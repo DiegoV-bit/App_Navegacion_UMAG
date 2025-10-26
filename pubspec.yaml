@@ -1,14 +1,16 @@
 name: mi_facultad_umag
-description: "A new Flutter project."
+description: "Aplicación móvil para la Facultad de Ingeniería de la Universidad de Magallanes."
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.0+1
 
 environment:
-  sdk: ^3.9.2
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.2
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:

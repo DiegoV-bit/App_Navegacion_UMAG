@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 void main() {
   runApp(const NavigacionUMAGApp());
@@ -192,6 +193,24 @@ class PantallaMapa extends StatefulWidget {
 }
 
 class _PantallaMapaState extends State<PantallaMapa> {
+  final TransformationController _transformationController = 
+      TransformationController();
+
+  String get rutaArchivo {
+    switch (widget.numeroPiso) {
+      case 1:
+        return 'Mapas/Primer piso labs_fac_ing simple.svg';
+      case 2:
+        return 'Mapas/Segundo piso fac ing simple.svg';
+      case 3:
+        return 'Mapas/Tercer piso fac_ing simple.svg';
+      case 4:
+        return 'Mapas/Cuarto piso fac_ing simple.svg';
+      default:
+        return 'Mapas/Primer piso labs_fac_ing simple.svg';
+    }
+  }
+
   String get nombreArchivo {
     switch (widget.numeroPiso) {
       case 1:
@@ -207,6 +226,28 @@ class _PantallaMapaState extends State<PantallaMapa> {
     }
   }
 
+  void _zoomIn() {
+    final Matrix4 matrix = _transformationController.value.clone();
+    matrix.scale(1.2);
+    _transformationController.value = matrix;
+  }
+
+  void _zoomOut() {
+    final Matrix4 matrix = _transformationController.value.clone();
+    matrix.scale(0.8);
+    _transformationController.value = matrix;
+  }
+
+  void _resetZoom() {
+    _transformationController.value = Matrix4.identity();
+  }
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -220,6 +261,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
               _mostrarInformacion(context);
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _resetZoom,
+            tooltip: 'Reiniciar zoom',
+          ),
         ],
       ),
       body: Column(
@@ -232,11 +278,20 @@ class _PantallaMapaState extends State<PantallaMapa> {
               children: [
                 Icon(Icons.map, color: Colors.blue.shade600),
                 const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Mapa del ${widget.titulo}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.blue.shade800,
+                    ),
+                  ),
+                ),
                 Text(
-                  'Mapa del ${widget.titulo}',
+                  'Pellizca para zoom',
                   style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.blue.shade800,
+                    fontSize: 12,
+                    color: Colors.blue.shade600,
                   ),
                 ),
               ],
@@ -244,39 +299,74 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
           Expanded(
             child: InteractiveViewer(
+              transformationController: _transformationController,
               panEnabled: true,
               scaleEnabled: true,
-              minScale: 0.5,
-              maxScale: 3.0,
+              minScale: 0.3,
+              maxScale: 5.0,
               child: Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: Colors.grey.shade100,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.map_outlined,
-                        size: 100,
-                        color: Colors.grey.shade400,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Mapa: $nombreArchivo',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(color: Colors.grey.shade600),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'El mapa se cargará aquí',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey.shade500,
+                color: Colors.white,
+                child: FutureBuilder(
+                  future: _loadSvg(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text('Cargando mapa...'),
+                          ],
+                        ),
+                      );
+                    }
+                    
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 64,
+                              color: Colors.red.shade400,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Error al cargar el mapa',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Archivo: $nombreArchivo.svg',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Error: ${snapshot.error}',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return Center(
+                      child: SvgPicture.asset(
+                        rutaArchivo,
+                        fit: BoxFit.contain,
+                        placeholderBuilder: (BuildContext context) => Container(
+                          padding: const EdgeInsets.all(30.0),
+                          child: const CircularProgressIndicator(),
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -288,41 +378,34 @@ class _PantallaMapaState extends State<PantallaMapa> {
         children: [
           FloatingActionButton(
             heroTag: "zoom_in",
-            onPressed: () {
-              // Implementar zoom in
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Zoom In')));
-            },
+            onPressed: _zoomIn,
             mini: true,
+            tooltip: 'Acercar',
             child: const Icon(Icons.zoom_in),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
             heroTag: "zoom_out",
-            onPressed: () {
-              // Implementar zoom out
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Zoom Out')));
-            },
+            onPressed: _zoomOut,
             mini: true,
+            tooltip: 'Alejar',
             child: const Icon(Icons.zoom_out),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
-            heroTag: "location",
-            onPressed: () {
-              // Implementar ubicación actual
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Centrar mapa')));
-            },
-            child: const Icon(Icons.my_location),
+            heroTag: "reset_zoom",
+            onPressed: _resetZoom,
+            tooltip: 'Reiniciar vista',
+            child: const Icon(Icons.center_focus_strong),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _loadSvg() async {
+    // Simular carga para mostrar el loading
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   void _mostrarInformacion(BuildContext context) {
@@ -335,14 +418,15 @@ class _PantallaMapaState extends State<PantallaMapa> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Archivo del mapa: $nombreArchivo'),
+              Text('Archivo del mapa: $nombreArchivo.svg'),
               const SizedBox(height: 12),
               const Text('Funcionalidades:'),
               const SizedBox(height: 8),
               const Text('• Navegación táctil (pan)'),
-              const Text('• Zoom con gestos'),
+              const Text('• Zoom con pellizco'),
               const Text('• Botones de zoom'),
-              const Text('• Centrar mapa'),
+              const Text('• Reiniciar vista'),
+              const Text('• Carga de mapas SVG'),
             ],
           ),
           actions: [
