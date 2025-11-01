@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 void main() {
+  // Inicializa la aplicación con la configuración principal.
   runApp(const NavigacionUMAGApp());
 }
 
@@ -10,6 +11,7 @@ class NavigacionUMAGApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // MaterialApp establece tema, navegación y punto de entrada visual.
     return MaterialApp(
       title: 'Navegación UMAG',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
@@ -30,6 +32,7 @@ class PantallaInicio extends StatelessWidget {
       ),
       body: Container(
         decoration: BoxDecoration(
+          // Fondo con degradado suave para darle jerarquía a la pantalla inicial.
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -51,18 +54,18 @@ class PantallaInicio extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       'Navegación Interna',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade800,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue.shade800,
+                              ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Selecciona el piso que deseas explorar',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey.shade600,
-                      ),
+                            color: Colors.grey.shade600,
+                          ),
                     ),
                   ],
                 ),
@@ -71,6 +74,7 @@ class PantallaInicio extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    // Cada tarjeta abre el mapa correspondiente al piso seleccionado.
                     _buildPisoCard(
                       context,
                       'Primer Piso',
@@ -128,6 +132,7 @@ class PantallaInicio extends StatelessWidget {
       elevation: 4,
       child: InkWell(
         onTap: () {
+          // Navega hacia la pantalla de mapa enviando piso y título.
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -156,15 +161,15 @@ class PantallaInicio extends StatelessWidget {
                     Text(
                       titulo,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       descripcion,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade600,
-                      ),
+                            color: Colors.grey.shade600,
+                          ),
                     ),
                   ],
                 ),
@@ -193,10 +198,11 @@ class PantallaMapa extends StatefulWidget {
 }
 
 class _PantallaMapaState extends State<PantallaMapa> {
-  final TransformationController _transformationController = 
+  final TransformationController _transformationController =
       TransformationController();
 
   String get rutaArchivo {
+    // Asocia cada piso con su archivo SVG almacenado en la carpeta Mapas.
     switch (widget.numeroPiso) {
       case 1:
         return 'Mapas/Primer piso labs_fac_ing simple.svg';
@@ -212,6 +218,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
   }
 
   String get nombreArchivo {
+    // Nombre legible del SVG para mostrarlo en mensajes al usuario.
     switch (widget.numeroPiso) {
       case 1:
         return 'Primer piso labs_fac_ing simple';
@@ -227,23 +234,27 @@ class _PantallaMapaState extends State<PantallaMapa> {
   }
 
   void _zoomIn() {
+    // Amplía la vista actual multiplicando la matriz de transformación.
     final Matrix4 matrix = _transformationController.value.clone();
     matrix.scale(1.2);
     _transformationController.value = matrix;
   }
 
   void _zoomOut() {
+    // Reduce la vista actual aplicando una escala menor.
     final Matrix4 matrix = _transformationController.value.clone();
     matrix.scale(0.8);
     _transformationController.value = matrix;
   }
 
   void _resetZoom() {
+    // Devuelve la vista a la transformación inicial sin desplazamientos ni zoom.
     _transformationController.value = Matrix4.identity();
   }
 
   @override
   void dispose() {
+    // Libera el controlador al cerrar la pantalla para evitar fugas de memoria.
     _transformationController.dispose();
     super.dispose();
   }
@@ -258,6 +269,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
+              // Muestra diálogo con detalles del mapa actual.
               _mostrarInformacion(context);
             },
           ),
@@ -312,6 +324,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   future: _loadSvg(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
+                      // Muestra indicador de carga hasta que el mapa esté disponible.
                       return const Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -323,8 +336,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
                         ),
                       );
                     }
-                    
+
                     if (snapshot.hasError) {
+                      // Diagnóstico amigable cuando el archivo no se encuentra o falla al cargar.
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -347,7 +361,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
                             const SizedBox(height: 8),
                             Text(
                               'Error: ${snapshot.error}',
-                              style: Theme.of(context).textTheme.bodySmall
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
                                   ?.copyWith(color: Colors.red),
                               textAlign: TextAlign.center,
                             ),
@@ -357,6 +373,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                     }
 
                     return Center(
+                      // Muestra el SVG dentro del visor con ajuste proporcional.
                       child: SvgPicture.asset(
                         rutaArchivo,
                         fit: BoxFit.contain,
@@ -404,7 +421,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
   }
 
   Future<void> _loadSvg() async {
-    // Simular carga para mostrar el loading
+    // Simula una breve espera para que el indicador de carga sea visible.
     await Future.delayed(const Duration(milliseconds: 500));
   }
 
