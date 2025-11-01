@@ -5,34 +5,11 @@
    viewBox="0 0 11230.098 8563.6252"
    version="1.1"
    id="svg1632"
-   sodipodi:docname="Segundo piso fac ing simple"
-   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns:lc="https://librecad.org">
   <defs
      id="defs1632" />
-  <sodipodi:namedview
-     id="namedview1632"
-     pagecolor="#505050"
-     bordercolor="#eeeeee"
-     borderopacity="1"
-     inkscape:showpageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#505050"
-     inkscape:document-units="mm"
-     inkscape:zoom="0.010846735"
-     inkscape:cx="16364.372"
-     inkscape:cy="14889.274"
-     inkscape:window-width="1360"
-     inkscape:window-height="700"
-     inkscape:window-x="0"
-     inkscape:window-y="31"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="g750" />
   <g
      lc:layername="ASCENSOR"
      lc:is_locked="false"
@@ -4531,15 +4508,6 @@
        id="line750"
        style="stroke-width:0.956204" />
   </g>
-  <g
-     lc:layername="Salas"
-     lc:is_locked="false"
-     lc:is_construction="false"
-     fill="none"
-     stroke="#000000"
-     stroke-width="1"
-     id="g751"
-     transform="translate(0.35355333,0.35355335)" />
   <g
      lc:layername="TAB"
      lc:is_locked="false"
