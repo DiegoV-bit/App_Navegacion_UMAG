@@ -1,0 +1,11 @@
+{
+  "nodos": [
+    {"id": "P1_Entrada", "x": 50, "y": 200},
+    {"id": "P1_Pasillo", "x": 150, "y": 200},
+    {"id": "P1_A101", "x": 150, "y": 100}
+  ],
+  "conexiones": [
+    {"origen": "P1_Entrada", "destino": "P1_Pasillo", "distancia": 10},
+    {"origen": "P1_Pasillo", "destino": "P1_A101", "distancia": 5}
+  ]
+}

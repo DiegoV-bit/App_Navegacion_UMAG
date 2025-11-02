@@ -22,3 +22,4 @@ flutter:
   
   assets:
     - Mapas/
+    - lib/data/

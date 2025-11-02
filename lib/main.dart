@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:collection';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
   // Inicializa la aplicación con la configuración principal.
@@ -148,7 +151,7 @@ class PantallaInicio extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icono, size: 32, color: color),
@@ -200,20 +203,65 @@ class PantallaMapa extends StatefulWidget {
 class _PantallaMapaState extends State<PantallaMapa> {
   final TransformationController _transformationController =
       TransformationController();
+  late Future<void> _svgFuture = Future.value();
+
+  @override
+  void initState() {
+    super.initState();
+    _svgFuture = _precargarSvg();
+  }
+
+  Future<void> _precargarSvg() async {
+    // Precarga el SVG para evitar demoras en la UI
+    await Future.delayed(const Duration(milliseconds: 100));
+  }
+
+  Future<void> _cargarYValidarSvg() async {
+    try {
+      // Intenta cargar el string del asset para validar que existe
+      final content = await rootBundle.loadString(rutaArchivo);
+      if (content.isEmpty) {
+        throw Exception('El archivo SVG está vacío');
+      }
+      // Validación básica de que es un SVG
+      if (!content.trim().startsWith('<svg') && !content.contains('<svg')) {
+        throw Exception('El archivo no parece ser un SVG válido');
+      }
+    } catch (e) {
+      throw Exception(
+          'No se pudo cargar el archivo SVG: $rutaArchivo. Error: $e');
+    }
+  }
 
   String get rutaArchivo {
     // Asocia cada piso con su archivo SVG almacenado en la carpeta Mapas.
     switch (widget.numeroPiso) {
       case 1:
-        return 'Mapas/Primer piso labs_fac_ing simple.svg';
+        return 'Mapas/Primer piso fac_ing simple.svg';
       case 2:
-        return 'Mapas/Segundo piso fac ing simple.svg';
+        return 'Mapas/Segundo piso fac_ing simple.svg';
       case 3:
         return 'Mapas/Tercer piso fac_ing simple.svg';
       case 4:
         return 'Mapas/Cuarto piso fac_ing simple.svg';
       default:
-        return 'Mapas/Primer piso labs_fac_ing simple.svg';
+        return 'Mapas/Primer piso fac_ing simple.svg';
+    }
+  }
+
+  String get rutaGrafoJson {
+    // Asocia cada piso con su archivo JSON del grafo correspondiente.
+    switch (widget.numeroPiso) {
+      case 1:
+        return 'lib/data/grafo_piso1.json';
+      case 2:
+        return 'lib/data/grafo_piso2.json';
+      case 3:
+        return 'lib/data/grafo_piso3.json';
+      case 4:
+        return 'lib/data/grafo_piso4.json';
+      default:
+        return 'lib/data/grafo_piso1.json';
     }
   }
 
@@ -221,29 +269,29 @@ class _PantallaMapaState extends State<PantallaMapa> {
     // Nombre legible del SVG para mostrarlo en mensajes al usuario.
     switch (widget.numeroPiso) {
       case 1:
-        return 'Primer piso labs_fac_ing simple';
+        return 'Primer piso fac_ing simple';
       case 2:
-        return 'Segundo piso fac ing simple';
+        return 'Segundo piso fac_ing simple';
       case 3:
         return 'Tercer piso fac_ing simple';
       case 4:
         return 'Cuarto piso fac_ing simple';
       default:
-        return 'Primer piso labs_fac_ing simple';
+        return 'Primer piso fac_ing simple';
     }
   }
 
   void _zoomIn() {
     // Amplía la vista actual multiplicando la matriz de transformación.
     final Matrix4 matrix = _transformationController.value.clone();
-    matrix.scale(1.2);
+    matrix.scaleByDouble(1.2, 1.2, 1.2, 1.0);
     _transformationController.value = matrix;
   }
 
   void _zoomOut() {
     // Reduce la vista actual aplicando una escala menor.
     final Matrix4 matrix = _transformationController.value.clone();
-    matrix.scale(0.8);
+    matrix.scaleByDouble(0.8, 0.8, 0.8, 1.0);
     _transformationController.value = matrix;
   }
 
@@ -310,82 +358,126 @@ class _PantallaMapaState extends State<PantallaMapa> {
             ),
           ),
           Expanded(
-            child: InteractiveViewer(
-              transformationController: _transformationController,
-              panEnabled: true,
-              scaleEnabled: true,
-              minScale: 0.3,
-              maxScale: 5.0,
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: Colors.white,
-                child: FutureBuilder(
-                  future: _loadSvg(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      // Muestra indicador de carga hasta que el mapa esté disponible.
-                      return const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(height: 16),
-                            Text('Cargando mapa...'),
-                          ],
-                        ),
-                      );
-                    }
+            child: FutureBuilder<void>(
+              future: _svgFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('Cargando mapa...'),
+                      ],
+                    ),
+                  );
+                }
 
-                    if (snapshot.hasError) {
-                      // Diagnóstico amigable cuando el archivo no se encuentra o falla al cargar.
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              size: 64,
-                              color: Colors.red.shade400,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Error al cargar el mapa',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Archivo: $nombreArchivo.svg',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Error: ${snapshot.error}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(color: Colors.red),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red.shade400,
                         ),
-                      );
-                    }
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error al cargar el mapa',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Archivo: $nombreArchivo.svg',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Error: ${snapshot.error}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-                    return Center(
-                      // Muestra el SVG dentro del visor con ajuste proporcional.
-                      child: SvgPicture.asset(
-                        rutaArchivo,
-                        fit: BoxFit.contain,
-                        placeholderBuilder: (BuildContext context) => Container(
-                          padding: const EdgeInsets.all(30.0),
-                          child: const CircularProgressIndicator(),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+                return InteractiveViewer(
+                  transformationController: _transformationController,
+                  panEnabled: true,
+                  scaleEnabled: true,
+                  minScale: 0.3,
+                  maxScale: 4.0,
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: Colors.white,
+                    child: FutureBuilder(
+                      future: _cargarYValidarSvg(),
+                      builder: (context, svgSnapshot) {
+                        if (svgSnapshot.hasError) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.image_not_supported,
+                                  size: 64,
+                                  color: Colors.orange.shade400,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No se pudo cargar el mapa SVG',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Archivo: $rutaArchivo',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Error: ${svgSnapshot.error}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(color: Colors.red),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _svgFuture = _precargarSvg();
+                                    });
+                                  },
+                                  child: const Text('Reintentar'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return SvgPicture.asset(
+                          rutaArchivo,
+                          fit: BoxFit.contain,
+                          placeholderBuilder: (context) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -415,14 +507,16 @@ class _PantallaMapaState extends State<PantallaMapa> {
             tooltip: 'Reiniciar vista',
             child: const Icon(Icons.center_focus_strong),
           ),
+          const SizedBox(height: 8),
+          FloatingActionButton(
+            heroTag: "graph_demo",
+            onPressed: _mostrarDemoGrafo,
+            tooltip: 'Ver grafo',
+            child: const Icon(Icons.route),
+          ),
         ],
       ),
     );
-  }
-
-  Future<void> _loadSvg() async {
-    // Simula una breve espera para que el indicador de carga sea visible.
-    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   void _mostrarInformacion(BuildContext context) {
@@ -448,6 +542,13 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
           actions: [
             TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _mostrarDiagnostico();
+              },
+              child: const Text('Diagnóstico'),
+            ),
+            TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cerrar'),
             ),
@@ -455,5 +556,199 @@ class _PantallaMapaState extends State<PantallaMapa> {
         );
       },
     );
+  }
+
+  Future<void> _mostrarDiagnostico() async {
+    final diagnosticos = <String>[];
+
+    // Verificar archivos SVG
+    for (int i = 1; i <= 4; i++) {
+      final piso = i;
+      final ruta = _getRutaArchivoPorPiso(piso);
+      try {
+        final content = await rootBundle.loadString(ruta);
+        diagnosticos.add('✓ Piso $piso: OK (${content.length} caracteres)');
+      } catch (e) {
+        diagnosticos.add('✗ Piso $piso: ERROR - $e');
+      }
+    }
+
+    // Verificar archivos JSON del grafo
+    for (int i = 1; i <= 4; i++) {
+      final piso = i;
+      final ruta = _getRutaGrafoPorPiso(piso);
+      try {
+        final content = await rootBundle.loadString(ruta);
+        final data = json.decode(content);
+        diagnosticos.add(
+            '✓ Grafo Piso $piso: OK (${data['nodos']?.length ?? 0} nodos)');
+      } catch (e) {
+        diagnosticos.add('✗ Grafo Piso $piso: ERROR - $e');
+      }
+    }
+
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Diagnóstico del Sistema'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: diagnosticos
+                .map((diagnostico) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Text(
+                        diagnostico,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          color: diagnostico.startsWith('✓')
+                              ? Colors.green
+                              : Colors.red,
+                        ),
+                      ),
+                    ))
+                .toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getRutaArchivoPorPiso(int piso) {
+    switch (piso) {
+      case 1:
+        return 'Mapas/Primer piso fac_ing simple.svg';
+      case 2:
+        return 'Mapas/Segundo piso fac_ing simple.svg';
+      case 3:
+        return 'Mapas/Tercer piso fac_ing simple.svg';
+      case 4:
+        return 'Mapas/Cuarto piso fac_ing simple.svg';
+      default:
+        return 'Mapas/Primer piso fac_ing simple.svg';
+    }
+  }
+
+  String _getRutaGrafoPorPiso(int piso) {
+    switch (piso) {
+      case 1:
+        return 'lib/data/grafo_piso1.json';
+      case 2:
+        return 'lib/data/grafo_piso2.json';
+      case 3:
+        return 'lib/data/grafo_piso3.json';
+      case 4:
+        return 'lib/data/grafo_piso4.json';
+      default:
+        return 'lib/data/grafo_piso1.json';
+    }
+  }
+
+  Future<void> _mostrarDemoGrafo() async {
+    try {
+      final raw = await rootBundle.loadString(rutaGrafoJson);
+      final data = json.decode(raw) as Map<String, dynamic>;
+      final nodos =
+          List<Map<String, dynamic>>.from(data['nodos'] as List<dynamic>);
+      final conexiones =
+          List<Map<String, dynamic>>.from(data['conexiones'] as List<dynamic>);
+      final ruta = _calcularRutaDemo(conexiones);
+
+      if (!mounted) return;
+      await showModalBottomSheet(
+        context: context,
+        showDragHandle: true,
+        builder: (_) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Nodos (${nodos.length})',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                ...nodos.map(
+                  (nodo) => ListTile(
+                    dense: true,
+                    title: Text(nodo['id'] as String),
+                    subtitle: Text('x: ${nodo['x']}  y: ${nodo['y']}'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text('Conexiones (${conexiones.length})',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                ...conexiones.map(
+                  (conexion) => ListTile(
+                    dense: true,
+                    title:
+                        Text('${conexion['origen']} → ${conexion['destino']}'),
+                    subtitle: Text('Distancia: ${conexion['distancia']}'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text('Ruta demo',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                if (ruta.isEmpty)
+                  const Text('No hay ruta de ejemplo para este piso todavía.')
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: ruta
+                        .map(
+                          (paso) => Chip(
+                            label: Text(paso),
+                            avatar: const Icon(Icons.place, size: 16),
+                          ),
+                        )
+                        .toList(),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo cargar el grafo: $e')),
+      );
+    }
+  }
+
+  List<String> _calcularRutaDemo(List<Map<String, dynamic>> conexiones) {
+    if (widget.numeroPiso != 1) return [];
+    const origen = 'P1_Entrada';
+    const destino = 'P1_A101';
+    final grafo = <String, List<String>>{};
+    for (final conexion in conexiones) {
+      final origenId = conexion['origen'] as String;
+      final destinoId = conexion['destino'] as String;
+      grafo.putIfAbsent(origenId, () => []).add(destinoId);
+      grafo.putIfAbsent(destinoId, () => []).add(origenId);
+    }
+    final visitados = <String>{origen};
+    final cola = Queue<List<String>>()..add([origen]);
+    while (cola.isNotEmpty) {
+      final camino = cola.removeFirst();
+      final ultimo = camino.last;
+      if (ultimo == destino) return camino;
+      for (final vecino in grafo[ultimo] ?? const []) {
+        if (visitados.add(vecino)) {
+          cola.add([...camino, vecino]);
+        }
+      }
+    }
+    return [];
   }
 }
