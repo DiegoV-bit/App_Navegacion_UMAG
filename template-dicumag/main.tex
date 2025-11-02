@@ -1,0 +1,152 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+
+% Rutas para los recursos gráficos (permite compilar desde la raíz o desde esta carpeta)
+\graphicspath{{./}{./logo/}{./image/}}
+
+% ============================================================
+% CONFIGURACIÓN BÁSICA DEL TEMPLATE
+% ============================================================
+\newcommand{\institucion}{Universidad de Magallanes}
+\newcommand{\facultad}{Departamento de Ingeniería en Computación}
+\newcommand{\programa}{Ingeniería Civil en Computación e Informática}
+\newcommand{\curso}{Clase de Universidad 101}
+\newcommand{\docente}{Dra. María González}
+\newcommand{\estudiante}{Juan Pérez}
+\newcommand{\titulo}{\textit{Título provisional del informe}}
+\newcommand{\fechaentrega}{\textit{Fecha de entrega}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\institucion}
+\fancyhead[R]{\curso}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14.5pt}
+
+\begin{document}
+
+% ============================================================
+% PORTADA
+% ============================================================
+\begin{center}
+  \begin{tabular}{@{}c@{\hspace{2cm}}c@{\hspace{2cm}}c@{}}
+  \includegraphics[height=2.8cm]{umag.png} &
+    \begin{minipage}[c]{5.5cm}
+      \centering
+      {\Large \curso} \\
+      {\large \institucion} \\
+      \vspace{1mm}
+      {\Large \titulo}
+    \end{minipage} &
+  \includegraphics[height=2.8cm]{dic.png}
+  \end{tabular}
+\end{center}
+
+\vspace{4mm}
+\begin{center}
+  \includegraphics[width=0.65\textwidth]{placeholder.png}
+\end{center}
+
+\vspace{4mm}
+\hrule
+\vspace{1mm}
+\hrule
+
+\vspace{3mm}
+\begin{tabular}{ll}
+  Estudiante: & \estudiante \\
+  Programa: & \programa \\
+  Departamento: & \facultad \\
+  Profesor: & \docente \\
+  Fecha: & \fechaentrega \\
+\end{tabular}
+
+\vspace{3mm}
+\hrule
+\vspace{1mm}
+\hrule
+
+\clearpage
+\tableofcontents
+
+\clearpage
+
+% ============================================================
+% RESUMEN O INTRODUCCIÓN
+% ============================================================
+\section*{Resumen}
+\textit{El presente proyecto desarrolla una aplicacion de navegacion interna que tiene como fin optimizar la orientacion y el desplazamiento dentro de la facultad de ingenieria de la universidad de magallanes. Esta solucion viene de la necesidad de mejorar la accebilidad y la eficiencia a la hora de encontrar salas, oficinas y laboratorios, especialmente para estudiantes nuevos y personas visitantes. Para el desarrollo se implemento un sistema de mapeo digital basados en mapas arquitectonicos del edificio, integrando tecnologias de posicionamiento basadas en puntos de referencia.}
+
+\section{Introducción}
+Los alumnos cuando llegan por primera vez a la universidad pueden sentirse desorientados a la hora de ir a alguna sala o laboratorio ya que no sabe como llegar a esos lugares en especifico, para resolver esta problemática se busca crear una aplicación móvil para poder navegar dentro de la facultad.
+
+El proyecto fue desarrollado en el segundo semestre del año 2025 en las dependencias de la facultad de ingeniería de la universidad de Magallanes. Las pruebas y evaluaciones se realizaron usando planos digitales y simulaciones de desplazamiento en sus principales pasillos y áreas de uso común
+
+\subsection{Objetivos}
+Desarrollar una aplicación móvil de navegación interna que permita a los usuarios ubicarse y desplazarse eficientemente dentro de la Facultad de Ingeniería, utilizando tecnologías de posicionamiento y mapas digitales interactivos.
+\begin{itemize}
+  \item Analizar la estructura espacial y las necesidades de orientación dentro de la Facultad de Ingeniería..
+  \item Diseñar e implementar una interfaz intuitiva que muestre mapas internos y rutas óptimas hacia los distintos destinos.
+  \item Integrar tecnologías de posicionamiento en interiores (beacons, Wi-Fi o códigos QR) que permitan determinar la ubicación del usuario en tiempo real.
+\end{itemize}
+
+\section{Metodología}
+Describa los pasos principales realizados durante la práctica. Puede apoyarse en subsecciones:
+\begin{enumerate}
+  \item Placeholder para primera etapa del trabajo.
+  \item Placeholder para segunda etapa del trabajo.
+  \item Placeholder para validación y resultados.
+\end{enumerate}
+
+\section{Resultados Principales}
+Incluya diagramas, tablas o fragmentos de código relevantes. Ejemplo de uso de figuras:
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\textwidth]{placeholder.png}
+  \caption{Sustituir esta imagen por el diagrama o captura correspondiente}
+\end{figure}
+
+\section{Conclusiones}
+Redacte conclusiones breves destacando los aprendizajes clave y posibles extensiones del trabajo.
+
+\section*{Próximos Pasos}
+\begin{itemize}
+  \item Placeholder para acción futura 1.
+  \item Placeholder para acción futura 2.
+\end{itemize}
+
+\section{Declaración de Uso de Apoyo}
+  extit{Utilice esta sección para transparentar cualquier apoyo externo empleado durante la preparación del informe. Describa qué herramientas autorizadas se usaron, en qué etapa contribuyeron y cómo se integraron a su trabajo propio.}
+
+\begin{itemize}
+  \item Documente el uso de sistemas de digitalización (por ejemplo, OCR) indicando qué materiales se procesaron y cómo se verificó la fidelidad de la conversión.
+  \item Declare el empleo de herramientas de IA generativa o de soporte al estudio (chatbots, asistentes de codificación, análisis de datos, etc.), especificando la finalidad, las indicaciones dadas y las verificaciones realizadas.
+  \item Si el docente o la institución impone lineamientos adicionales, refleje aquí las condiciones y los permisos obtenidos.
+\end{itemize}
+
+\section{Referencias}
+\begin{thebibliography}{9}
+\bibitem{torvalds2001}
+L. Torvalds y D. Diamond, \textit{Just for Fun: The Story of an Accidental Revolutionary}. HarperBusiness, 2001.
+
+\bibitem{tanenbaum2015}
+A. S. Tanenbaum y H. Bos, \textit{Modern Operating Systems}. 4.\,ed., Pearson, 2015.
+\end{thebibliography}
+
+\vspace{0.5cm}
+\hrule
+\begin{center}
+\textbf{\estudiante}\\
+Estudiante de \programa\\
+\institucion\\
+\fechaentrega
+\end{center}
+
+\end{document}
