@@ -1,0 +1,13 @@
+{
+  "nodos": [
+    {"id": "P4_Escalera", "x": 50, "y": 200},
+    {"id": "P4_Ascensor", "x": 100, "y": 200},
+    {"id": "P4_Pasillo", "x": 150, "y": 200},
+    {"id": "P4_A101", "x": 150, "y": 100}
+  ],
+  "conexiones": [
+    {"origen": "P4_Escalera", "destino": "P4_Pasillo", "distancia": 10},
+    {"origen": "P4_Ascensor", "destino": "P4_Pasillo", "distancia": 10},
+    {"origen": "P4_Pasillo", "destino": "P4_A101", "distancia": 5}
+  ]
+}
