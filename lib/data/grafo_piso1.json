@@ -1,6 +1,17 @@
 {
   "nodos": [
     {"id": "P1_Entrada", "x": 50, "y": 200},
+    {"id": "P1_Administracion_TI", "x": 50, "y": 200},
+    {"id": "P1_Sala_Magiter", "x": 100, "y": 200},
+    {"id": "P1_Sala_tesistas", "x": 200, "y": 200},
+    {"id": "P1_Sala_TI1", "x": 250, "y": 200},
+    {"id": "P1_Sala_TI2", "x": 300, "y": 200},
+    {"id": "P1_Sala_Redes", "x": 350, "y": 200},
+    {"id": "P1_Sala_Proyectos", "x": 400, "y": 200},
+    {"id": "P1_Sala_Mantenimiento", "x": 450, "y": 200},
+    {"id": "P1_Sala_Descanso_Quimica", "x": 500, "y": 200},
+    {"id": "P1_Secretaria de Computacion", "x": 550, "y": 200},
+    {"id": "P1_Pasillo_Profesores", "x": 600, "y": 200},
     {"id": "P1_Pasillo", "x": 150, "y": 200},
     {"id": "P1_Ascensor", "x": 100, "y": 200},
     {"id": "P1_A101", "x": 150, "y": 100}
