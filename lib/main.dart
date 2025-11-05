@@ -204,11 +204,31 @@ class _PantallaMapaState extends State<PantallaMapa> {
   final TransformationController _transformationController =
       TransformationController();
   late Future<void> _svgFuture = Future.value();
+  List<Map<String, dynamic>> _nodos = [];
+  bool _mostrarNodos = true;
 
   @override
   void initState() {
     super.initState();
     _svgFuture = _precargarSvg();
+    _cargarNodos();
+  }
+
+  Future<void> _cargarNodos() async {
+    try {
+      final raw = await rootBundle.loadString(rutaGrafoJson);
+      final data = json.decode(raw) as Map<String, dynamic>;
+      setState(() {
+        _nodos =
+            List<Map<String, dynamic>>.from(data['nodos'] as List<dynamic>);
+      });
+    } catch (e) {
+      // Manejo de errores al cargar nodos
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudieron cargar los nodos: $e')),
+      );
+    }
   }
 
   Future<void> _precargarSvg() async {
@@ -307,6 +327,92 @@ class _PantallaMapaState extends State<PantallaMapa> {
     super.dispose();
   }
 
+  void _toggleNodos() {
+    setState(() {
+      _mostrarNodos = !_mostrarNodos;
+    });
+  }
+
+  void _mostrarInfoNodo(Map<String, dynamic> nodo) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.location_on, color: Colors.blue.shade600),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                nodo['id'] as String,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              dense: true,
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Tipo de lugar'),
+              subtitle: Text(_obtenerTipoLugar(nodo['id'] as String)),
+            ),
+            ListTile(
+              dense: true,
+              leading: const Icon(Icons.straighten),
+              title: const Text('Coordenadas'),
+              subtitle: Text('X: ${nodo['x']}, Y: ${nodo['y']}'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Navegando a ${nodo['id']}...'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            child: const Text('Navegar aquí'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _obtenerTipoLugar(String id) {
+    if (id.contains('Entrada')) return 'Entrada principal';
+    if (id.contains('Pasillo')) return 'Pasillo';
+    if (id.contains('A')) return 'Aula';
+    if (id.contains('Lab')) return 'Laboratorio';
+    if (id.contains('Oficina')) return 'Oficina';
+    if (id.contains('Baño')) return 'Baño';
+    if (id.contains('Escalera')) return 'Escalera';
+    if (id.contains('Ascensor')) return 'Ascensor';
+    return 'Punto de interés';
+  }
+
+  IconData _obtenerIconoNodo(String id) {
+    if (id.contains('Entrada')) return Icons.door_front_door;
+    if (id.contains('Pasillo')) return Icons.swap_horiz;
+    if (id.contains('A')) return Icons.meeting_room;
+    if (id.contains('Lab')) return Icons.science;
+    if (id.contains('Oficina')) return Icons.business;
+    if (id.contains('Baño')) return Icons.wc;
+    if (id.contains('Escalera')) return Icons.stairs;
+    if (id.contains('Ascensor')) return Icons.elevator;
+    return Icons.place;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -314,6 +420,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
         title: Text(widget.titulo),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          IconButton(
+            icon: Icon(_mostrarNodos ? Icons.visibility : Icons.visibility_off),
+            onPressed: _toggleNodos,
+            tooltip: _mostrarNodos ? 'Ocultar nodos' : 'Mostrar nodos',
+          ),
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
@@ -347,6 +458,24 @@ class _PantallaMapaState extends State<PantallaMapa> {
                     ),
                   ),
                 ),
+                if (_nodos.isNotEmpty)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_nodos.length} nodos',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue.shade800,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                const SizedBox(width: 8),
                 Text(
                   'Pellizca para zoom',
                   style: TextStyle(
@@ -418,62 +547,70 @@ class _PantallaMapaState extends State<PantallaMapa> {
                     width: double.infinity,
                     height: double.infinity,
                     color: Colors.white,
-                    child: FutureBuilder(
-                      future: _cargarYValidarSvg(),
-                      builder: (context, svgSnapshot) {
-                        if (svgSnapshot.hasError) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.image_not_supported,
-                                  size: 64,
-                                  color: Colors.orange.shade400,
+                    child: Stack(
+                      children: [
+                        FutureBuilder(
+                          future: _cargarYValidarSvg(),
+                          builder: (context, svgSnapshot) {
+                            if (svgSnapshot.hasError) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.image_not_supported,
+                                      size: 64,
+                                      color: Colors.orange.shade400,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No se pudo cargar el mapa SVG',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Archivo: $rutaArchivo',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Error: ${svgSnapshot.error}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: Colors.red),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          _svgFuture = _precargarSvg();
+                                        });
+                                      },
+                                      child: const Text('Reintentar'),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No se pudo cargar el mapa SVG',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Archivo: $rutaArchivo',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Error: ${svgSnapshot.error}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(color: Colors.red),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _svgFuture = _precargarSvg();
-                                    });
-                                  },
-                                  child: const Text('Reintentar'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                              );
+                            }
 
-                        return SvgPicture.asset(
-                          rutaArchivo,
-                          fit: BoxFit.contain,
-                          placeholderBuilder: (context) => const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      },
+                            return SvgPicture.asset(
+                              rutaArchivo,
+                              fit: BoxFit.contain,
+                              placeholderBuilder: (context) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          },
+                        ),
+                        if (_mostrarNodos && _nodos.isNotEmpty)
+                          ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
+                      ],
                     ),
                   ),
                 );
@@ -750,5 +887,42 @@ class _PantallaMapaState extends State<PantallaMapa> {
       }
     }
     return [];
+  }
+
+  Widget _buildNodoMarker(Map<String, dynamic> nodo) {
+    final x = (nodo['x'] as num).toDouble();
+    final y = (nodo['y'] as num).toDouble();
+    final id = nodo['id'] as String;
+
+    return Positioned(
+      left: x,
+      top: y,
+      child: GestureDetector(
+        onTap: () => _mostrarInfoNodo(nodo),
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.blue.shade500,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(
+              _obtenerIconoNodo(id),
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
