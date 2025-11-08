@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1762635025.44851 "c:/Users/DiegoV-bit/OneDrive/Desktop/Repos github/App_Navegacion_UMAG/template-dicumag/main.tex" "main.pdf" "main" 1762635028.47292 0
+["pdflatex"] 1762636416.98105 "c:/Users/DiegoV-bit/OneDrive/Desktop/Repos github/App_Navegacion_UMAG/template-dicumag/main.tex" "main.pdf" "main" 1762636421.46791 0
   "C:/Users/DiegoV-bit/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1760412440 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/DiegoV-bit/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1760412262 13324084 858c82b714a52865e174e9fe38ed2314 ""
   "C:/Users/DiegoV-bit/AppData/Local/Programs/MiKTeX/fonts/tfm/public/cm/cmbx10.tfm" 1136765053 1328 c834bbb027764024c09d3d2bf908b5f0 ""
@@ -63,14 +63,14 @@
   "C:/Users/DiegoV-bit/AppData/Local/Programs/MiKTeX/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1751104012 9684 a33a14b82ce60d6e77cb9be689d79ee6 ""
   "C:/Users/DiegoV-bit/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/Users/DiegoV-bit/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
-  "c:/Users/DiegoV-bit/OneDrive/Desktop/Repos github/App_Navegacion_UMAG/template-dicumag/main.tex" 1762635020 6428 f76f87bb8fea215567b4c5cf16c583a7 ""
+  "c:/Users/DiegoV-bit/OneDrive/Desktop/Repos github/App_Navegacion_UMAG/template-dicumag/main.tex" 1762636414 6425 5eadbe79c71932ca80be6c4187dd0caf ""
   "image/placeholder.png" 1762556879 30255 08c66a31d69caca7c5682e9bee8cc4ef ""
   "logo/dic.png" 1762556879 477694 bc69405b48d0c6f1d46280d0a751c9b5 ""
   "logo/umag.png" 1762556879 1877387 72b85c55ee3d5784867b85184a76e3cd ""
-  "main.aux" 1762635028 1385 f3454375f4eb023d61fec2206dc8d31a "pdflatex"
-  "main.out" 1762635028 859 7dc4c24b2e45a257bbf3c644726cdb1e "pdflatex"
-  "main.tex" 1762635020 6428 f76f87bb8fea215567b4c5cf16c583a7 ""
-  "main.toc" 1762635028 539 5758ec39e6844cb1dd1bf69302d2cfec "pdflatex"
+  "main.aux" 1762636421 1385 f3454375f4eb023d61fec2206dc8d31a "pdflatex"
+  "main.out" 1762636421 859 7dc4c24b2e45a257bbf3c644726cdb1e "pdflatex"
+  "main.tex" 1762636414 6425 5eadbe79c71932ca80be6c4187dd0caf ""
+  "main.toc" 1762636421 539 5758ec39e6844cb1dd1bf69302d2cfec "pdflatex"
   (generated)
   "main.aux"
   "main.log"
