@@ -16,10 +16,11 @@
 \newcommand{\institucion}{Universidad de Magallanes}
 \newcommand{\facultad}{Departamento de Ingeniería en Computación}
 \newcommand{\programa}{Ingeniería Civil en Computación e Informática}
-\newcommand{\curso}{Clase de Universidad 101}
-\newcommand{\docente}{Dra. María González}
-\newcommand{\estudiante}{Juan Pérez}
-\newcommand{\titulo}{\textit{Título provisional del informe}}
+\newcommand{\curso}{Taller de Integración}
+\newcommand{\docente}{Dra. Patricia Maldonado}
+\newcommand{\estudianteUno}{Diego Vidal}
+\newcommand{\estudianteDos}{Bruno Martinez}
+\newcommand{\titulo}{\textit{Aplicación de navegación interna para la Facultad de Ingeniería}}
 \newcommand{\fechaentrega}{\textit{Fecha de entrega}}
 
 \pagestyle{fancy}
@@ -35,9 +36,9 @@
 % PORTADA
 % ============================================================
 \begin{center}
-  \begin{tabular}{@{}c@{\hspace{2cm}}c@{\hspace{2cm}}c@{}}
+  \begin{tabular}{@{}c@{\hspace{1.5cm}}c@{\hspace{1.5cm}}c@{}}
   \includegraphics[height=2.8cm]{umag.png} &
-    \begin{minipage}[c]{5.5cm}
+    \begin{minipage}[c]{5cm}
       \centering
       {\Large \curso} \\
       {\large \institucion} \\
@@ -60,14 +61,13 @@
 
 \vspace{3mm}
 \begin{tabular}{ll}
-  Estudiante: & \estudiante\\
+  Estudiantes: & \estudianteUno\\
+              & \estudianteDos\\
   Programa: & \programa\\
   Departamento: & \facultad\\
-  Profesor: & \docente\\
+  Profesor adjunto: & \docente\\
   Fecha: & \fechaentrega\\
-\end{tabular}
-
-\vspace{3mm}
+\end{tabular}\vspace{3mm}
 \hrule
 \vspace{1mm}
 \hrule
@@ -78,69 +78,87 @@
 \clearpage
 
 % ============================================================
-% RESUMEN O INTRODUCCIÓN
+% RESUMEN
 % ============================================================
 \section*{Resumen}
 \textit{El presente proyecto desarrolla una aplicacion de navegacion interna que tiene como fin optimizar la orientacion y el desplazamiento dentro de la facultad de ingenieria de la universidad de magallanes. Esta solucion viene de la necesidad de mejorar la accebilidad y la eficiencia a la hora de encontrar salas, oficinas y laboratorios, especialmente para estudiantes nuevos y personas visitantes. Para el desarrollo se implemento un sistema de mapeo digital basados en mapas arquitectonicos del edificio, integrando tecnologias de posicionamiento basadas en puntos de referencia.}
 
+% ============================================================
+% INTRODUCCIÓN
+% ============================================================
 \section{Introducción}
+% La introducción debe tener las siguientes subsecciones según el formato [cite: 40]
+
+\subsection{Antecedentes}
+% 
 Los alumnos cuando llegan por primera vez a la universidad pueden sentirse desorientados a la hora de ir a alguna sala o laboratorio ya que no sabe como llegar a esos lugares en especifico, para resolver esta problemática se busca crear una aplicación móvil para poder navegar dentro de la facultad.
 
-El proyecto fue desarrollado en el segundo semestre del año 2025 en las dependencias de la facultad de ingeniería de la universidad de Magallanes. Las pruebas y evaluaciones se realizaron usando planos digitales y simulaciones de desplazamiento en sus principales pasillos y áreas de uso común
+\subsection{Período en que se realizó}
+% 
+El proyecto fue desarrollado en el segundo semestre del año 2025 en las dependencias de la facultad de ingeniería de la universidad de Magallanes. Las pruebas y evaluaciones se realizaron usando planos digitales y simulaciones de desplazamiento en sus principales pasillos y áreas de uso común.
 
-\subsection{Objetivos}
+\subsection{Objetivo General}
+% 
 Desarrollar una aplicación móvil de navegación interna que permita a los usuarios ubicarse y desplazarse eficientemente dentro de la Facultad de Ingeniería, utilizando tecnologías de posicionamiento y mapas digitales interactivos.
+
+\subsection{Objetivos Específicos}
+% 
 \begin{itemize}
-  \item Analizar la estructura espacial y las necesidades de orientación dentro de la Facultad de Ingeniería..
+  \item Analizar la estructura espacial y las necesidades de orientación dentro de la Facultad de Ingeniería.
   \item Diseñar e implementar una interfaz intuitiva que muestre mapas internos y rutas óptimas hacia los distintos destinos.
   \item Integrar tecnologías de posicionamiento en interiores (beacons, Wi-Fi o códigos QR) que permitan determinar la ubicación del usuario en tiempo real.
 \end{itemize}
 
-\section{Metodología}
+% ============================================================
+% DESARROLLO / HALLAZGOS / RESULTADOS
+% ============================================================
+\section{Desarrollo/Hallazgos/Resultados}
+% 
+% Esta sección se divide en Metodología y Presentación de Resultados [cite: 61]
+
+\subsection{Metodología utilizada}
+% 
 Para la realización de este proyecto se siguieron las siguientes etapas:
 
 \begin{enumerate}
-  \item Digitalizacion de planos arquitectonicos de la facultad.
-  \item Investigacion sobre la creacion de aplicaciones moviles.
+  \item Digitalización de planos arquitectónicos de la facultad.
+  \item Investigación sobre la creación de aplicaciones móviles.
   \item Preparación del entorno de desarrollo y repositorio de Github.
-  \item Creación de la interfaz grafica de la aplicación.
+  \item Creación de la interfaz gráfica de la aplicación.
   \item Integración de los mapas a la aplicación.
   \item Modelado del grafo de salas y conexiones.
-  \item Implementacion del algoritmo de rutas.
+  \item Implementación del algoritmo de rutas.
   \item Implementación de funcionalidades extras a la aplicación.
   \item Pruebas piloto de la aplicación.
   \item Escalado a todos los pisos.
-  \item 
+  \item Pruebas finales y ajustes.
 \end{enumerate}
 
-\section{Resultados Principales}
+\subsection{Presentación de los Hallazgos y Resultados}
+% 
+% Los títulos de esta sección deben coincidir con los objetivos específicos [cite: 69]
 Incluya diagramas, tablas o fragmentos de código relevantes. Ejemplo de uso de figuras:
 
 \begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.85\textwidth]{placeholder.png}
-  \caption{Sustituir esta imagen por el diagrama o captura correspondiente}
+  \centering
+  \includegraphics[width=0.85\textwidth]{placeholder.png}
+  \caption{Sustituir esta imagen por el diagrama o captura correspondiente}
 \end{figure}
 
-\section{Conclusiones}
-Redacte conclusiones breves destacando los aprendizajes clave y posibles extensiones del trabajo.
+% ============================================================
+% CONCLUSIONES Y RECOMENDACIONES
+% ============================================================
+\section{Conclusiones y Recomendaciones}
+% 
+Redacte conclusiones breves destacando los aprendizajes clave y si se cumplieron los objetivos[cite: 83]. Añada recomendaciones si es pertinente[cite: 86].
 
-\section*{Próximos Pasos}
-\begin{itemize}
-  \item Placeholder para acción futura 1.
-  \item Placeholder para acción futura 2.
-\end{itemize}
-
-\section{Declaración de Uso de Apoyo}
-  extit{Utilice esta sección para transparentar cualquier apoyo externo empleado durante la preparación del informe. Describa qué herramientas autorizadas se usaron, en qué etapa contribuyeron y cómo se integraron a su trabajo propio.}
-
-\begin{itemize}
-  \item Documente el uso de sistemas de digitalización (por ejemplo, OCR) indicando qué materiales se procesaron y cómo se verificó la fidelidad de la conversión.
-  \item Declare el empleo de herramientas de IA generativa o de soporte al estudio (chatbots, asistentes de codificación, análisis de datos, etc.), especificando la finalidad, las indicaciones dadas y las verificaciones realizadas.
-  \item Si el docente o la institución impone lineamientos adicionales, refleje aquí las condiciones y los permisos obtenidos.
-\end{itemize}
-
+% ============================================================
+% REFERENCIAS
+% ============================================================
 \section{Referencias}
+% [cite: 33]
+% El formato solicitado es IEEE.
+% Asegurarse de que las citas en el texto usen corchetes, ej. [1], [2].
 \begin{thebibliography}{9}
 \bibitem{torvalds2001}
 L. Torvalds y D. Diamond, \textit{Just for Fun: The Story of an Accidental Revolutionary}. HarperBusiness, 2001.
@@ -149,11 +167,19 @@ L. Torvalds y D. Diamond, \textit{Just for Fun: The Story of an Accidental Revol
 A. S. Tanenbaum y H. Bos, \textit{Modern Operating Systems}. 4.\,ed., Pearson, 2015.
 \end{thebibliography}
 
+% ============================================================
+% ANEXOS
+% ============================================================
+\section{Anexos}
+% [cite: 34, 87]
+% Aquí se puede incluir material que complementa el informe pero que
+% no es esencial para la comprensión principal[cite: 90, 91].
+
 \vspace{0.5cm}
 \hrule
 \begin{center}
-\textbf{\estudiante}\\
-Estudiante de \programa\\
+\textbf{\estudianteUno{} y \estudianteDos}\\
+Estudiantes de \programa\\
 \institucion\\
 \fechaentrega{}
 \end{center}
