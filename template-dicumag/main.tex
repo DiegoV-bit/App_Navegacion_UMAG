@@ -36,16 +36,17 @@
 % PORTADA
 % ============================================================
 \begin{center}
-  \begin{tabular}{@{}c@{\hspace{1.5cm}}c@{\hspace{1.5cm}}c@{}}
-  \includegraphics[height=2.8cm]{umag.png} &
-    \begin{minipage}[c]{5cm}
-      \centering
-      {\Large \curso} \\
-      {\large \institucion} \\
-      \vspace{1mm}
-      {\Large \titulo}
-    \end{minipage} &
-  \includegraphics[height=2.8cm]{dic.png}
+  \begin{tabular}{@{}c@{\hspace{1cm}}c@{\hspace{1cm}}c@{}}
+    \raisebox{-0.5\height}{\includegraphics[height=2.5cm]{umag.png}} &
+    \raisebox{-0.5\height}{%
+      \begin{minipage}[c]{6cm}
+        \centering
+        {\Large \curso}\\[2mm]
+        {\large \institucion}\\[3mm]
+        {\Large \titulo}
+      \end{minipage}%
+    } &
+    \raisebox{-0.5\height}{\includegraphics[height=2.5cm]{dic.png}}
   \end{tabular}
 \end{center}
 
@@ -67,7 +68,9 @@
   Departamento: & \facultad\\
   Profesor adjunto: & \docente\\
   Fecha: & \fechaentrega\\
-\end{tabular}\vspace{3mm}
+\end{tabular}
+
+\vspace{3mm}
 \hrule
 \vspace{1mm}
 \hrule
