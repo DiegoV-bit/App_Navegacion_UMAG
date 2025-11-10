@@ -138,9 +138,22 @@ Para la realización de este proyecto se siguieron las siguientes etapas:
 \end{enumerate}
 
 \subsection{Presentación de los Hallazgos y Resultados}
-% 
-% Los títulos de esta sección deben coincidir con los objetivos específicos [cite: 69]
-Incluya diagramas, tablas o fragmentos de código relevantes. Ejemplo de uso de figuras:
+\subsubsection{Digitalización de planos arquitectónicos de la facultad}
+Los mapas arquitectónicos de la facultad ya estaban digitalizados en formato DWG (formato usado por AutoCAD). Usando estos archivos como base, se hizo una conversión a otro formato para que fuera manipulable por un software gratuito que trabaje con archivos de mapas arquitectónicos. Los archivos fueron convertidos a formato DXF (Drawing Exchange Format) para posteriormente ser editados en el software LibreCAD.
+Con LibreCAD se eliminaron elementos sin importancia para un mapa de navegación, como muebles y detalles decorativos, dejando solo las paredes y pasillos principales; también se corrigieron errores en los planos originales, ya que faltaban varias salas, laboratorios y oficinas.
+Una vez que los planos se corrigieron y simplificaron, se exportaron a formato SVG (Scalable Vector Graphics) para su integración en la aplicación móvil. Pero la exportación directa a SVG desde LibreCAD no mantenía las proporciones correctas, lo que hacia que cuando se visualizara el mapa con un visor de imagenes o navegador web, este se viera demasiado pequeño o nisiquiera este se pudiera ver. Para corregir esto se utilizo un software de edición de imágenes vectoriales llamado Inkscape, donde se ajustaron las dimensiones del mapa para que se visualizaran correctamente en la aplicación móvil.
+
+\subsubsection{Investigación sobre la creación de aplicaciones móviles}
+Con el fin de elegir la mejor forma para poder desarrollar la aplicacion movil, se penso en que plataformas moviles que utilizan los estudiantes en la facultad como Android e IOS son las que mas se usan, por lo que se decidio primero investigar sobre las diferentes tecnologias y frameworks que existen para el desarrollo movil, las opciones eran las siguientes:
+\begin{itemize}
+  \item Desarrollo nativo: Crear aplicaciones independientes para cada plataforma (Java/Kotlin para Android y Swift/Objetive-C en el caso de IOS).
+  \item Desarrollo multiplataforma: Utilizar frameworks como React Native, Flutter o Xamarin para desarrollar una sola base de código que funcione en ambas plataformas.
+\end{itemize}
+
+Despues de analizar las opciones, se opto por usar Flutter, ya que permite crear aplicaciones nativas de alto rendimiento para ambas plataformas desde una sola base de código, ademas de que tiene una gran comunidad de desarrolladores y una amplia gama de paquetes y plugins disponibles.
+
+\subsubsection{Preparación del entorno de desarrollo y repositorio de Github}
+Se prepararon los equipos para poder desarrollar la aplicacion movil (los equipos usados tenian como sistemas operativos Windows 10 y Debian 13), instalando Flutter SDK, un editor de codigo (Visual Studio Code) y los emuladores de Android e IOS para poder probar la aplicacion durante el desarrollo. Una vez teniendo el entorno de desarrollo listo, se creo un repositorio en Github para alojar el codigo fuente del proyecto y permitir la colaboracion entre los integrantes del equipo.
 
 \begin{figure}[htbp]
   \centering
