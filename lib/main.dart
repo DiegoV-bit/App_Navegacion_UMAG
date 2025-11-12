@@ -59,7 +59,7 @@ class PantallaInicio extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.location_on,
-                      size: 80,
+                      size: 20,
                       color: Colors.blue.shade600,
                     ),
                     const SizedBox(height: 16),
@@ -355,7 +355,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.location_on, color: Colors.blue.shade600),
+            Icon(Icons.location_on, color: Colors.blue.shade600, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -371,13 +371,13 @@ class _PantallaMapaState extends State<PantallaMapa> {
           children: [
             ListTile(
               dense: true,
-              leading: const Icon(Icons.info_outline),
+              leading: const Icon(Icons.info_outline, size: 20),
               title: const Text('Tipo de lugar'),
               subtitle: Text(_obtenerTipoLugar(nodo['id'] as String)),
             ),
             ListTile(
               dense: true,
-              leading: const Icon(Icons.straighten),
+              leading: const Icon(Icons.straighten, size: 20),
               title: const Text('Coordenadas'),
               subtitle: Text('X: ${nodo['x']}, Y: ${nodo['y']}'),
             ),
@@ -1250,17 +1250,17 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final id = nodo['id'] as String;
 
     return Positioned(
-      left: x - 20, // Centrar el marcador
-      top: y - 20,
+      left: x - 5, // Centrar el marcador
+      top: y - 5,
       child: GestureDetector(
         onTap: () => _mostrarInfoNodo(nodo),
         child: Container(
-          width: 40,
-          height: 40,
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(
             color: Colors.blue.shade500,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
+            border: Border.all(color: Colors.white, width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withAlpha((0.3 * 255).round()),
@@ -1273,7 +1273,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
             child: Icon(
               _obtenerIconoNodo(id),
               color: Colors.white,
-              size: 20,
+              size: 5,
             ),
           ),
         ),
