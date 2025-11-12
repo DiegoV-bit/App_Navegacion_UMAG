@@ -16,10 +16,11 @@
 \newcommand{\institucion}{Universidad de Magallanes}
 \newcommand{\facultad}{Departamento de Ingeniería en Computación}
 \newcommand{\programa}{Ingeniería Civil en Computación e Informática}
-\newcommand{\curso}{Clase de Universidad 101}
-\newcommand{\docente}{Dra. María González}
-\newcommand{\estudiante}{Juan Pérez}
-\newcommand{\titulo}{\textit{Título provisional del informe}}
+\newcommand{\curso}{Taller de Integración}
+\newcommand{\docente}{Dra. Patricia Maldonado}
+\newcommand{\estudianteUno}{Diego Vidal}
+\newcommand{\estudianteDos}{Bruno Martinez}
+\newcommand{\titulo}{\textit{Aplicación de navegación interna para la Facultad de Ingeniería}}
 \newcommand{\fechaentrega}{\textit{Fecha de entrega}}
 
 \pagestyle{fancy}
@@ -35,16 +36,17 @@
 % PORTADA
 % ============================================================
 \begin{center}
-  \begin{tabular}{@{}c@{\hspace{2cm}}c@{\hspace{2cm}}c@{}}
-  \includegraphics[height=2.8cm]{umag.png} &
-    \begin{minipage}[c]{5.5cm}
-      \centering
-      {\Large \curso} \\
-      {\large \institucion} \\
-      \vspace{1mm}
-      {\Large \titulo}
-    \end{minipage} &
-  \includegraphics[height=2.8cm]{dic.png}
+  \begin{tabular}{@{}c@{\hspace{1cm}}c@{\hspace{1cm}}c@{}}
+    \raisebox{-0.5\height}{\includegraphics[height=2.5cm]{umag.png}} &
+    \raisebox{-0.5\height}{%
+      \begin{minipage}[c]{6cm}
+        \centering
+        {\Large \curso}\\[2mm]
+        {\large \institucion}\\[3mm]
+        {\Large \titulo}
+      \end{minipage}%
+    } &
+    \raisebox{-0.5\height}{\includegraphics[height=2.5cm]{dic.png}}
   \end{tabular}
 \end{center}
 
@@ -60,11 +62,12 @@
 
 \vspace{3mm}
 \begin{tabular}{ll}
-  Estudiante: & \estudiante \\
-  Programa: & \programa \\
-  Departamento: & \facultad \\
-  Profesor: & \docente \\
-  Fecha: & \fechaentrega \\
+  Estudiantes: & \estudianteUno\\
+              & \estudianteDos\\
+  Programa: & \programa\\
+  Departamento: & \facultad\\
+  Profesor adjunto: & \docente\\
+  Fecha: & \fechaentrega\\
 \end{tabular}
 
 \vspace{3mm}
@@ -78,60 +81,100 @@
 \clearpage
 
 % ============================================================
-% RESUMEN O INTRODUCCIÓN
+% RESUMEN
 % ============================================================
 \section*{Resumen}
 \textit{El presente proyecto desarrolla una aplicacion de navegacion interna que tiene como fin optimizar la orientacion y el desplazamiento dentro de la facultad de ingenieria de la universidad de magallanes. Esta solucion viene de la necesidad de mejorar la accebilidad y la eficiencia a la hora de encontrar salas, oficinas y laboratorios, especialmente para estudiantes nuevos y personas visitantes. Para el desarrollo se implemento un sistema de mapeo digital basados en mapas arquitectonicos del edificio, integrando tecnologias de posicionamiento basadas en puntos de referencia.}
 
+% ============================================================
+% INTRODUCCIÓN
+% ============================================================
 \section{Introducción}
+% La introducción debe tener las siguientes subsecciones según el formato [cite: 40]
+
+\subsection{Antecedentes}
+% 
 Los alumnos cuando llegan por primera vez a la universidad pueden sentirse desorientados a la hora de ir a alguna sala o laboratorio ya que no sabe como llegar a esos lugares en especifico, para resolver esta problemática se busca crear una aplicación móvil para poder navegar dentro de la facultad.
 
-El proyecto fue desarrollado en el segundo semestre del año 2025 en las dependencias de la facultad de ingeniería de la universidad de Magallanes. Las pruebas y evaluaciones se realizaron usando planos digitales y simulaciones de desplazamiento en sus principales pasillos y áreas de uso común
+\subsection{Período en que se realizó}
+% 
+El proyecto fue desarrollado en el segundo semestre del año 2025 en las dependencias de la facultad de ingeniería de la universidad de Magallanes. Las pruebas y evaluaciones se realizaron usando planos digitales y simulaciones de desplazamiento en sus principales pasillos y áreas de uso común.
 
-\subsection{Objetivos}
+\subsection{Objetivo General}
+% 
 Desarrollar una aplicación móvil de navegación interna que permita a los usuarios ubicarse y desplazarse eficientemente dentro de la Facultad de Ingeniería, utilizando tecnologías de posicionamiento y mapas digitales interactivos.
+
+\subsection{Objetivos Específicos}
+% 
 \begin{itemize}
-  \item Analizar la estructura espacial y las necesidades de orientación dentro de la Facultad de Ingeniería..
+  \item Analizar la estructura espacial y las necesidades de orientación dentro de la Facultad de Ingeniería.
   \item Diseñar e implementar una interfaz intuitiva que muestre mapas internos y rutas óptimas hacia los distintos destinos.
   \item Integrar tecnologías de posicionamiento en interiores (beacons, Wi-Fi o códigos QR) que permitan determinar la ubicación del usuario en tiempo real.
 \end{itemize}
 
-\section{Metodología}
-Describa los pasos principales realizados durante la práctica. Puede apoyarse en subsecciones:
+% ============================================================
+% DESARROLLO / HALLAZGOS / RESULTADOS
+% ============================================================
+\section{Desarrollo/Hallazgos/Resultados}
+% 
+% Esta sección se divide en Metodología y Presentación de Resultados [cite: 61]
+
+\subsection{Metodología utilizada}
+% 
+Para la realización de este proyecto se siguieron las siguientes etapas:
+
 \begin{enumerate}
-  \item Placeholder para primera etapa del trabajo.
-  \item Placeholder para segunda etapa del trabajo.
-  \item Placeholder para validación y resultados.
+  \item Digitalización de planos arquitectónicos de la facultad.
+  \item Investigación sobre la creación de aplicaciones móviles.
+  \item Preparación del entorno de desarrollo y repositorio de Github.
+  \item Creación de la interfaz gráfica de la aplicación.
+  \item Integración de los mapas a la aplicación.
+  \item Modelado del grafo de salas y conexiones.
+  \item Implementación del algoritmo de rutas.
+  \item Implementación de funcionalidades extras a la aplicación.
+  \item Pruebas piloto de la aplicación.
+  \item Escalado a todos los pisos.
+  \item Pruebas finales y ajustes.
 \end{enumerate}
 
-\section{Resultados Principales}
-Incluya diagramas, tablas o fragmentos de código relevantes. Ejemplo de uso de figuras:
+\subsection{Presentación de los Hallazgos y Resultados}
+\subsubsection{Digitalización de planos arquitectónicos de la facultad}
+Los mapas arquitectónicos de la facultad ya estaban digitalizados en formato DWG (formato usado por AutoCAD). Usando estos archivos como base, se hizo una conversión a otro formato para que fuera manipulable por un software gratuito que trabaje con archivos de mapas arquitectónicos. Los archivos fueron convertidos a formato DXF (Drawing Exchange Format) para posteriormente ser editados en el software LibreCAD.
+Con LibreCAD se eliminaron elementos sin importancia para un mapa de navegación, como muebles y detalles decorativos, dejando solo las paredes y pasillos principales; también se corrigieron errores en los planos originales, ya que faltaban varias salas, laboratorios y oficinas.
+Una vez que los planos se corrigieron y simplificaron, se exportaron a formato SVG (Scalable Vector Graphics) para su integración en la aplicación móvil. Pero la exportación directa a SVG desde LibreCAD no mantenía las proporciones correctas, lo que hacia que cuando se visualizara el mapa con un visor de imagenes o navegador web, este se viera demasiado pequeño o nisiquiera este se pudiera ver. Para corregir esto se utilizo un software de edición de imágenes vectoriales llamado Inkscape, donde se ajustaron las dimensiones del mapa para que se visualizaran correctamente en la aplicación móvil.
+
+\subsubsection{Investigación sobre la creación de aplicaciones móviles}
+Con el fin de elegir la mejor forma para poder desarrollar la aplicacion movil, se penso en que plataformas moviles que utilizan los estudiantes en la facultad como Android e IOS son las que mas se usan, por lo que se decidio primero investigar sobre las diferentes tecnologias y frameworks que existen para el desarrollo movil, las opciones eran las siguientes:
+\begin{itemize}
+  \item Desarrollo nativo: Crear aplicaciones independientes para cada plataforma (Java/Kotlin para Android y Swift/Objetive-C en el caso de IOS).
+  \item Desarrollo multiplataforma: Utilizar frameworks como React Native, Flutter o Xamarin para desarrollar una sola base de código que funcione en ambas plataformas.
+\end{itemize}
+
+Despues de analizar las opciones, se opto por usar Flutter, ya que permite crear aplicaciones nativas de alto rendimiento para ambas plataformas desde una sola base de código, ademas de que tiene una gran comunidad de desarrolladores y una amplia gama de paquetes y plugins disponibles.
+
+\subsubsection{Preparación del entorno de desarrollo y repositorio de Github}
+Se prepararon los equipos para poder desarrollar la aplicacion movil (los equipos usados tenian como sistemas operativos Windows 10 y Debian 13), instalando Flutter SDK, un editor de codigo (Visual Studio Code) y los emuladores de Android e IOS para poder probar la aplicacion durante el desarrollo. Una vez teniendo el entorno de desarrollo listo, se creo un repositorio en Github para alojar el codigo fuente del proyecto y permitir la colaboracion entre los integrantes del equipo.
 
 \begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.85\textwidth]{placeholder.png}
-  \caption{Sustituir esta imagen por el diagrama o captura correspondiente}
+  \centering
+  \includegraphics[width=0.85\textwidth]{placeholder.png}
+  \caption{Sustituir esta imagen por el diagrama o captura correspondiente}
 \end{figure}
 
-\section{Conclusiones}
-Redacte conclusiones breves destacando los aprendizajes clave y posibles extensiones del trabajo.
+% ============================================================
+% CONCLUSIONES Y RECOMENDACIONES
+% ============================================================
+\section{Conclusiones y Recomendaciones}
+% 
+Redacte conclusiones breves destacando los aprendizajes clave y si se cumplieron los objetivos[cite: 83]. Añada recomendaciones si es pertinente[cite: 86].
 
-\section*{Próximos Pasos}
-\begin{itemize}
-  \item Placeholder para acción futura 1.
-  \item Placeholder para acción futura 2.
-\end{itemize}
-
-\section{Declaración de Uso de Apoyo}
-  extit{Utilice esta sección para transparentar cualquier apoyo externo empleado durante la preparación del informe. Describa qué herramientas autorizadas se usaron, en qué etapa contribuyeron y cómo se integraron a su trabajo propio.}
-
-\begin{itemize}
-  \item Documente el uso de sistemas de digitalización (por ejemplo, OCR) indicando qué materiales se procesaron y cómo se verificó la fidelidad de la conversión.
-  \item Declare el empleo de herramientas de IA generativa o de soporte al estudio (chatbots, asistentes de codificación, análisis de datos, etc.), especificando la finalidad, las indicaciones dadas y las verificaciones realizadas.
-  \item Si el docente o la institución impone lineamientos adicionales, refleje aquí las condiciones y los permisos obtenidos.
-\end{itemize}
-
+% ============================================================
+% REFERENCIAS
+% ============================================================
 \section{Referencias}
+% [cite: 33]
+% El formato solicitado es IEEE.
+% Asegurarse de que las citas en el texto usen corchetes, ej. [1], [2].
 \begin{thebibliography}{9}
 \bibitem{torvalds2001}
 L. Torvalds y D. Diamond, \textit{Just for Fun: The Story of an Accidental Revolutionary}. HarperBusiness, 2001.
@@ -140,13 +183,21 @@ L. Torvalds y D. Diamond, \textit{Just for Fun: The Story of an Accidental Revol
 A. S. Tanenbaum y H. Bos, \textit{Modern Operating Systems}. 4.\,ed., Pearson, 2015.
 \end{thebibliography}
 
+% ============================================================
+% ANEXOS
+% ============================================================
+\section{Anexos}
+% [cite: 34, 87]
+% Aquí se puede incluir material que complementa el informe pero que
+% no es esencial para la comprensión principal[cite: 90, 91].
+
 \vspace{0.5cm}
 \hrule
 \begin{center}
-\textbf{\estudiante}\\
-Estudiante de \programa\\
+\textbf{\estudianteUno{} y \estudianteDos}\\
+Estudiantes de \programa\\
 \institucion\\
-\fechaentrega
+\fechaentrega{}
 \end{center}
 
 \end{document}
