@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:collection';
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart'
+    show rootBundle, Clipboard, ClipboardData;
+
+// ==================== CONFIGURACIÓN DEBUG ====================
+// Cambiar a false cuando la aplicación esté lista para producción
+const bool kDebugMode = true;
+// =============================================================
 
 void main() {
   // Inicializa la aplicación con la configuración principal.
@@ -206,6 +212,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
   late Future<void> _svgFuture = Future.value();
   List<Map<String, dynamic>> _nodos = [];
   bool _mostrarNodos = true;
+
+  // Variables para modo debug
+  bool _modoDebugActivo = kDebugMode;
+  final List<Map<String, dynamic>> _coordenadasDebug = [];
+  final GlobalKey _svgKey = GlobalKey();
 
   @override
   void initState() {
@@ -413,13 +424,309 @@ class _PantallaMapaState extends State<PantallaMapa> {
     return Icons.place;
   }
 
+  // ==================== FUNCIONES DEBUG ====================
+
+  void _toggleModoDebug() {
+    setState(() {
+      _modoDebugActivo = !_modoDebugActivo;
+      if (!_modoDebugActivo) {
+        _coordenadasDebug.clear();
+      }
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_modoDebugActivo
+            ? '🔧 Modo Debug Activado: Toca el mapa para ver coordenadas'
+            : '✓ Modo Debug Desactivado'),
+        duration: const Duration(seconds: 2),
+        backgroundColor: _modoDebugActivo ? Colors.orange : Colors.green,
+      ),
+    );
+  }
+
+  void _handleDebugTap(TapDownDetails details) {
+    if (!_modoDebugActivo) return;
+
+    // Obtener el RenderBox del widget del mapa
+    final RenderBox? renderBox =
+        _svgKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    // Convertir coordenadas globales a locales del widget
+    final localPosition = renderBox.globalToLocal(details.globalPosition);
+
+    // Ajustar por la transformación actual (zoom y pan)
+    final transform = _transformationController.value;
+    final scale = transform.getMaxScaleOnAxis();
+    final translation = transform.getTranslation();
+
+    // Calcular coordenadas reales del SVG
+    final svgX = (localPosition.dx - translation.x) / scale;
+    final svgY = (localPosition.dy - translation.y) / scale;
+
+    setState(() {
+      _coordenadasDebug.add({
+        'x': svgX.toInt(),
+        'y': svgY.toInt(),
+        'timestamp': DateTime.now(),
+      });
+    });
+
+    // Mostrar diálogo con coordenadas
+    _mostrarDialogoCoordenadas(svgX, svgY);
+  }
+
+  void _mostrarDialogoCoordenadas(double x, double y) {
+    final TextEditingController idController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.pin_drop, color: Colors.orange.shade600),
+            const SizedBox(width: 8),
+            const Text('Coordenadas del Mapa'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Coordenadas SVG:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SelectableText(
+                    'X: ${x.toInt()}',
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 16,
+                    ),
+                  ),
+                  SelectableText(
+                    'Y: ${y.toInt()}',
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: idController,
+              decoration: InputDecoration(
+                labelText: 'ID del nodo (opcional)',
+                hintText: 'Ej: P${widget.numeroPiso}_A101',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.label),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Total de puntos marcados: ${_coordenadasDebug.length}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(
+                text:
+                    '{"id": "${idController.text}", "x": ${x.toInt()}, "y": ${y.toInt()}}',
+              ));
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✓ Coordenadas copiadas al portapapeles'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            child: const Text('Copiar JSON'),
+          ),
+          if (idController.text.isNotEmpty)
+            FilledButton(
+              onPressed: () {
+                setState(() {
+                  _nodos.add({
+                    'id': idController.text,
+                    'x': x.toInt(),
+                    'y': y.toInt(),
+                  });
+                });
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        '✓ Nodo ${idController.text} agregado temporalmente'),
+                  ),
+                );
+              },
+              child: const Text('Agregar Nodo'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _exportarCoordenadasDebug() {
+    if (_coordenadasDebug.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay coordenadas para exportar'),
+        ),
+      );
+      return;
+    }
+
+    final nodosJson = _coordenadasDebug
+        .asMap()
+        .entries
+        .map((entry) => {
+              'id': 'Nodo_${entry.key + 1}',
+              'x': entry.value['x'],
+              'y': entry.value['y'],
+            })
+        .toList();
+
+    final json = JsonEncoder.withIndent('  ').convert({
+      'nodos': nodosJson,
+      'conexiones': [],
+    });
+
+    Clipboard.setData(ClipboardData(text: json));
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('JSON Exportado'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Las coordenadas han sido copiadas al portapapeles.'),
+              const SizedBox(height: 12),
+              Text(
+                'Total de nodos: ${_coordenadasDebug.length}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text('Pega el contenido en tu archivo:'),
+              Text(
+                rutaGrafoJson,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 12,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: SelectableText(
+                  json,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _coordenadasDebug.clear();
+              });
+              Navigator.of(context).pop();
+            },
+            child: const Text('Limpiar y Cerrar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _limpiarCoordenadasDebug() {
+    setState(() {
+      _coordenadasDebug.clear();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Coordenadas debug limpiadas'),
+      ),
+    );
+  }
+
+  // ==================== FIN FUNCIONES DEBUG ====================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.titulo),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: _modoDebugActivo
+            ? Colors.orange.shade700
+            : Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          // Botón Debug - Solo visible si kDebugMode está activado
+          if (kDebugMode) ...[
+            IconButton(
+              icon: Icon(
+                _modoDebugActivo ? Icons.bug_report : Icons.bug_report_outlined,
+                color: _modoDebugActivo ? Colors.white : null,
+              ),
+              onPressed: _toggleModoDebug,
+              tooltip: _modoDebugActivo
+                  ? 'Desactivar modo debug'
+                  : 'Activar modo debug',
+            ),
+            if (_modoDebugActivo && _coordenadasDebug.isNotEmpty) ...[
+              IconButton(
+                icon: const Icon(Icons.save),
+                onPressed: _exportarCoordenadasDebug,
+                tooltip: 'Exportar coordenadas',
+              ),
+              IconButton(
+                icon: const Icon(Icons.clear_all),
+                onPressed: _limpiarCoordenadasDebug,
+                tooltip: 'Limpiar coordenadas',
+              ),
+            ],
+          ],
           IconButton(
             icon: Icon(_mostrarNodos ? Icons.visibility : Icons.visibility_off),
             onPressed: _toggleNodos,
@@ -444,21 +751,48 @@ class _PantallaMapaState extends State<PantallaMapa> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            color: Colors.blue.shade50,
+            color:
+                _modoDebugActivo ? Colors.orange.shade50 : Colors.blue.shade50,
             child: Row(
               children: [
-                Icon(Icons.map, color: Colors.blue.shade600),
+                Icon(
+                  _modoDebugActivo ? Icons.bug_report : Icons.map,
+                  color: _modoDebugActivo
+                      ? Colors.orange.shade600
+                      : Colors.blue.shade600,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Mapa del ${widget.titulo}',
+                    _modoDebugActivo
+                        ? '🔧 Debug: Toca el mapa para ver coordenadas'
+                        : 'Mapa del ${widget.titulo}',
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      color: Colors.blue.shade800,
+                      color: _modoDebugActivo
+                          ? Colors.orange.shade800
+                          : Colors.blue.shade800,
                     ),
                   ),
                 ),
-                if (_nodos.isNotEmpty)
+                if (_modoDebugActivo && _coordenadasDebug.isNotEmpty)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_coordenadasDebug.length} puntos',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange.shade800,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                if (!_modoDebugActivo && _nodos.isNotEmpty)
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -477,10 +811,14 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   ),
                 const SizedBox(width: 8),
                 Text(
-                  'Pellizca para zoom',
+                  _modoDebugActivo
+                      ? 'Modo desarrollador'
+                      : 'Pellizca para zoom',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.blue.shade600,
+                    color: _modoDebugActivo
+                        ? Colors.orange.shade600
+                        : Colors.blue.shade600,
                   ),
                 ),
               ],
@@ -537,80 +875,89 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   );
                 }
 
-                return InteractiveViewer(
-                  transformationController: _transformationController,
-                  panEnabled: true,
-                  scaleEnabled: true,
-                  minScale: 0.3,
-                  maxScale: 4.0,
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: Colors.white,
-                    child: Stack(
-                      children: [
-                        FutureBuilder(
-                          future: _cargarYValidarSvg(),
-                          builder: (context, svgSnapshot) {
-                            if (svgSnapshot.hasError) {
-                              return Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.image_not_supported,
-                                      size: 64,
-                                      color: Colors.orange.shade400,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No se pudo cargar el mapa SVG',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Archivo: $rutaArchivo',
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Error: ${svgSnapshot.error}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(color: Colors.red),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _svgFuture = _precargarSvg();
-                                        });
-                                      },
-                                      child: const Text('Reintentar'),
-                                    ),
-                                  ],
+                return GestureDetector(
+                  onTapDown: _modoDebugActivo ? _handleDebugTap : null,
+                  child: InteractiveViewer(
+                    transformationController: _transformationController,
+                    panEnabled: true,
+                    scaleEnabled: true,
+                    minScale: 0.3,
+                    maxScale: 4.0,
+                    child: Container(
+                      key: _svgKey,
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: Colors.white,
+                      child: Stack(
+                        children: [
+                          FutureBuilder(
+                            future: _cargarYValidarSvg(),
+                            builder: (context, svgSnapshot) {
+                              if (svgSnapshot.hasError) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.image_not_supported,
+                                        size: 64,
+                                        color: Colors.orange.shade400,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No se pudo cargar el mapa SVG',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Archivo: $rutaArchivo',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Error: ${svgSnapshot.error}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(color: Colors.red),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _svgFuture = _precargarSvg();
+                                          });
+                                        },
+                                        child: const Text('Reintentar'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              return SvgPicture.asset(
+                                rutaArchivo,
+                                fit: BoxFit.contain,
+                                placeholderBuilder: (context) => const Center(
+                                  child: CircularProgressIndicator(),
                                 ),
                               );
-                            }
-
-                            return SvgPicture.asset(
-                              rutaArchivo,
-                              fit: BoxFit.contain,
-                              placeholderBuilder: (context) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          },
-                        ),
-                        if (_mostrarNodos && _nodos.isNotEmpty)
-                          ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
-                      ],
+                            },
+                          ),
+                          if (_mostrarNodos && _nodos.isNotEmpty)
+                            ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
+                          // Mostrar marcadores de debug
+                          if (_modoDebugActivo && _coordenadasDebug.isNotEmpty)
+                            ..._coordenadasDebug
+                                .map((coord) => _buildDebugMarker(coord)),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -895,8 +1242,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final id = nodo['id'] as String;
 
     return Positioned(
-      left: x,
-      top: y,
+      left: x - 20, // Centrar el marcador
+      top: y - 20,
       child: GestureDetector(
         onTap: () => _mostrarInfoNodo(nodo),
         child: Container(
@@ -919,6 +1266,81 @@ class _PantallaMapaState extends State<PantallaMapa> {
               _obtenerIconoNodo(id),
               color: Colors.white,
               size: 20,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDebugMarker(Map<String, dynamic> coord) {
+    final x = (coord['x'] as num).toDouble();
+    final y = (coord['y'] as num).toDouble();
+    final timestamp = coord['timestamp'] as DateTime;
+
+    return Positioned(
+      left: x - 12,
+      top: y - 12,
+      child: GestureDetector(
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Punto Debug'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('X: ${x.toInt()}'),
+                  Text('Y: ${y.toInt()}'),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Marcado: ${timestamp.hour}:${timestamp.minute}:${timestamp.second}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(
+                      text: '{"x": ${x.toInt()}, "y": ${y.toInt()}}',
+                    ));
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Coordenadas copiadas')),
+                    );
+                  },
+                  child: const Text('Copiar'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cerrar'),
+                ),
+              ],
+            ),
+          );
+        },
+        child: Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: Colors.orange.shade600,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(
+              Icons.push_pin,
+              color: Colors.white,
+              size: 14,
             ),
           ),
         ),
