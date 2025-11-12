@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 void main() {
   // Inicializa la aplicación con la configuración principal.
@@ -151,7 +152,8 @@ class PantallaInicio extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  // Reemplazamos `withOpacity` (deprecado) por `withAlpha` para evitar warnings.
+                  color: color.withAlpha((0.1 * 255).round()),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icono, size: 32, color: color),
@@ -304,14 +306,16 @@ class _PantallaMapaState extends State<PantallaMapa> {
   void _zoomIn() {
     // Amplía la vista actual multiplicando la matriz de transformación.
     final Matrix4 matrix = _transformationController.value.clone();
-    matrix.scaleByDouble(1.2, 1.2, 1.2, 1.0);
+    // Usar `scaleByVector3` para aplicar la escala (evita el método deprecado `scale`).
+    matrix.scaleByVector3(Vector3(1.2, 1.2, 1.0));
     _transformationController.value = matrix;
   }
 
   void _zoomOut() {
     // Reduce la vista actual aplicando una escala menor.
     final Matrix4 matrix = _transformationController.value.clone();
-    matrix.scaleByDouble(0.8, 0.8, 0.8, 1.0);
+    // Reemplazo similar para reducir escala usando Vector3.
+    matrix.scaleByVector3(Vector3(0.8, 0.8, 1.0));
     _transformationController.value = matrix;
   }
 
@@ -908,7 +912,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
             border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: Colors.black.withAlpha((0.3 * 255).round()),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
