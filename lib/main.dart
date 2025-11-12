@@ -452,22 +452,25 @@ class _PantallaMapaState extends State<PantallaMapa> {
   void _handleDebugTap(TapDownDetails details) {
     if (!_modoDebugActivo) return;
 
-    // Obtener el RenderBox del widget del mapa
+    // Obtener el RenderBox del contenedor SVG
     final RenderBox? renderBox =
         _svgKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
+    if (renderBox == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Error: No se puede obtener el contexto del mapa')),
+      );
+      return;
+    }
 
-    // Convertir coordenadas globales a locales del widget
+    // Convertir la posición global del tap a coordenadas locales del contenedor
     final localPosition = renderBox.globalToLocal(details.globalPosition);
 
-    // Ajustar por la transformación actual (zoom y pan)
-    final transform = _transformationController.value;
-    final scale = transform.getMaxScaleOnAxis();
-    final translation = transform.getTranslation();
-
-    // Calcular coordenadas reales del SVG
-    final svgX = (localPosition.dx - translation.x) / scale;
-    final svgY = (localPosition.dy - translation.y) / scale;
+    // Las coordenadas locales ya están en el espacio del SVG porque el
+    // GestureDetector está dentro del InteractiveViewer y el Container
+    // con _svgKey es el hijo directo del GestureDetector
+    final svgX = localPosition.dx;
+    final svgY = localPosition.dy;
 
     setState(() {
       _coordenadasDebug.add({
@@ -880,14 +883,14 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   );
                 }
 
-                return GestureDetector(
-                  onTapDown: _modoDebugActivo ? _handleDebugTap : null,
-                  child: InteractiveViewer(
-                    transformationController: _transformationController,
-                    panEnabled: true,
-                    scaleEnabled: true,
-                    minScale: 0.3,
-                    maxScale: 4.0,
+                return InteractiveViewer(
+                  transformationController: _transformationController,
+                  panEnabled: true,
+                  scaleEnabled: true,
+                  minScale: 0.3,
+                  maxScale: 4.0,
+                  child: GestureDetector(
+                    onTapDown: _modoDebugActivo ? _handleDebugTap : null,
                     child: Container(
                       key: _svgKey,
                       width: double.infinity,
