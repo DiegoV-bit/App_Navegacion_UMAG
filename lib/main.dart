@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:collection';
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:flutter/services.dart'
     show rootBundle, Clipboard, ClipboardData;
@@ -65,18 +64,18 @@ class PantallaInicio extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       'Navegación Interna',
-                      style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade800,
-                              ),
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade800,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Selecciona el piso que deseas explorar',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.grey.shade600,
-                          ),
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -173,15 +172,15 @@ class PantallaInicio extends StatelessWidget {
                     Text(
                       titulo,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       descripcion,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey.shade600,
-                          ),
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -230,17 +229,69 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
   Future<void> _cargarNodos() async {
     try {
+      if (kDebugMode) {
+        print('\n${'=' * 60}');
+        print(
+          '🔍 DEBUG [${DateTime.now()}]: Cargando nodos desde: $rutaGrafoJson',
+        );
+        print('=' * 60);
+      }
+
       final raw = await rootBundle.loadString(rutaGrafoJson);
+
+      if (kDebugMode) {
+        print('📄 DEBUG: Archivo cargado exitosamente');
+        print('📄 DEBUG: Tamaño: ${raw.length} caracteres');
+      }
+
       final data = json.decode(raw) as Map<String, dynamic>;
+      final nodosDesdeArchivo = List<Map<String, dynamic>>.from(
+        data['nodos'] as List<dynamic>,
+      );
+
+      if (kDebugMode) {
+        print('\n✅ DEBUG: ${nodosDesdeArchivo.length} nodos encontrados:');
+        print('-' * 60);
+        for (int i = 0; i < nodosDesdeArchivo.length; i++) {
+          final nodo = nodosDesdeArchivo[i];
+          print(
+            '${i + 1}. ${nodo['id'].toString().padRight(35)} X:${nodo['x'].toString().padLeft(4)} Y:${nodo['y'].toString().padLeft(4)}',
+          );
+        }
+        print('-' * 60);
+      }
+
       setState(() {
-        _nodos =
-            List<Map<String, dynamic>>.from(data['nodos'] as List<dynamic>);
+        _nodos = nodosDesdeArchivo;
       });
-    } catch (e) {
-      // Manejo de errores al cargar nodos
+
+      if (kDebugMode) {
+        print('🎯 DEBUG: Estado actualizado con ${_nodos.length} nodos');
+        print('${'=' * 60}\n');
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudieron cargar los nodos: $e')),
+        SnackBar(
+          content: Text('✓ ${_nodos.length} nodos cargados correctamente'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      // Manejo de errores al cargar nodos
+      if (kDebugMode) {
+        print('❌ DEBUG ERROR al cargar nodos: $e');
+        print('❌ DEBUG Stack trace: ${StackTrace.current}');
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al cargar nodos: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
       );
     }
   }
@@ -263,7 +314,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
       }
     } catch (e) {
       throw Exception(
-          'No se pudo cargar el archivo SVG: $rutaArchivo. Error: $e');
+        'No se pudo cargar el archivo SVG: $rutaArchivo. Error: $e',
+      );
     }
   }
 
@@ -440,13 +492,75 @@ class _PantallaMapaState extends State<PantallaMapa> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_modoDebugActivo
-            ? '🔧 Modo Debug Activado: Toca el mapa para ver coordenadas'
-            : '✓ Modo Debug Desactivado'),
+        content: Text(
+          _modoDebugActivo
+              ? '🔧 Modo Debug Activado: Toca el mapa para ver coordenadas'
+              : '✓ Modo Debug Desactivado',
+        ),
         duration: const Duration(seconds: 2),
         backgroundColor: _modoDebugActivo ? Colors.orange : Colors.green,
       ),
     );
+  }
+
+  Future<void> _recargarNodosDesdeArchivo() async {
+    try {
+      if (kDebugMode) {
+        print('\n${'=' * 60}');
+        print('🔄 DEBUG [${DateTime.now()}]: RECARGA MANUAL DE NODOS');
+        print('🔄 DEBUG: Archivo: $rutaGrafoJson');
+        print('=' * 60);
+      }
+
+      final raw = await rootBundle.loadString(rutaGrafoJson);
+      final data = json.decode(raw) as Map<String, dynamic>;
+      final nodosNuevos = List<Map<String, dynamic>>.from(
+        data['nodos'] as List<dynamic>,
+      );
+
+      if (kDebugMode) {
+        print('\n✅ DEBUG: ${nodosNuevos.length} nodos encontrados:');
+        print('-' * 60);
+        for (int i = 0; i < nodosNuevos.length; i++) {
+          final nodo = nodosNuevos[i];
+          print(
+            '${i + 1}. ${nodo['id'].toString().padRight(35)} X:${nodo['x'].toString().padLeft(4)} Y:${nodo['y'].toString().padLeft(4)}',
+          );
+        }
+        print('-' * 60);
+      }
+
+      setState(() {
+        _nodos = nodosNuevos;
+        _coordenadasDebug.clear();
+      });
+
+      if (kDebugMode) {
+        print('🎯 DEBUG: Estado actualizado con ${_nodos.length} nodos');
+        print('🎯 DEBUG: Coordenadas debug limpiadas');
+        print('${'=' * 60}\n');
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✓ ${_nodos.length} nodos recargados desde archivo'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ DEBUG: Error al recargar: $e');
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al recargar: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _handleDebugTap(TapDownDetails details) {
@@ -458,7 +572,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
     if (renderBox == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Error: No se puede obtener el contexto del mapa')),
+          content: Text('Error: No se puede obtener el contexto del mapa'),
+        ),
       );
       return;
     }
@@ -560,10 +675,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
           TextButton(
             onPressed: () {
-              Clipboard.setData(ClipboardData(
-                text:
-                    '{"id": "${idController.text}", "x": ${x.toInt()}, "y": ${y.toInt()}}',
-              ));
+              Clipboard.setData(
+                ClipboardData(
+                  text:
+                      '{"id": "${idController.text}", "x": ${x.toInt()}, "y": ${y.toInt()}}',
+                ),
+              );
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -588,7 +705,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                        '✓ Nodo ${idController.text} agregado temporalmente'),
+                      '✓ Nodo ${idController.text} agregado temporalmente',
+                    ),
                   ),
                 );
               },
@@ -602,9 +720,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
   void _exportarCoordenadasDebug() {
     if (_coordenadasDebug.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No hay coordenadas para exportar'),
-        ),
+        const SnackBar(content: Text('No hay coordenadas para exportar')),
       );
       return;
     }
@@ -612,17 +728,18 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final nodosJson = _coordenadasDebug
         .asMap()
         .entries
-        .map((entry) => {
-              'id': 'Nodo_${entry.key + 1}',
-              'x': entry.value['x'],
-              'y': entry.value['y'],
-            })
+        .map(
+          (entry) => {
+            'id': 'Nodo_${entry.key + 1}',
+            'x': entry.value['x'],
+            'y': entry.value['y'],
+          },
+        )
         .toList();
 
-    final json = JsonEncoder.withIndent('  ').convert({
-      'nodos': nodosJson,
-      'conexiones': [],
-    });
+    final json = JsonEncoder.withIndent(
+      '  ',
+    ).convert({'nodos': nodosJson, 'conexiones': []});
 
     Clipboard.setData(ClipboardData(text: json));
 
@@ -660,10 +777,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                 ),
                 child: SelectableText(
                   json,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 10,
-                  ),
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 10),
                 ),
               ),
             ],
@@ -693,9 +807,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       _coordenadasDebug.clear();
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Coordenadas debug limpiadas'),
-      ),
+      const SnackBar(content: Text('Coordenadas debug limpiadas')),
     );
   }
 
@@ -722,17 +834,24 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   ? 'Desactivar modo debug'
                   : 'Activar modo debug',
             ),
-            if (_modoDebugActivo && _coordenadasDebug.isNotEmpty) ...[
+            if (_modoDebugActivo) ...[
               IconButton(
-                icon: const Icon(Icons.save),
-                onPressed: _exportarCoordenadasDebug,
-                tooltip: 'Exportar coordenadas',
+                icon: const Icon(Icons.refresh),
+                onPressed: _recargarNodosDesdeArchivo,
+                tooltip: 'Recargar nodos desde archivo',
               ),
-              IconButton(
-                icon: const Icon(Icons.clear_all),
-                onPressed: _limpiarCoordenadasDebug,
-                tooltip: 'Limpiar coordenadas',
-              ),
+              if (_coordenadasDebug.isNotEmpty) ...[
+                IconButton(
+                  icon: const Icon(Icons.save),
+                  onPressed: _exportarCoordenadasDebug,
+                  tooltip: 'Exportar coordenadas',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.clear_all),
+                  onPressed: _limpiarCoordenadasDebug,
+                  tooltip: 'Limpiar coordenadas',
+                ),
+              ],
             ],
           ],
           IconButton(
@@ -759,8 +878,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            color:
-                _modoDebugActivo ? Colors.orange.shade50 : Colors.blue.shade50,
+            color: _modoDebugActivo
+                ? Colors.orange.shade50
+                : Colors.blue.shade50,
             child: Row(
               children: [
                 Icon(
@@ -785,8 +905,10 @@ class _PantallaMapaState extends State<PantallaMapa> {
                 ),
                 if (_modoDebugActivo && _coordenadasDebug.isNotEmpty)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.shade100,
                       borderRadius: BorderRadius.circular(12),
@@ -802,8 +924,10 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   ),
                 if (!_modoDebugActivo && _nodos.isNotEmpty)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.blue.shade100,
                       borderRadius: BorderRadius.circular(12),
@@ -872,10 +996,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
                         const SizedBox(height: 8),
                         Text(
                           'Error: ${snapshot.error}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: Colors.red),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: Colors.red),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -914,16 +1037,16 @@ class _PantallaMapaState extends State<PantallaMapa> {
                                       const SizedBox(height: 16),
                                       Text(
                                         'No se pudo cargar el mapa SVG',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleMedium,
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
                                         'Archivo: $rutaArchivo',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall,
                                         textAlign: TextAlign.center,
                                       ),
                                       const SizedBox(height: 8),
@@ -962,8 +1085,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
                             ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
                           // Mostrar marcadores de debug
                           if (_modoDebugActivo && _coordenadasDebug.isNotEmpty)
-                            ..._coordenadasDebug
-                                .map((coord) => _buildDebugMarker(coord)),
+                            ..._coordenadasDebug.map(
+                              (coord) => _buildDebugMarker(coord),
+                            ),
                         ],
                       ),
                     ),
@@ -1073,7 +1197,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
         final content = await rootBundle.loadString(ruta);
         final data = json.decode(content);
         diagnosticos.add(
-            '✓ Grafo Piso $piso: OK (${data['nodos']?.length ?? 0} nodos)');
+          '✓ Grafo Piso $piso: OK (${data['nodos']?.length ?? 0} nodos)',
+        );
       } catch (e) {
         diagnosticos.add('✗ Grafo Piso $piso: ERROR - $e');
       }
@@ -1089,18 +1214,20 @@ class _PantallaMapaState extends State<PantallaMapa> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: diagnosticos
-                .map((diagnostico) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Text(
-                        diagnostico,
-                        style: TextStyle(
-                          fontFamily: 'monospace',
-                          color: diagnostico.startsWith('✓')
-                              ? Colors.green
-                              : Colors.red,
-                        ),
+                .map(
+                  (diagnostico) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Text(
+                      diagnostico,
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        color: diagnostico.startsWith('✓')
+                            ? Colors.green
+                            : Colors.red,
                       ),
-                    ))
+                    ),
+                  ),
+                )
                 .toList(),
           ),
         ),
@@ -1148,10 +1275,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
     try {
       final raw = await rootBundle.loadString(rutaGrafoJson);
       final data = json.decode(raw) as Map<String, dynamic>;
-      final nodos =
-          List<Map<String, dynamic>>.from(data['nodos'] as List<dynamic>);
-      final conexiones =
-          List<Map<String, dynamic>>.from(data['conexiones'] as List<dynamic>);
+      final nodos = List<Map<String, dynamic>>.from(
+        data['nodos'] as List<dynamic>,
+      );
+      final conexiones = List<Map<String, dynamic>>.from(
+        data['conexiones'] as List<dynamic>,
+      );
       final ruta = _calcularRutaDemo(conexiones);
 
       if (!mounted) return;
@@ -1164,8 +1293,10 @@ class _PantallaMapaState extends State<PantallaMapa> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Nodos (${nodos.length})',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Nodos (${nodos.length})',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 8),
                 ...nodos.map(
                   (nodo) => ListTile(
@@ -1175,20 +1306,25 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text('Conexiones (${conexiones.length})',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Conexiones (${conexiones.length})',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 8),
                 ...conexiones.map(
                   (conexion) => ListTile(
                     dense: true,
-                    title:
-                        Text('${conexion['origen']} → ${conexion['destino']}'),
+                    title: Text(
+                      '${conexion['origen']} → ${conexion['destino']}',
+                    ),
                     subtitle: Text('Distancia: ${conexion['distancia']}'),
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text('Ruta demo',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Ruta demo',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 8),
                 if (ruta.isEmpty)
                   const Text('No hay ruta de ejemplo para este piso todavía.')
@@ -1212,9 +1348,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo cargar el grafo: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('No se pudo cargar el grafo: $e')));
     }
   }
 
@@ -1244,6 +1380,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
     return [];
   }
 
+  // ==================== Marcador de nodos ====================
   Widget _buildNodoMarker(Map<String, dynamic> nodo) {
     final x = (nodo['x'] as num).toDouble();
     final y = (nodo['y'] as num).toDouble();
@@ -1270,25 +1407,22 @@ class _PantallaMapaState extends State<PantallaMapa> {
             ],
           ),
           child: Center(
-            child: Icon(
-              _obtenerIconoNodo(id),
-              color: Colors.white,
-              size: 5,
-            ),
+            child: Icon(_obtenerIconoNodo(id), color: Colors.white, size: 5),
           ),
         ),
       ),
     );
   }
 
+  // ==================== Marcador del modo debug ====================
   Widget _buildDebugMarker(Map<String, dynamic> coord) {
     final x = (coord['x'] as num).toDouble();
     final y = (coord['y'] as num).toDouble();
     final timestamp = coord['timestamp'] as DateTime;
 
     return Positioned(
-      left: x - 12,
-      top: y - 12,
+      left: x - 5, // Mismo centrado que los nodos normales
+      top: y - 5,
       child: GestureDetector(
         onTap: () {
           showDialog(
@@ -1311,9 +1445,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Clipboard.setData(ClipboardData(
-                      text: '{"x": ${x.toInt()}, "y": ${y.toInt()}}',
-                    ));
+                    Clipboard.setData(
+                      ClipboardData(
+                        text: '{"x": ${x.toInt()}, "y": ${y.toInt()}}',
+                      ),
+                    );
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Coordenadas copiadas')),
@@ -1330,16 +1466,19 @@ class _PantallaMapaState extends State<PantallaMapa> {
           );
         },
         child: Container(
-          width: 24,
-          height: 24,
+          width: 10, // Mismo tamaño que los nodos normales
+          height: 10,
           decoration: BoxDecoration(
             color: Colors.orange.shade600,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
+            border: Border.all(
+              color: Colors.white,
+              width: 1,
+            ), // Border más delgado
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.4),
-                blurRadius: 6,
+                blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -1348,7 +1487,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
             child: Icon(
               Icons.push_pin,
               color: Colors.white,
-              size: 14,
+              size: 5, // Icono más pequeño para que quepa
             ),
           ),
         ),
