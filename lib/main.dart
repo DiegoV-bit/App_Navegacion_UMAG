@@ -64,18 +64,18 @@ class PantallaInicio extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       'Navegación Interna',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade800,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue.shade800,
+                              ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Selecciona el piso que deseas explorar',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey.shade600,
-                      ),
+                            color: Colors.grey.shade600,
+                          ),
                     ),
                   ],
                 ),
@@ -172,15 +172,15 @@ class PantallaInicio extends StatelessWidget {
                     Text(
                       titulo,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       descripcion,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade600,
-                      ),
+                            color: Colors.grey.shade600,
+                          ),
                     ),
                   ],
                 ),
@@ -220,11 +220,16 @@ class _PantallaMapaState extends State<PantallaMapa> {
   final List<Map<String, dynamic>> _coordenadasDebug = [];
   final GlobalKey _svgKey = GlobalKey();
 
+  // Dimensiones del SVG original (se cargan automáticamente)
+  double _svgWidthOriginal = 800.0;
+  double _svgHeightOriginal = 600.0;
+
   @override
   void initState() {
     super.initState();
     _svgFuture = _precargarSvg();
     _cargarNodos();
+    _cargarDimensionesSVG();
   }
 
   Future<void> _cargarNodos() async {
@@ -299,6 +304,96 @@ class _PantallaMapaState extends State<PantallaMapa> {
   Future<void> _precargarSvg() async {
     // Precarga el SVG para evitar demoras en la UI
     await Future.delayed(const Duration(milliseconds: 100));
+  }
+
+  // Nuevo método para cargar dimensiones reales del SVG
+  Future<void> _cargarDimensionesSVG() async {
+    try {
+      final svgString = await rootBundle.loadString(rutaArchivo);
+
+      // Extraer width y height del SVG
+      final widthMatch = RegExp(r'width="(\d+\.?\d*)"').firstMatch(svgString);
+      final heightMatch = RegExp(r'height="(\d+\.?\d*)"').firstMatch(svgString);
+
+      if (widthMatch != null && heightMatch != null) {
+        setState(() {
+          _svgWidthOriginal = double.parse(widthMatch.group(1)!);
+          _svgHeightOriginal = double.parse(heightMatch.group(1)!);
+        });
+
+        if (kDebugMode) {
+          print(
+              '📐 DEBUG: Dimensiones SVG detectadas: $_svgWidthOriginal x $_svgHeightOriginal');
+        }
+      } else {
+        if (kDebugMode) {
+          print(
+              '⚠️ DEBUG: No se pudieron detectar dimensiones del SVG, usando valores por defecto');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ DEBUG: Error al cargar dimensiones SVG: $e');
+      }
+    }
+  }
+
+  // Método para calcular la posición escalada del nodo
+  Offset _calcularPosicionEscalada(double x, double y) {
+    final RenderBox? renderBox =
+        _svgKey.currentContext?.findRenderObject() as RenderBox?;
+
+    if (renderBox == null) {
+      return Offset(x, y); // Retornar coordenadas originales si no hay contexto
+    }
+
+    final renderSize = renderBox.size;
+
+    // Calcular la escala manteniendo aspect ratio (como hace BoxFit.contain)
+    final scaleX = renderSize.width / _svgWidthOriginal;
+    final scaleY = renderSize.height / _svgHeightOriginal;
+    final scale = scaleX < scaleY ? scaleX : scaleY;
+
+    // Calcular offsets para centrado
+    final scaledWidth = _svgWidthOriginal * scale;
+    final scaledHeight = _svgHeightOriginal * scale;
+    final offsetX = (renderSize.width - scaledWidth) / 2;
+    final offsetY = (renderSize.height - scaledHeight) / 2;
+
+    // Aplicar transformación
+    final scaledX = (x * scale) + offsetX;
+    final scaledY = (y * scale) + offsetY;
+
+    return Offset(scaledX, scaledY);
+  }
+
+  // Método inverso: de coordenadas de pantalla a coordenadas SVG
+  Offset _calcularCoordenadasSVG(Offset screenPosition) {
+    final RenderBox? renderBox =
+        _svgKey.currentContext?.findRenderObject() as RenderBox?;
+
+    if (renderBox == null) {
+      return screenPosition;
+    }
+
+    final renderSize = renderBox.size;
+
+    // Calcular la escala
+    final scaleX = renderSize.width / _svgWidthOriginal;
+    final scaleY = renderSize.height / _svgHeightOriginal;
+    final scale = scaleX < scaleY ? scaleX : scaleY;
+
+    // Calcular offsets
+    final scaledWidth = _svgWidthOriginal * scale;
+    final scaledHeight = _svgHeightOriginal * scale;
+    final offsetX = (renderSize.width - scaledWidth) / 2;
+    final offsetY = (renderSize.height - scaledHeight) / 2;
+
+    // Transformación inversa
+    final svgX = (screenPosition.dx - offsetX) / scale;
+    final svgY = (screenPosition.dy - offsetY) / scale;
+
+    return Offset(svgX, svgY);
   }
 
   Future<void> _cargarYValidarSvg() async {
@@ -566,7 +661,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
   void _handleDebugTap(TapDownDetails details) {
     if (!_modoDebugActivo) return;
 
-    // Obtener el RenderBox del contenedor SVG
     final RenderBox? renderBox =
         _svgKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) {
@@ -578,14 +672,23 @@ class _PantallaMapaState extends State<PantallaMapa> {
       return;
     }
 
-    // Convertir la posición global del tap a coordenadas locales del contenedor
     final localPosition = renderBox.globalToLocal(details.globalPosition);
 
-    // Las coordenadas locales ya están en el espacio del SVG porque el
-    // GestureDetector está dentro del InteractiveViewer y el Container
-    // con _svgKey es el hijo directo del GestureDetector
-    final svgX = localPosition.dx;
-    final svgY = localPosition.dy;
+    // Convertir a coordenadas SVG
+    final svgCoords = _calcularCoordenadasSVG(localPosition);
+    final svgX = svgCoords.dx;
+    final svgY = svgCoords.dy;
+
+    if (kDebugMode) {
+      print('\n${'=' * 60}');
+      print('🎯 DEBUG TAP:');
+      print(
+          '📱 Screen: (${localPosition.dx.toInt()}, ${localPosition.dy.toInt()})');
+      print('📐 SVG: (${svgX.toInt()}, ${svgY.toInt()})');
+      print('📏 Container: ${renderBox.size}');
+      print('📄 SVG Original: $_svgWidthOriginal x $_svgHeightOriginal');
+      print('=' * 60);
+    }
 
     setState(() {
       _coordenadasDebug.add({
@@ -595,7 +698,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
       });
     });
 
-    // Mostrar diálogo con coordenadas
     _mostrarDialogoCoordenadas(svgX, svgY);
   }
 
@@ -878,9 +980,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            color: _modoDebugActivo
-                ? Colors.orange.shade50
-                : Colors.blue.shade50,
+            color:
+                _modoDebugActivo ? Colors.orange.shade50 : Colors.blue.shade50,
             child: Row(
               children: [
                 Icon(
@@ -1386,18 +1487,21 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final y = (nodo['y'] as num).toDouble();
     final id = nodo['id'] as String;
 
+    // Calcular posición escalada
+    final posicionEscalada = _calcularPosicionEscalada(x, y);
+
     return Positioned(
-      left: x - 5, // Centrar el marcador
-      top: y - 5,
+      left: posicionEscalada.dx - 10,
+      top: posicionEscalada.dy - 10,
       child: GestureDetector(
         onTap: () => _mostrarInfoNodo(nodo),
         child: Container(
-          width: 10,
-          height: 10,
+          width: 20,
+          height: 20,
           decoration: BoxDecoration(
             color: Colors.blue.shade500,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 1),
+            border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withAlpha((0.3 * 255).round()),
@@ -1407,7 +1511,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
             ],
           ),
           child: Center(
-            child: Icon(_obtenerIconoNodo(id), color: Colors.white, size: 5),
+            child: Icon(_obtenerIconoNodo(id), color: Colors.white, size: 12),
           ),
         ),
       ),
@@ -1420,9 +1524,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final y = (coord['y'] as num).toDouble();
     final timestamp = coord['timestamp'] as DateTime;
 
+    // Calcular posición escalada
+    final posicionEscalada = _calcularPosicionEscalada(x, y);
+
     return Positioned(
-      left: x - 5, // Mismo centrado que los nodos normales
-      top: y - 5,
+      left: posicionEscalada.dx - 10,
+      top: posicionEscalada.dy - 10,
       child: GestureDetector(
         onTap: () {
           showDialog(
@@ -1433,8 +1540,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('X: ${x.toInt()}'),
-                  Text('Y: ${y.toInt()}'),
+                  Text('X (SVG): ${x.toInt()}'),
+                  Text('Y (SVG): ${y.toInt()}'),
+                  const SizedBox(height: 8),
+                  Text('X (Pantalla): ${posicionEscalada.dx.toInt()}'),
+                  Text('Y (Pantalla): ${posicionEscalada.dy.toInt()}'),
                   const SizedBox(height: 8),
                   Text(
                     'Marcado: ${timestamp.hour}:${timestamp.minute}:${timestamp.second}',
@@ -1447,7 +1557,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   onPressed: () {
                     Clipboard.setData(
                       ClipboardData(
-                        text: '{"x": ${x.toInt()}, "y": ${y.toInt()}}',
+                        text:
+                            '{"id": "P${widget.numeroPiso}_Punto", "x": ${x.toInt()}, "y": ${y.toInt()}}',
                       ),
                     );
                     Navigator.of(context).pop();
@@ -1466,15 +1577,15 @@ class _PantallaMapaState extends State<PantallaMapa> {
           );
         },
         child: Container(
-          width: 10, // Mismo tamaño que los nodos normales
-          height: 10,
+          width: 20,
+          height: 20,
           decoration: BoxDecoration(
             color: Colors.orange.shade600,
             shape: BoxShape.circle,
             border: Border.all(
               color: Colors.white,
-              width: 1,
-            ), // Border más delgado
+              width: 2,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.4),
@@ -1483,11 +1594,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
               ),
             ],
           ),
-          child: Center(
+          child: const Center(
             child: Icon(
               Icons.push_pin,
               color: Colors.white,
-              size: 5, // Icono más pequeño para que quepa
+              size: 12,
             ),
           ),
         ),
