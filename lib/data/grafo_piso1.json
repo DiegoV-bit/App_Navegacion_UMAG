@@ -12,12 +12,13 @@
     {"id": "P1_Sala_Mantenimiento",         "x": 196, "y": 467},
     {"id": "P1_Sala_Descanso_Electrica",     "x": 182, "y": 466},
     {"id": "P1_Sala_Descanso_Quimica",      "x": 183, "y": 479},
-    {"id": "P1_Secretaria de Computacion",  "x": 165, "y": 470},
-    {"id": "P1_Pasillo_Profesores",         "x": 91, "y": 437},
+    {"id": "P1_Secretaria_de_Computacion",  "x": 165, "y": 470},
+    {"id": "P1_Pasillo_Profesores",         "x": 123, "y": 466},
     {"id": "P1_Pasillo_Ingenieria",         "x": 229, "y": 459},
     {"id": "P1_Pasillo_Ciencias",           "x": 174, "y": 407},
     {"id": "P1_Ascensor",                   "x": 106, "y": 156},
-    {"id": "P1_A101",                       "x": 150, "y": 100}
+    {"id": "P1_Laboratorio_Fisica",         "x": 103, "y": 402},
+    {"id": "P1_Secretaria_de_Quimica",      "x": 74, "y": 518}
   ],
   "conexiones": [
     {"origen": "P1_Entrada", "destino": "P1_Pasillo", "distancia": 10},
