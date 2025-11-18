@@ -58,7 +58,7 @@ class PantallaInicio extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.location_on,
-                      size: 20,
+                      size: 5,
                       color: Colors.blue.shade600,
                     ),
                     const SizedBox(height: 16),
@@ -502,7 +502,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.location_on, color: Colors.blue.shade600, size: 20),
+            Icon(Icons.location_on, color: Colors.blue.shade600, size: 5),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -518,13 +518,13 @@ class _PantallaMapaState extends State<PantallaMapa> {
           children: [
             ListTile(
               dense: true,
-              leading: const Icon(Icons.info_outline, size: 20),
+              leading: const Icon(Icons.info_outline, size: 5),
               title: const Text('Tipo de lugar'),
               subtitle: Text(_obtenerTipoLugar(nodo['id'] as String)),
             ),
             ListTile(
               dense: true,
-              leading: const Icon(Icons.straighten, size: 20),
+              leading: const Icon(Icons.straighten, size: 5),
               title: const Text('Coordenadas'),
               subtitle: Text('X: ${nodo['x']}, Y: ${nodo['y']}'),
             ),
@@ -879,7 +879,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                 ),
                 child: SelectableText(
                   json,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 10),
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 5),
                 ),
               ),
             ],
