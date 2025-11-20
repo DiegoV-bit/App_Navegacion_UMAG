@@ -18,7 +18,17 @@
     {"id": "P1_Pasillo_Ciencias",           "x": 606, "y": 397},
     {"id": "P1_Ascensor",                   "x": 348, "y": 582},
     {"id": "P1_Laboratorio_Fisica",         "x": 354, "y": 390},
-    {"id": "P1_Secretaria_de_Quimica",      "x": 238, "y": 787}
+    {"id": "P1_Secretaria_de_Quimica",      "x": 238, "y": 787},
+    {"id": "P1_Lab_procedimientos_mecanicos",     "x": 1149, "y": 782},
+    {"id": "P1_Lab_Ing_construccion",        "x": 900, "y": 795},
+    {"id": "P1_Lab_Austro-UMAG",            "x": 665, "y": 777},
+    {"id": "P1_Lab_Ing_electrica",          "x": 509, "y": 785},
+    {"id": "P1_Lab_Microbiologia",          "x": 519, "y": 403},
+    {"id": "P1_Lab_Biologia",               "x": 574, "y": 337},
+    {"id": "P1_Lab_Oceanologia",            "x": 685, "y": 233},
+    {"id": "P1_Lab_Tesla",                  "x": 451, "y": 296},
+    {"id": "P1_Lab_Quimica_gral",           "x": 523, "y": 217},
+    {"id": "P1_Lab_Fisico-Quimica",         "x": 200, "y": 250}
   ],
   "conexiones": [
     {"origen": "P1_Entrada",             "destino": "P1_Pasillo",                 "distancia": 10},
