@@ -23,6 +23,18 @@
   "conexiones": [
     {"origen": "P1_Entrada", "destino": "P1_Pasillo", "distancia": 10},
     {"origen": "P1_Pasillo", "destino": "P1_Ascensor", "distancia": 10},
-    {"origen": "P1_Pasillo", "destino": "P1_A101", "distancia": 5}
+    {"origen": "P1_Pasillo", "destino": "P1_A101", "distancia": 5},
+
+    {"origen": "P1_Sala_Magister", "destino": "P1_Sala_tesistas", "distancia": 5},
+    {"origen": "P1_Sala_tesistas", "destino": "P1_Sala_TI1", "distancia": 5},
+    {"origen": "P1_Sala_TI1", "destino": "P1_Administracion_TI", "distancia": 5},
+    {"origen": "P1_Administracion_TI", "destino": "P1_Sala_TI2", "distancia": 5},
+    {"origen": "P1_Sala_TI2", "destino": "P1_Sala_Redes", "distancia": 5},
+
+    {"origen": "P1_Sala_Proyectos", "destino": "P1_Sala_Redes", "distancia": 5},
+    {"origen": "P1_Sala_Mantenimiento", "destino": "P1_Sala_Redes", "distancia": 5},
+
+    {"origen": "P1_Sala_TI1", "destino": "P1_Pasillo", "distancia": 8},
+    {"origen": "P1_Sala_TI2", "destino": "P1_Pasillo", "distancia": 8}
   ]
 }
