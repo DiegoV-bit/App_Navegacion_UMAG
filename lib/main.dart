@@ -211,7 +211,6 @@ class PantallaMapa extends StatefulWidget {
 class _PantallaMapaState extends State<PantallaMapa> {
   final TransformationController _transformationController =
       TransformationController();
-  late Future<void> _svgFuture = Future.value();
   List<Map<String, dynamic>> _nodos = [];
   bool _mostrarNodos = true;
 
@@ -220,147 +219,107 @@ class _PantallaMapaState extends State<PantallaMapa> {
   final List<Map<String, dynamic>> _coordenadasDebug = [];
   final GlobalKey _svgKey = GlobalKey();
 
-  // Dimensiones del SVG original (se cargan automáticamente)
-  double _svgWidthOriginal = 800.0;
-  double _svgHeightOriginal = 600.0;
+  // Dimensiones del SVG original (predefinidas para cada piso)
+  double _svgWidthOriginal = 1200.0;
+  double _svgHeightOriginal = 800.0;
+  bool _inicializado = false;
 
   @override
   void initState() {
     super.initState();
-    _svgFuture = _precargarSvg();
-    _cargarNodos();
-    _cargarDimensionesSVG();
+    _configurarDimensionesSVG();
+    _inicializarMapa();
+  }
+
+  // Configurar dimensiones según el piso (sin cargar el archivo completo)
+  void _configurarDimensionesSVG() {
+    // Estas dimensiones deben coincidir con las del SVG real
+    // Puedes verificarlas abriendo el SVG en un editor de texto
+    switch (widget.numeroPiso) {
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+        _svgWidthOriginal = 1200.0;
+        _svgHeightOriginal = 800.0;
+        break;
+      default:
+        _svgWidthOriginal = 1200.0;
+        _svgHeightOriginal = 800.0;
+    }
+  }
+
+  Future<void> _inicializarMapa() async {
+    try {
+      // Cargar nodos sin setState
+      await _cargarNodos();
+
+      // Esperar al primer frame para tener RenderBox disponible
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _inicializado = true;
+          });
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ ERROR inicialización: $e');
+      }
+    }
   }
 
   Future<void> _cargarNodos() async {
     try {
-      if (kDebugMode) {
-        print('\n${'=' * 60}');
-        print(
-          '🔍 DEBUG [${DateTime.now()}]: Cargando nodos desde: $rutaGrafoJson',
-        );
-        print('=' * 60);
-      }
-
       final raw = await rootBundle.loadString(rutaGrafoJson);
-
-      if (kDebugMode) {
-        print('📄 DEBUG: Archivo cargado exitosamente');
-        print('📄 DEBUG: Tamaño: ${raw.length} caracteres');
-      }
-
       final data = json.decode(raw) as Map<String, dynamic>;
-      final nodosDesdeArchivo = List<Map<String, dynamic>>.from(
-        data['nodos'] as List<dynamic>,
-      );
+      _nodos = List<Map<String, dynamic>>.from(data['nodos'] as List<dynamic>);
 
       if (kDebugMode) {
-        print('\n✅ DEBUG: ${nodosDesdeArchivo.length} nodos encontrados:');
-        print('-' * 60);
-        for (int i = 0; i < nodosDesdeArchivo.length; i++) {
-          final nodo = nodosDesdeArchivo[i];
-          print(
-            '${i + 1}. ${nodo['id'].toString().padRight(35)} X:${nodo['x'].toString().padLeft(4)} Y:${nodo['y'].toString().padLeft(4)}',
-          );
-        }
-        print('-' * 60);
-      }
-
-      setState(() {
-        _nodos = nodosDesdeArchivo;
-      });
-
-      if (kDebugMode) {
-        print('🎯 DEBUG: Estado actualizado con ${_nodos.length} nodos');
-        print('${'=' * 60}\n');
-      }
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✓ ${_nodos.length} nodos cargados correctamente'),
-          duration: const Duration(seconds: 2),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      // Manejo de errores al cargar nodos
-      if (kDebugMode) {
-        print('❌ DEBUG ERROR al cargar nodos: $e');
-        print('❌ DEBUG Stack trace: ${StackTrace.current}');
-      }
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al cargar nodos: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
-        ),
-      );
-    }
-  }
-
-  Future<void> _precargarSvg() async {
-    // Precarga el SVG para evitar demoras en la UI
-    await Future.delayed(const Duration(milliseconds: 100));
-  }
-
-  // Nuevo método para cargar dimensiones reales del SVG
-  Future<void> _cargarDimensionesSVG() async {
-    try {
-      final svgString = await rootBundle.loadString(rutaArchivo);
-
-      // Extraer width y height del SVG
-      final widthMatch = RegExp(r'width="(\d+\.?\d*)"').firstMatch(svgString);
-      final heightMatch = RegExp(r'height="(\d+\.?\d*)"').firstMatch(svgString);
-
-      if (widthMatch != null && heightMatch != null) {
-        setState(() {
-          _svgWidthOriginal = double.parse(widthMatch.group(1)!);
-          _svgHeightOriginal = double.parse(heightMatch.group(1)!);
-        });
-
-        if (kDebugMode) {
-          print(
-              '📐 DEBUG: Dimensiones SVG detectadas: $_svgWidthOriginal x $_svgHeightOriginal');
-        }
-      } else {
-        if (kDebugMode) {
-          print(
-              '⚠️ DEBUG: No se pudieron detectar dimensiones del SVG, usando valores por defecto');
-        }
+        print('✓ ${_nodos.length} nodos cargados');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ DEBUG: Error al cargar dimensiones SVG: $e');
+        print('❌ Error cargando nodos: $e');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar nodos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
 
-  // Método para calcular la posición escalada del nodo
   Offset _calcularPosicionEscalada(double x, double y) {
+    if (!_inicializado) {
+      return Offset(x, y);
+    }
+
     final RenderBox? renderBox =
         _svgKey.currentContext?.findRenderObject() as RenderBox?;
 
-    if (renderBox == null) {
-      return Offset(x, y); // Retornar coordenadas originales si no hay contexto
+    if (renderBox == null || !renderBox.hasSize) {
+      return Offset(x, y);
     }
 
     final renderSize = renderBox.size;
 
-    // Calcular la escala manteniendo aspect ratio (como hace BoxFit.contain)
+    if (renderSize.width <= 0 || renderSize.height <= 0) {
+      return Offset(x, y);
+    }
+
     final scaleX = renderSize.width / _svgWidthOriginal;
     final scaleY = renderSize.height / _svgHeightOriginal;
     final scale = scaleX < scaleY ? scaleX : scaleY;
 
-    // Calcular offsets para centrado
     final scaledWidth = _svgWidthOriginal * scale;
     final scaledHeight = _svgHeightOriginal * scale;
     final offsetX = (renderSize.width - scaledWidth) / 2;
     final offsetY = (renderSize.height - scaledHeight) / 2;
 
-    // Aplicar transformación
     final scaledX = (x * scale) + offsetX;
     final scaledY = (y * scale) + offsetY;
 
@@ -394,24 +353,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final svgY = (screenPosition.dy - offsetY) / scale;
 
     return Offset(svgX, svgY);
-  }
-
-  Future<void> _cargarYValidarSvg() async {
-    try {
-      // Intenta cargar el string del asset para validar que existe
-      final content = await rootBundle.loadString(rutaArchivo);
-      if (content.isEmpty) {
-        throw Exception('El archivo SVG está vacío');
-      }
-      // Validación básica de que es un SVG
-      if (!content.trim().startsWith('<svg') && !content.contains('<svg')) {
-        throw Exception('El archivo no parece ser un SVG válido');
-      }
-    } catch (e) {
-      throw Exception(
-        'No se pudo cargar el archivo SVG: $rutaArchivo. Error: $e',
-      );
-    }
   }
 
   String get rutaArchivo {
@@ -1058,143 +999,39 @@ class _PantallaMapaState extends State<PantallaMapa> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<void>(
-              future: _svgFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState != ConnectionState.done) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Cargando mapa...'),
-                      ],
-                    ),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: Colors.red.shade400,
+            child: InteractiveViewer(
+              transformationController: _transformationController,
+              panEnabled: true,
+              scaleEnabled: true,
+              minScale: 0.3,
+              maxScale: 4.0,
+              child: GestureDetector(
+                onTapDown: _modoDebugActivo ? _handleDebugTap : null,
+                child: Container(
+                  key: _svgKey,
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.white,
+                  child: Stack(
+                    children: [
+                      SvgPicture.asset(
+                        rutaArchivo,
+                        fit: BoxFit.contain,
+                        placeholderBuilder: (context) => const Center(
+                          child: CircularProgressIndicator(),
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Error al cargar el mapa',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Archivo: $nombreArchivo.svg',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Error: ${snapshot.error}',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(color: Colors.red),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return InteractiveViewer(
-                  transformationController: _transformationController,
-                  panEnabled: true,
-                  scaleEnabled: true,
-                  minScale: 0.3,
-                  maxScale: 4.0,
-                  child: GestureDetector(
-                    onTapDown: _modoDebugActivo ? _handleDebugTap : null,
-                    child: Container(
-                      key: _svgKey,
-                      width: double.infinity,
-                      height: double.infinity,
-                      color: Colors.white,
-                      child: Stack(
-                        children: [
-                          FutureBuilder(
-                            future: _cargarYValidarSvg(),
-                            builder: (context, svgSnapshot) {
-                              if (svgSnapshot.hasError) {
-                                return Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.image_not_supported,
-                                        size: 64,
-                                        color: Colors.orange.shade400,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        'No se pudo cargar el mapa SVG',
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.titleMedium,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Archivo: $rutaArchivo',
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodySmall,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Error: ${svgSnapshot.error}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(color: Colors.red),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _svgFuture = _precargarSvg();
-                                          });
-                                        },
-                                        child: const Text('Reintentar'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-
-                              return SvgPicture.asset(
-                                rutaArchivo,
-                                fit: BoxFit.contain,
-                                placeholderBuilder: (context) => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            },
-                          ),
-                          if (_mostrarNodos && _nodos.isNotEmpty)
-                            ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
-                          // Mostrar marcadores de debug
-                          if (_modoDebugActivo && _coordenadasDebug.isNotEmpty)
-                            ..._coordenadasDebug.map(
-                              (coord) => _buildDebugMarker(coord),
-                            ),
-                        ],
                       ),
-                    ),
+                      if (_mostrarNodos && _nodos.isNotEmpty)
+                        ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
+                      // Mostrar marcadores de debug
+                      if (_modoDebugActivo && _coordenadasDebug.isNotEmpty)
+                        ..._coordenadasDebug.map(
+                          (coord) => _buildDebugMarker(coord),
+                        ),
+                    ],
                   ),
-                );
-              },
+                ),
+              ),
             ),
           ),
         ],
@@ -1491,27 +1328,27 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final posicionEscalada = _calcularPosicionEscalada(x, y);
 
     return Positioned(
-      left: posicionEscalada.dx - 10,
-      top: posicionEscalada.dy - 10,
+      left: posicionEscalada.dx - 6,
+      top: posicionEscalada.dy - 6,
       child: GestureDetector(
         onTap: () => _mostrarInfoNodo(nodo),
         child: Container(
-          width: 20,
-          height: 20,
+          width: 12,
+          height: 12,
           decoration: BoxDecoration(
             color: Colors.blue.shade500,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
+            border: Border.all(color: Colors.white, width: 1.5),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withAlpha((0.3 * 255).round()),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+                blurRadius: 3,
+                offset: const Offset(0, 1),
               ),
             ],
           ),
           child: Center(
-            child: Icon(_obtenerIconoNodo(id), color: Colors.white, size: 12),
+            child: Icon(_obtenerIconoNodo(id), color: Colors.white, size: 7),
           ),
         ),
       ),
@@ -1528,8 +1365,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final posicionEscalada = _calcularPosicionEscalada(x, y);
 
     return Positioned(
-      left: posicionEscalada.dx - 10,
-      top: posicionEscalada.dy - 10,
+      left: posicionEscalada.dx - 6,
+      top: posicionEscalada.dy - 6,
       child: GestureDetector(
         onTap: () {
           showDialog(
@@ -1577,20 +1414,20 @@ class _PantallaMapaState extends State<PantallaMapa> {
           );
         },
         child: Container(
-          width: 20,
-          height: 20,
+          width: 12,
+          height: 12,
           decoration: BoxDecoration(
             color: Colors.orange.shade600,
             shape: BoxShape.circle,
             border: Border.all(
               color: Colors.white,
-              width: 2,
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.4),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+                blurRadius: 3,
+                offset: const Offset(0, 1),
               ),
             ],
           ),
@@ -1598,7 +1435,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
             child: Icon(
               Icons.push_pin,
               color: Colors.white,
-              size: 12,
+              size: 7,
             ),
           ),
         ),
