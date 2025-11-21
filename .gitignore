@@ -61,3 +61,4 @@ app.*.map.json
 *.bbl
 *.blg
 *.pdf
+gantt_gen.py
