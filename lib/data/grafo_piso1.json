@@ -28,7 +28,7 @@
     {"id": "P1_Lab_Oceanologia",            "x": 685, "y": 233},
     {"id": "P1_Lab_Tesla",                  "x": 451, "y": 296},
     {"id": "P1_Lab_Quimica_gral",           "x": 523, "y": 217},
-    {"id": "P1_Lab_Fisico-Quimica",         "x": 200, "y": 250}
+    {"id": "P1_Lab_Fisico-Quimica",         "x": 648, "y": 81}
   ],
   "conexiones": [
     {"origen": "P1_Entrada",             "destino": "P1_Pasillo",                 "distancia": 10},
