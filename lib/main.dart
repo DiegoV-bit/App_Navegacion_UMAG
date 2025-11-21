@@ -217,7 +217,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
   // Variables para modo debug
   bool _modoDebugActivo = kDebugMode;
   final List<Map<String, dynamic>> _coordenadasDebug = [];
-  final GlobalKey _svgKey = GlobalKey();
+  final GlobalKey _containerKey = GlobalKey();
 
   // Dimensiones del SVG original (predefinidas para cada piso)
   double _svgWidthOriginal = 1200.0;
@@ -233,8 +233,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
   // Configurar dimensiones según el piso (sin cargar el archivo completo)
   void _configurarDimensionesSVG() {
-    // Estas dimensiones deben coincidir con las del SVG real
-    // Puedes verificarlas abriendo el SVG en un editor de texto
+    // Usando sistema de coordenadas 1200x800 para todos los pisos
+    // Este sistema se usa para mantener compatibilidad con los nodos existentes
     switch (widget.numeroPiso) {
       case 1:
       case 2:
@@ -298,28 +298,34 @@ class _PantallaMapaState extends State<PantallaMapa> {
       return Offset(x, y);
     }
 
-    final RenderBox? renderBox =
-        _svgKey.currentContext?.findRenderObject() as RenderBox?;
+    // Usar el Container principal como referencia
+    final RenderBox? containerBox =
+        _containerKey.currentContext?.findRenderObject() as RenderBox?;
 
-    if (renderBox == null || !renderBox.hasSize) {
+    if (containerBox == null || !containerBox.hasSize) {
       return Offset(x, y);
     }
 
-    final renderSize = renderBox.size;
+    final containerSize = containerBox.size;
 
-    if (renderSize.width <= 0 || renderSize.height <= 0) {
+    if (containerSize.width <= 0 || containerSize.height <= 0) {
       return Offset(x, y);
     }
 
-    final scaleX = renderSize.width / _svgWidthOriginal;
-    final scaleY = renderSize.height / _svgHeightOriginal;
+    // Calcular la escala manteniendo aspect ratio (BoxFit.contain)
+    final scaleX = containerSize.width / _svgWidthOriginal;
+    final scaleY = containerSize.height / _svgHeightOriginal;
     final scale = scaleX < scaleY ? scaleX : scaleY;
 
+    // Calcular dimensiones escaladas del SVG
     final scaledWidth = _svgWidthOriginal * scale;
     final scaledHeight = _svgHeightOriginal * scale;
-    final offsetX = (renderSize.width - scaledWidth) / 2;
-    final offsetY = (renderSize.height - scaledHeight) / 2;
 
+    // Calcular offsets para centrado (BoxFit.contain centra el contenido)
+    final offsetX = (containerSize.width - scaledWidth) / 2;
+    final offsetY = (containerSize.height - scaledHeight) / 2;
+
+    // Aplicar transformación
     final scaledX = (x * scale) + offsetX;
     final scaledY = (y * scale) + offsetY;
 
@@ -328,25 +334,25 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
   // Método inverso: de coordenadas de pantalla a coordenadas SVG
   Offset _calcularCoordenadasSVG(Offset screenPosition) {
-    final RenderBox? renderBox =
-        _svgKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? containerBox =
+        _containerKey.currentContext?.findRenderObject() as RenderBox?;
 
-    if (renderBox == null) {
+    if (containerBox == null) {
       return screenPosition;
     }
 
-    final renderSize = renderBox.size;
+    final containerSize = containerBox.size;
 
     // Calcular la escala
-    final scaleX = renderSize.width / _svgWidthOriginal;
-    final scaleY = renderSize.height / _svgHeightOriginal;
+    final scaleX = containerSize.width / _svgWidthOriginal;
+    final scaleY = containerSize.height / _svgHeightOriginal;
     final scale = scaleX < scaleY ? scaleX : scaleY;
 
     // Calcular offsets
     final scaledWidth = _svgWidthOriginal * scale;
     final scaledHeight = _svgHeightOriginal * scale;
-    final offsetX = (renderSize.width - scaledWidth) / 2;
-    final offsetY = (renderSize.height - scaledHeight) / 2;
+    final offsetX = (containerSize.width - scaledWidth) / 2;
+    final offsetY = (containerSize.height - scaledHeight) / 2;
 
     // Transformación inversa
     final svgX = (screenPosition.dx - offsetX) / scale;
@@ -602,9 +608,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
   void _handleDebugTap(TapDownDetails details) {
     if (!_modoDebugActivo) return;
 
-    final RenderBox? renderBox =
-        _svgKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) {
+    final RenderBox? containerBox =
+        _containerKey.currentContext?.findRenderObject() as RenderBox?;
+    if (containerBox == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error: No se puede obtener el contexto del mapa'),
@@ -613,7 +619,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       return;
     }
 
-    final localPosition = renderBox.globalToLocal(details.globalPosition);
+    final localPosition = containerBox.globalToLocal(details.globalPosition);
 
     // Convertir a coordenadas SVG
     final svgCoords = _calcularCoordenadasSVG(localPosition);
@@ -626,7 +632,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       print(
           '📱 Screen: (${localPosition.dx.toInt()}, ${localPosition.dy.toInt()})');
       print('📐 SVG: (${svgX.toInt()}, ${svgY.toInt()})');
-      print('📏 Container: ${renderBox.size}');
+      print('📏 Container: ${containerBox.size}');
       print('📄 SVG Original: $_svgWidthOriginal x $_svgHeightOriginal');
       print('=' * 60);
     }
@@ -1008,7 +1014,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
               child: GestureDetector(
                 onTapDown: _modoDebugActivo ? _handleDebugTap : null,
                 child: Container(
-                  key: _svgKey,
+                  key: _containerKey,
                   width: double.infinity,
                   height: double.infinity,
                   color: Colors.white,
