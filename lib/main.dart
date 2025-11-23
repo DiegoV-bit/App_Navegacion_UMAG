@@ -276,7 +276,16 @@ class _PantallaMapaState extends State<PantallaMapa> {
       _nodos = List<Map<String, dynamic>>.from(data['nodos'] as List<dynamic>);
 
       if (kDebugMode) {
-        print('✓ ${_nodos.length} nodos cargados');
+        print('\n════════════════════════════════════════');
+        print('📍 CARGA DE NODOS - Piso ${widget.numeroPiso}');
+        print('════════════════════════════════════════');
+        print('Total de nodos: ${_nodos.length}');
+        print('\nCoordenadas de todos los nodos:');
+        for (var i = 0; i < _nodos.length; i++) {
+          final nodo = _nodos[i];
+          print('  [$i] ${nodo['id']}: x=${nodo['x']}, y=${nodo['y']}');
+        }
+        print('════════════════════════════════════════\n');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -325,9 +334,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final offsetX = (containerSize.width - scaledWidth) / 2;
     final offsetY = (containerSize.height - scaledHeight) / 2;
 
-    // Aplicar transformación
-    final scaledX = (x * scale) + offsetX;
-    final scaledY = (y * scale) + offsetY;
+    // Aplicar transformación y redondear a enteros para consistencia
+    final scaledX = ((x * scale) + offsetX).roundToDouble();
+    final scaledY = ((y * scale) + offsetY).roundToDouble();
 
     return Offset(scaledX, scaledY);
   }
@@ -354,9 +363,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final offsetX = (containerSize.width - scaledWidth) / 2;
     final offsetY = (containerSize.height - scaledHeight) / 2;
 
-    // Transformación inversa
-    final svgX = (screenPosition.dx - offsetX) / scale;
-    final svgY = (screenPosition.dy - offsetY) / scale;
+    // Transformación inversa y redondear a enteros para consistencia
+    final svgX = ((screenPosition.dx - offsetX) / scale).roundToDouble();
+    final svgY = ((screenPosition.dy - offsetY) / scale).roundToDouble();
 
     return Offset(svgX, svgY);
   }
@@ -532,6 +541,46 @@ class _PantallaMapaState extends State<PantallaMapa> {
         _coordenadasDebug.clear();
       }
     });
+
+    // Imprimir información de nodos cuando se activa o desactiva
+    if (kDebugMode) {
+      print('\n════════════════════════════════════════');
+      print(_modoDebugActivo
+          ? '🔧 MODO DEBUG ACTIVADO - Piso ${widget.numeroPiso}'
+          : '✓ MODO DEBUG DESACTIVADO - Piso ${widget.numeroPiso}');
+      print('════════════════════════════════════════');
+      print('Total de nodos en el mapa: ${_nodos.length}');
+      print('\nCoordenadas actuales de todos los nodos:');
+      for (var i = 0; i < _nodos.length; i++) {
+        final nodo = _nodos[i];
+        final posEscalada = _calcularPosicionEscalada(
+          (nodo['x'] as num).toDouble(),
+          (nodo['y'] as num).toDouble(),
+        );
+        print('  [$i] ${nodo['id']}:');
+        print('      SVG: x=${nodo['x']}, y=${nodo['y']}');
+        print(
+            '      Escalada: x=${posEscalada.dx.toInt()}, y=${posEscalada.dy.toInt()}');
+      }
+      if (_modoDebugActivo) {
+        print('\n💡 Estado del contenedor:');
+        final RenderBox? containerBox =
+            _containerKey.currentContext?.findRenderObject() as RenderBox?;
+        if (containerBox != null && containerBox.hasSize) {
+          print(
+              '   Tamaño: ${containerBox.size.width.toStringAsFixed(2)} x ${containerBox.size.height.toStringAsFixed(2)}');
+          final scaleX = containerBox.size.width / _svgWidthOriginal;
+          final scaleY = containerBox.size.height / _svgHeightOriginal;
+          final scale = scaleX < scaleY ? scaleX : scaleY;
+          print(
+              '   Escala: ${scale.toStringAsFixed(4)} (scaleX: ${scaleX.toStringAsFixed(4)}, scaleY: ${scaleY.toStringAsFixed(4)})');
+        } else {
+          print('   ⚠️ Contenedor no disponible o sin tamaño');
+        }
+      }
+      print('════════════════════════════════════════\n');
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -1334,8 +1383,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final posicionEscalada = _calcularPosicionEscalada(x, y);
 
     return Positioned(
-      left: posicionEscalada.dx - 6,
-      top: posicionEscalada.dy - 6,
+      left: (posicionEscalada.dx - 6).roundToDouble(),
+      top: (posicionEscalada.dy - 6).roundToDouble(),
       child: GestureDetector(
         onTap: () => _mostrarInfoNodo(nodo),
         child: Container(
@@ -1371,8 +1420,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final posicionEscalada = _calcularPosicionEscalada(x, y);
 
     return Positioned(
-      left: posicionEscalada.dx - 6,
-      top: posicionEscalada.dy - 6,
+      left: (posicionEscalada.dx - 6).roundToDouble(),
+      top: (posicionEscalada.dy - 6).roundToDouble(),
       child: GestureDetector(
         onTap: () {
           showDialog(
