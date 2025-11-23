@@ -8,7 +8,7 @@ import 'package:flutter/services.dart'
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
-const bool kDebugMode = true;
+const bool kDebugMode = false;
 // =============================================================
 
 void main() {
@@ -542,6 +542,15 @@ class _PantallaMapaState extends State<PantallaMapa> {
       }
     });
 
+    // Forzar un rebuild después del siguiente frame para recalcular posiciones correctamente
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          // Este setState vacío fuerza un rebuild con las dimensiones correctas
+        });
+      }
+    });
+
     // Imprimir información de nodos cuando se activa o desactiva
     if (kDebugMode) {
       print('\n════════════════════════════════════════');
@@ -624,6 +633,15 @@ class _PantallaMapaState extends State<PantallaMapa> {
       setState(() {
         _nodos = nodosNuevos;
         _coordenadasDebug.clear();
+      });
+
+      // Forzar un rebuild después del siguiente frame para recalcular posiciones correctamente
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            // Este setState vacío fuerza un rebuild con las dimensiones correctas
+          });
+        }
       });
 
       if (kDebugMode) {
