@@ -34,7 +34,7 @@ Una vez seleccionado un piso, el usuario es dirigido a la pantalla de mapa, que 
   - Cuarto piso: `Mapas/Cuarto piso fac_ing simple.svg`
 
 - **Navegación interactiva**: Se implementó el widget `InteractiveViewer` de Flutter, que proporciona:
-  - Desplazamiento táctil (pan) para explorar diferentes áreas del mapa
+  - Desplazamiento táctil para explorar diferentes áreas del mapa
   - Zoom mediante gestos de pellizco en pantallas táctiles
   - Límites de escala configurables (mínimo 0.3x, máximo 5.0x) para mantener la visualización en rangos útiles
 
