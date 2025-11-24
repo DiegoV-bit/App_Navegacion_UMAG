@@ -1,9 +1,22 @@
 {
   "nodos": [
-    {"id": "P2_Escalera", "x": 50, "y": 200},
-    {"id": "P2_Ascensor", "x": 100, "y": 200},
-    {"id": "P2_Pasillo", "x": 150, "y": 200},
-    {"id": "P2_A101", "x": 150, "y": 100}
+    {"id": "P2_Escalera", "x": 348, "y": 656},
+    {"id": "P2_Ascensor", "x": 239, "y": 578},
+    {"id": "P2_Pasillo_ciencias", "x": 429, "y": 475},
+    {"id": "P2_Pasillo_ingenieria", "x":450, "y": 586},
+    {"id": "P2_Secretaria_Electrica", "x": 456, "y": 628},
+    {"id": "P2_Sala_21", "x": 509, "y": 637},
+    {"id": "P2_Sala_22", "x": 574, "y": 633},
+    {"id": "P2_Sala_23", "x": 663, "y": 636},
+    {"id": "P2_Sala_24", "x": 778, "y": 638},
+    {"id": "P2_Sala_25", "x": 909, "y": 640},
+    {"id": "P2_Sala_26", "x": 989, "y": 633},
+    {"id": "P2_Lab_comp_facultad_ciencias", "x": 364, "y": 441},
+    {"id": "P2_Sala_52", "x": 422, "y": 372},
+    {"id": "P2_Sala_53", "x": 485, "y": 311},
+    {"id": "P2_Sala_54", "x": 546, "y": 254},
+    {"id": "P2_Sala_55", "x": 597, "y": 200},
+    {"id": "P2_Sala_56", "x": 660, "y": 140}
   ],
   "conexiones": [
     {"origen": "P2_Escalera", "destino": "P2_Pasillo", "distancia": 10},

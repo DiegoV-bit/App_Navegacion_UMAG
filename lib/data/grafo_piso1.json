@@ -1,7 +1,7 @@
 {
   "nodos": [
     {"id": "P1_Entrada",                    "x": 1004, "y": 460},
-    {"id": "P1_Pasillo",                    "x": 150, "y": 300},
+    {"id": "P1_Patio_de_ingenieria",        "x": 745, "y": 445},
     {"id": "P1_Administracion_TI",          "x": 720, "y": 649},
     {"id": "P1_Sala_Magister",               "x": 810, "y": 651},
     {"id": "P1_Sala_tesistas",              "x": 820, "y": 678},
@@ -13,22 +13,22 @@
     {"id": "P1_Sala_Descanso_Electrica",     "x": 535, "y": 637},
     {"id": "P1_Sala_Descanso_Quimica",      "x": 541, "y": 669},
     {"id": "P1_Secretaria_de_Computacion",  "x": 479, "y": 651},
-    {"id": "P1_Pasillo_Profesores",         "x": 123, "y": 466},
+    {"id": "P1_Pasillo_Profesores",         "x": 370, "y": 646},
     {"id": "P1_Pasillo_Ingenieria",         "x": 766, "y": 597},
     {"id": "P1_Pasillo_Ciencias",           "x": 606, "y": 397},
     {"id": "P1_Ascensor",                   "x": 309, "y": 605},
-    {"id": "P1_Laboratorio_Fisica",         "x": 354, "y": 390},
+    {"id": "P1_Laboratorio_Fisica",         "x": 290, "y": 447},
     {"id": "P1_Secretaria_de_Quimica",      "x": 206, "y": 797},
     {"id": "P1_Lab_procedimientos_mecanicos",     "x": 1149, "y": 782},
-    {"id": "P1_Lab_Ing_construccion",        "x": 900, "y": 795},
+    {"id": "P1_Lab_Ing_construccion",        "x": 758, "y": 780},
     {"id": "P1_Lab_Austro-UMAG",            "x": 595, "y": 785},
     {"id": "P1_Lab_Ing_electrica",          "x": 446, "y": 785},
     {"id": "P1_Lab_Microbiologia",          "x": 519, "y": 403},
     {"id": "P1_Lab_Biologia",               "x": 574, "y": 337},
     {"id": "P1_Lab_Oceanologia",            "x": 685, "y": 233},
-    {"id": "P1_Lab_Tesla",                  "x": 451, "y": 296},
-    {"id": "P1_Lab_Quimica_gral",           "x": 523, "y": 217},
-    {"id": "P1_Lab_Fisico-Quimica",         "x": 648, "y": 81}
+    {"id": "P1_Lab_Tesla",                  "x": 391, "y": 346},
+    {"id": "P1_Lab_Quimica_gral",           "x": 451, "y": 296},
+    {"id": "P1_Lab_Fisico-Quimica",         "x": 578, "y": 165}
   ],
   "conexiones": [
     {"origen": "P1_Entrada",             "destino": "P1_Pasillo",                 "distancia": 10},
