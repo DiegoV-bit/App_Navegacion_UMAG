@@ -8,7 +8,7 @@ import 'package:flutter/services.dart'
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
-const bool kDebugMode = false;
+const bool kDebugMode = true;
 // =============================================================
 
 void main() {
