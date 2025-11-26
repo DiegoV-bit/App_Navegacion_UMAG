@@ -4,7 +4,8 @@
     {"id": "P3_Ascensor", "x": 229, "y": 528},
     {"id": "P3_Pasillo_ciencias", "x": 397, "y": 443},
     {"id": "P3_Pasillo_ingenieria", "x": 418, "y": 523},
-    {"id": "P3_Secretaria_mecanica", "x": 447, "y": 573},
+    {"id": "P3_Secretaria_mecanica", "x": 106, "y": 758},
+    {"id": "P3_Secretaria_Construccion", "x": 447, "y": 573},
     {"id": "P3_Sala_31", "x": 513, "y": 592},
     {"id": "P3_Sala_32", "x": 573, "y": 590},
     {"id": "P3_Sala_33", "x": 627, "y": 589},
@@ -15,8 +16,24 @@
     {"id": "P3_Departamento_matematica_y_fisica", "x": 336, "y": 414}
   ],
   "conexiones": [
-    {"origen": "P3_Escalera", "destino": "P3_Pasillo", "distancia": 10},
-    {"origen": "P3_Ascensor", "destino": "P3_Pasillo", "distancia": 10},
-    {"origen": "P3_Pasillo", "destino": "P3_A101", "distancia": 5}
+    {"origen": "P3_Escalera", "destino": "P3_Pasillo_ingenieria", "distancia": 10},
+    
+    {"origen": "P3_Pasillo_ingenieria", "destino": "P3_Secretaria_Construccion"},
+
+    {"origen": "P3_Pasillo_ingenieria", "destino": "P3_Sala 31"},
+
+    {"origen": "P3_Pasillo_ingenieria", "destino": "P3_Sala_32"},
+
+    {"origen": "P3_Pasillo_ingenieria", "destino": "P3_Sala_33"},
+
+    {"origen": "P3_Pasillo_ingenieria", "destino": "P3_Sala_34"},
+
+    {"origen": "P3_Pasillo_ingenieria", "destino": "P3_Sala_35"},
+
+    {"origen": "P3_Pasillo_ingenieria", "destino": "P3_Sala_36"},
+
+    {"origen": "P3_Pasillo_ingenieria", "destino": "P3_Sala_37"},
+
+    {"origen": "P3_Pasillo_ciencias", "destino": "P3_Departamento_matematica_y_fisica"}
   ]
 }

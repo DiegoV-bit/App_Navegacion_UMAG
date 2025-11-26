@@ -12,7 +12,17 @@
   ],
   "conexiones": [
     {"origen": "P4_Escalera", "destino": "P4_Pasillo", "distancia": 10},
-    {"origen": "P4_Ascensor", "destino": "P4_Pasillo", "distancia": 10},
-    {"origen": "P4_Pasillo", "destino": "P4_A101", "distancia": 5}
+
+    {"origen": "P4_Pasillo", "destino": "P4_Secretaria_plan_comun"},
+
+    {"origen": "P4_Pasillo", "destino": "P4_Sala_41"},
+
+    {"origen": "P4_Pasillo", "destino": "P4_Sala_42"},
+
+    {"origen": "P4_Pasillo", "destino": "P4_Sala_43"},
+
+    {"origen": "P4_Pasillo", "destino": "P4_Sala_de_conferencias"},
+
+    {"origen": "P4_Pasillo", "destino": "P4_Decanato"}
   ]
 }

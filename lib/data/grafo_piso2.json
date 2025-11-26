@@ -19,8 +19,32 @@
     {"id": "P2_Sala_56", "x": 660, "y": 140}
   ],
   "conexiones": [
-    {"origen": "P2_Escalera", "destino": "P2_Pasillo", "distancia": 10},
-    {"origen": "P2_Ascensor", "destino": "P2_Pasillo", "distancia": 10},
-    {"origen": "P2_Pasillo", "destino": "P2_A101", "distancia": 5}
+    {"origen": "P2_Escalera", "destino": "P2_Pasillo_ingenieria", "distancia": 10},
+
+    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Pasillo_ciencias"},
+
+    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_21"},
+
+    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_22"},
+
+    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_23"},
+
+    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_24"},
+
+    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_25"},
+
+    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_26"},
+
+    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Lab_comp_facultad_ciencias"},
+
+    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_52"},
+
+    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_53"},
+
+    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_54"},
+
+    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_55"},
+
+    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_56"}
   ]
 }
