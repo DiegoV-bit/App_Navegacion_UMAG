@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:math';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:flutter/services.dart'
     show rootBundle, Clipboard, ClipboardData;
@@ -217,6 +218,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
   // Variables para modo debug
   bool _modoDebugActivo = kDebugMode;
   final List<Map<String, dynamic>> _coordenadasDebug = [];
+  final List<Map<String, dynamic>> _conexionesDebug = [];
   final GlobalKey _containerKey = GlobalKey();
 
   // Dimensiones del SVG original (predefinidas para cada piso)
@@ -539,6 +541,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       _modoDebugActivo = !_modoDebugActivo;
       if (!_modoDebugActivo) {
         _coordenadasDebug.clear();
+        _conexionesDebug.clear();
       }
     });
 
@@ -633,6 +636,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       setState(() {
         _nodos = nodosNuevos;
         _coordenadasDebug.clear();
+        _conexionesDebug.clear();
       });
 
       // Forzar un rebuild después del siguiente frame para recalcular posiciones correctamente
@@ -833,6 +837,356 @@ class _PantallaMapaState extends State<PantallaMapa> {
     );
   }
 
+  double _calcularDistanciaEntreNodos(String idOrigen, String idDestino) {
+    final nodoOrigen = _nodos.firstWhere((nodo) => nodo['id'] == idOrigen);
+    final nodoDestino = _nodos.firstWhere((nodo) => nodo['id'] == idDestino);
+
+    final x1 = (nodoOrigen['x'] as num).toDouble();
+    final y1 = (nodoOrigen['y'] as num).toDouble();
+    final x2 = (nodoDestino['x'] as num).toDouble();
+    final y2 = (nodoDestino['y'] as num).toDouble();
+
+    // Distancia euclidiana
+    final distancia = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+
+    return distancia;
+  }
+
+  void _crearConexion() {
+    if (_nodos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay nodos disponibles para crear conexiones'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    String? origenSeleccionado;
+    String? destinoSeleccionado;
+    double? distanciaCalculada;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.share, color: Colors.orange.shade600),
+              const SizedBox(width: 8),
+              const Text('Crear Conexión'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Selecciona el nodo de origen y destino:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                // Dropdown para origen
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Nodo Origen',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.trip_origin),
+                  ),
+                  initialValue: origenSeleccionado,
+                  items: _nodos.map((nodo) {
+                    final id = nodo['id'] as String;
+                    return DropdownMenuItem<String>(
+                      value: id,
+                      child: Text(
+                        id,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setDialogState(() {
+                      origenSeleccionado = value;
+                      if (origenSeleccionado != null &&
+                          destinoSeleccionado != null) {
+                        distanciaCalculada = _calcularDistanciaEntreNodos(
+                          origenSeleccionado!,
+                          destinoSeleccionado!,
+                        );
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Dropdown para destino
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Nodo Destino',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.flag),
+                  ),
+                  initialValue: destinoSeleccionado,
+                  items: _nodos.map((nodo) {
+                    final id = nodo['id'] as String;
+                    return DropdownMenuItem<String>(
+                      value: id,
+                      child: Text(
+                        id,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setDialogState(() {
+                      destinoSeleccionado = value;
+                      if (origenSeleccionado != null &&
+                          destinoSeleccionado != null) {
+                        distanciaCalculada = _calcularDistanciaEntreNodos(
+                          origenSeleccionado!,
+                          destinoSeleccionado!,
+                        );
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Mostrar distancia calculada
+                if (distanciaCalculada != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.straighten, color: Colors.green.shade700),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Distancia calculada:',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green.shade900,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${distanciaCalculada!.toStringAsFixed(2)} píxeles',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.green.shade700,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '≈ ${distanciaCalculada!.round()} unidades',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                if (_conexionesDebug.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Conexiones creadas: ${_conexionesDebug.length}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange.shade900,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (origenSeleccionado == null || destinoSeleccionado == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Por favor selecciona origen y destino'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                  return;
+                }
+
+                if (origenSeleccionado == destinoSeleccionado) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'El origen y destino no pueden ser el mismo nodo',
+                      ),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                  return;
+                }
+
+                final distancia = distanciaCalculada!.round();
+
+                setState(() {
+                  _conexionesDebug.add({
+                    'origen': origenSeleccionado,
+                    'destino': destinoSeleccionado,
+                    'distancia': distancia,
+                  });
+                });
+
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '✓ Conexión creada: $origenSeleccionado → $destinoSeleccionado ($distancia unidades)',
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                if (kDebugMode) {
+                  print('\n════════════════════════════════════════');
+                  print('🔗 CONEXIÓN CREADA');
+                  print('════════════════════════════════════════');
+                  print('Origen: $origenSeleccionado');
+                  print('Destino: $destinoSeleccionado');
+                  print(
+                      'Distancia calculada: ${distanciaCalculada!.toStringAsFixed(2)} píxeles');
+                  print('Distancia redondeada: $distancia unidades');
+                  print('Total de conexiones: ${_conexionesDebug.length}');
+                  print('════════════════════════════════════════\n');
+                }
+              },
+              child: const Text('Crear Conexión'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _exportarConexionesDebug() {
+    if (_conexionesDebug.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No hay conexiones para exportar')),
+      );
+      return;
+    }
+
+    final conexionesJson = _conexionesDebug.map((conexion) {
+      return {
+        'origen': conexion['origen'],
+        'destino': conexion['destino'],
+        'distancia': conexion['distancia'],
+      };
+    }).toList();
+
+    final json = JsonEncoder.withIndent('  ').convert({
+      'conexiones': conexionesJson,
+    });
+
+    Clipboard.setData(ClipboardData(text: json));
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Conexiones Exportadas'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Las conexiones han sido copiadas al portapapeles.',
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Total de conexiones: ${_conexionesDebug.length}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text('Agrega estas conexiones a tu archivo:'),
+              Text(
+                rutaGrafoJson,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 12,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: SelectableText(
+                  json,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 10),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _conexionesDebug.clear();
+              });
+              Navigator.of(context).pop();
+            },
+            child: const Text('Limpiar y Cerrar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _limpiarConexionesDebug() {
+    setState(() {
+      _conexionesDebug.clear();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Conexiones debug limpiadas')),
+    );
+  }
+
   void _exportarCoordenadasDebug() {
     if (_coordenadasDebug.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -956,18 +1310,87 @@ class _PantallaMapaState extends State<PantallaMapa> {
                 onPressed: _recargarNodosDesdeArchivo,
                 tooltip: 'Recargar nodos desde archivo',
               ),
-              if (_coordenadasDebug.isNotEmpty) ...[
-                IconButton(
-                  icon: const Icon(Icons.save),
-                  onPressed: _exportarCoordenadasDebug,
-                  tooltip: 'Exportar coordenadas',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.clear_all),
-                  onPressed: _limpiarCoordenadasDebug,
-                  tooltip: 'Limpiar coordenadas',
-                ),
-              ],
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                tooltip: 'Opciones Debug',
+                onSelected: (value) {
+                  switch (value) {
+                    case 'crear_conexion':
+                      _crearConexion();
+                      break;
+                    case 'exportar_coordenadas':
+                      _exportarCoordenadasDebug();
+                      break;
+                    case 'limpiar_coordenadas':
+                      _limpiarCoordenadasDebug();
+                      break;
+                    case 'exportar_conexiones':
+                      _exportarConexionesDebug();
+                      break;
+                    case 'limpiar_conexiones':
+                      _limpiarConexionesDebug();
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'crear_conexion',
+                    child: Row(
+                      children: [
+                        Icon(Icons.share, size: 20),
+                        SizedBox(width: 12),
+                        Text('Crear Conexión'),
+                      ],
+                    ),
+                  ),
+                  if (_coordenadasDebug.isNotEmpty) ...[
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: 'exportar_coordenadas',
+                      child: Row(
+                        children: [
+                          Icon(Icons.save, size: 20),
+                          SizedBox(width: 12),
+                          Text('Exportar Coordenadas'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'limpiar_coordenadas',
+                      child: Row(
+                        children: [
+                          Icon(Icons.clear_all, size: 20),
+                          SizedBox(width: 12),
+                          Text('Limpiar Coordenadas'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (_conexionesDebug.isNotEmpty) ...[
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: 'exportar_conexiones',
+                      child: Row(
+                        children: [
+                          Icon(Icons.download, size: 20),
+                          SizedBox(width: 12),
+                          Text('Exportar Conexiones'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'limpiar_conexiones',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_sweep, size: 20),
+                          SizedBox(width: 12),
+                          Text('Limpiar Conexiones'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ],
           IconButton(
@@ -1037,6 +1460,26 @@ class _PantallaMapaState extends State<PantallaMapa> {
                       ),
                     ),
                   ),
+                if (_modoDebugActivo && _conexionesDebug.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(left: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_conexionesDebug.length} conexiones',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade800,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 if (!_modoDebugActivo && _nodos.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -1094,6 +1537,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
                           child: CircularProgressIndicator(),
                         ),
                       ),
+                      // Mostrar líneas de conexiones debug
+                      if (_modoDebugActivo && _conexionesDebug.isNotEmpty)
+                        ..._conexionesDebug.map(
+                          (conexion) => _buildConexionLinea(conexion),
+                        ),
                       if (_mostrarNodos && _nodos.isNotEmpty)
                         ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
                       // Mostrar marcadores de debug
@@ -1428,6 +1876,49 @@ class _PantallaMapaState extends State<PantallaMapa> {
     );
   }
 
+  // ==================== Líneas de conexión debug ====================
+  Widget _buildConexionLinea(Map<String, dynamic> conexion) {
+    final origenId = conexion['origen'] as String;
+    final destinoId = conexion['destino'] as String;
+
+    // Buscar nodos origen y destino
+    Map<String, dynamic>? nodoOrigen;
+    Map<String, dynamic>? nodoDestino;
+
+    try {
+      nodoOrigen = _nodos.firstWhere((nodo) => nodo['id'] == origenId);
+    } catch (e) {
+      nodoOrigen = null;
+    }
+
+    try {
+      nodoDestino = _nodos.firstWhere((nodo) => nodo['id'] == destinoId);
+    } catch (e) {
+      nodoDestino = null;
+    }
+
+    if (nodoOrigen == null || nodoDestino == null) {
+      return const SizedBox.shrink();
+    }
+
+    final origenX = (nodoOrigen['x'] as num).toDouble();
+    final origenY = (nodoOrigen['y'] as num).toDouble();
+    final destinoX = (nodoDestino['x'] as num).toDouble();
+    final destinoY = (nodoDestino['y'] as num).toDouble();
+
+    final origenEscalado = _calcularPosicionEscalada(origenX, origenY);
+    final destinoEscalado = _calcularPosicionEscalada(destinoX, destinoY);
+
+    return CustomPaint(
+      size: Size.infinite,
+      painter: ConexionPainter(
+        inicio: origenEscalado,
+        fin: destinoEscalado,
+        distancia: conexion['distancia'] as int,
+      ),
+    );
+  }
+
   // ==================== Marcador del modo debug ====================
   Widget _buildDebugMarker(Map<String, dynamic> coord) {
     final x = (coord['x'] as num).toDouble();
@@ -1514,5 +2005,87 @@ class _PantallaMapaState extends State<PantallaMapa> {
         ),
       ),
     );
+  }
+}
+
+// ==================== Custom Painter para dibujar conexiones ====================
+class ConexionPainter extends CustomPainter {
+  final Offset inicio;
+  final Offset fin;
+  final int distancia;
+
+  ConexionPainter({
+    required this.inicio,
+    required this.fin,
+    required this.distancia,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.green.shade600.withAlpha((0.7 * 255).round())
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    // Dibujar línea
+    canvas.drawLine(inicio, fin, paint);
+
+    // Dibujar flecha en el destino
+    final angle = (fin - inicio).direction;
+    final arrowSize = 8.0;
+
+    final arrowPath = Path();
+    arrowPath.moveTo(
+      fin.dx - arrowSize * cos(angle - 0.4),
+      fin.dy - arrowSize * sin(angle - 0.4),
+    );
+    arrowPath.lineTo(fin.dx, fin.dy);
+    arrowPath.lineTo(
+      fin.dx - arrowSize * cos(angle + 0.4),
+      fin.dy - arrowSize * sin(angle + 0.4),
+    );
+
+    final arrowPaint = Paint()
+      ..color = Colors.green.shade600
+      ..style = PaintingStyle.fill;
+
+    canvas.drawPath(arrowPath, arrowPaint);
+
+    // Dibujar distancia en el centro de la línea
+    final center = Offset(
+      (inicio.dx + fin.dx) / 2,
+      (inicio.dy + fin.dy) / 2,
+    );
+
+    final textSpan = TextSpan(
+      text: '${distancia}m',
+      style: TextStyle(
+        color: Colors.green.shade800,
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
+        backgroundColor: Colors.white.withAlpha((0.9 * 255).round()),
+      ),
+    );
+
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        center.dx - textPainter.width / 2,
+        center.dy - textPainter.height / 2,
+      ),
+    );
+  }
+
+  @override
+  bool shouldRepaint(ConexionPainter oldDelegate) {
+    return oldDelegate.inicio != inicio ||
+        oldDelegate.fin != fin ||
+        oldDelegate.distancia != distancia;
   }
 }
