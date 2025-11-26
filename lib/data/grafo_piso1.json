@@ -31,35 +31,35 @@
     {"id": "P1_Lab_Fisico-Quimica",         "x": 578, "y": 165}
   ],
   "conexiones": [
-    {"origen": "P1_Entrada",             "destino": "P1_Pasillo",                 "distancia": 10},
-    {"origen": "P1_Pasillo",             "destino": "P1_Ascensor",                "distancia": 10},
-    {"origen": "P1_Pasillo",             "destino": "P1_A101",                    "distancia": 5},
+    {"origen": "P1_Entrada",             "destino": "P1_Patio_de_ingenieria",     "distancia": 259},
+    {"origen": "P1_Patio_de_ingenieria", "destino": "P1_Entrada",                "distancia": 259},
+    
+    {"origen":"P1_Patio_de_ingenieria", "destino": "P1_Pasillo_ingenieria", "distancia": 153},
 
-    {"origen": "P1_Sala_Magister",       "destino": "P1_Sala_tesistas",          "distancia": 5},
-    {"origen": "P1_Sala_tesistas",       "destino": "P1_Sala_Magister",          "distancia": 5},
+    {"origen": "P1_Pasillo_ingenieria", "destino": "P1_Sala_TI1"},
 
-    {"origen": "P1_Sala_tesistas",       "destino": "P1_Sala_TI1",               "distancia": 5},
-    {"origen": "P1_Sala_TI1",            "destino": "P1_Sala_tesistas",          "distancia": 5},
+    {"origen": "P1_Pasillo_ingenieria", "destino": "P1_Sala_TI2"},
 
-    {"origen": "P1_Sala_TI1",            "destino": "P1_Administracion_TI",      "distancia": 5},
-    {"origen": "P1_Administracion_TI",   "destino": "P1_Sala_TI1",               "distancia": 5},
+    {"origen": "P1_Pasillo_ingenieria", "destino": "P1_Pasillo_profesores"},
 
-    {"origen": "P1_Administracion_TI",   "destino": "P1_Sala_TI2",               "distancia": 5},
-    {"origen": "P1_Sala_TI2",            "destino": "P1_Administracion_TI",      "distancia": 5},
+    {"origen": "P1_Pasillo_ciencias", "destino": "P1_Lab_Microbiologia"},
 
-    {"origen": "P1_Sala_TI2",            "destino": "P1_Sala_Redes",             "distancia": 5},
-    {"origen": "P1_Sala_Redes",          "destino": "P1_Sala_TI2",               "distancia": 5},
+    {"origen": "P1_Pasillo_ciencias", "destino": "P1_Lab_Biologia"},
 
-    {"origen": "P1_Sala_Proyectos",      "destino": "P1_Sala_Redes",             "distancia": 5},
-    {"origen": "P1_Sala_Redes",          "destino": "P1_Sala_Proyectos",         "distancia": 5},
+    {"origen": "P1_Pasillo_ciencias", "destino": "P1_Lab_Oceanologia"},
 
-    {"origen": "P1_Sala_Mantenimiento",  "destino": "P1_Sala_Redes",             "distancia": 5},
-    {"origen": "P1_Sala_Redes",          "destino": "P1_Sala_Mantenimiento",     "distancia": 5},
+    {"origen": "P1_Pasillo_ingenieria", "destino": "P1_Ascensor"},
 
-    {"origen": "P1_Sala_TI1",            "destino": "P1_Pasillo",                "distancia": 8},
-    {"origen": "P1_Pasillo",             "destino": "P1_Sala_TI1",               "distancia": 8},
+    {"origen": "P1_Sala_TI1", "destino": "P1_Sala_magister"},
 
-    {"origen": "P1_Sala_TI2",            "destino": "P1_Pasillo",                "distancia": 8},
-    {"origen": "P1_Pasillo",             "destino": "P1_Sala_TI2",               "distancia": 8}
+    {"origen": "P1_Sala_TI1", "destino": "P1_Administracion_TI"},
+
+    {"origen": "P1_Sala_TI2", "destino": "P1_Administracion_TI"},
+
+    {"origen": "P1_Sala_TI2", "destino": "P1_Sala_Redes"},
+
+    {"origen": "P1_Sala_Redes", "destino": "P1_Sala_Mantenimiento"},
+
+    {"origen": "P1_Sala_Redes", "destino": "P1_Sala_Proyectos"}
   ]
 }
