@@ -1,9 +1,9 @@
 {
   "nodos": [
-    {"id": "P2_Escalera", "x": 348, "y": 656},
+    {"id": "P2_Escalera_Norte", "x": 348, "y": 656},
     {"id": "P2_Ascensor", "x": 239, "y": 578},
-    {"id": "P2_Pasillo_ciencias", "x": 429, "y": 475},
-    {"id": "P2_Pasillo_ingenieria", "x":450, "y": 586},
+    {"id": "P2_Pasillo_ciencias_Norte", "x": 429, "y": 475},
+    {"id": "P2_Pasillo_ingenieria_Norte", "x":450, "y": 586},
     {"id": "P2_Secretaria_Electrica", "x": 456, "y": 628},
     {"id": "P2_Sala_21", "x": 509, "y": 637},
     {"id": "P2_Sala_22", "x": 574, "y": 633},
@@ -16,7 +16,15 @@
     {"id": "P2_Sala_53", "x": 485, "y": 311},
     {"id": "P2_Sala_54", "x": 546, "y": 254},
     {"id": "P2_Sala_55", "x": 597, "y": 200},
-    {"id": "P2_Sala_56", "x": 660, "y": 140}
+    {"id": "P2_Sala_56", "x": 660, "y": 140},
+    {"id": "P2_Escalera_Centro_ingenieria", "x": 662, "y": 568},
+    {"id": "P2_Escalera_Sur_ingenieria", "x": 1045, "y": 632},
+    {"id": "P2_Pasillo_Profesores", "x": 317, "y": 613},
+    {"id": "P2_Pasillo_ciencias_Sur", "x": 747, "y": 143},
+    {"id": "P2_Pasillo_ingenieria_Sur", "x": 1047, "y": 588},
+    {"id": "P2_Escalera_Centro_ciencias", "x": 485, "y": 417},
+    {"id": "P2_Escalera_Sur_ciencias", "x": 707, "y": 91}
+
   ],
   "conexiones": [
     {"origen": "P2_Escalera", "destino": "P2_Pasillo_ingenieria", "distancia": 10},
