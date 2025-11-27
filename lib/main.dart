@@ -360,13 +360,26 @@ class _PantallaMapaState extends State<PantallaMapa> {
     try {
       final raw = await rootBundle.loadString(rutaGrafoJson);
       final data = json.decode(raw) as Map<String, dynamic>;
-      _nodos = List<Map<String, dynamic>>.from(data['nodos'] as List<dynamic>);
+      final nodosRaw =
+          List<Map<String, dynamic>>.from(data['nodos'] as List<dynamic>);
+
+      // Filtrar nodos vacíos o con datos inválidos
+      _nodos = nodosRaw.where((nodo) {
+        return nodo['id'] != null &&
+            nodo['x'] != null &&
+            nodo['y'] != null &&
+            (nodo['id'] as String).isNotEmpty;
+      }).toList();
 
       if (kDebugMode) {
+        final nodosInvalidos = nodosRaw.length - _nodos.length;
         print('\n════════════════════════════════════════');
         print('📍 CARGA DE NODOS - Piso ${widget.numeroPiso}');
         print('════════════════════════════════════════');
-        print('Total de nodos: ${_nodos.length}');
+        print('Total de nodos válidos: ${_nodos.length}');
+        if (nodosInvalidos > 0) {
+          print('⚠️  Nodos inválidos filtrados: $nodosInvalidos');
+        }
         print('\nCoordenadas de todos los nodos:');
         for (var i = 0; i < _nodos.length; i++) {
           final nodo = _nodos[i];
@@ -702,12 +715,24 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
       final raw = await rootBundle.loadString(rutaGrafoJson);
       final data = json.decode(raw) as Map<String, dynamic>;
-      final nodosNuevos = List<Map<String, dynamic>>.from(
+      final nodosRaw = List<Map<String, dynamic>>.from(
         data['nodos'] as List<dynamic>,
       );
 
+      // Filtrar nodos vacíos o con datos inválidos
+      final nodosNuevos = nodosRaw.where((nodo) {
+        return nodo['id'] != null &&
+            nodo['x'] != null &&
+            nodo['y'] != null &&
+            (nodo['id'] as String).isNotEmpty;
+      }).toList();
+
       if (kDebugMode) {
-        print('\n✅ DEBUG: ${nodosNuevos.length} nodos encontrados:');
+        final nodosInvalidos = nodosRaw.length - nodosNuevos.length;
+        print('\n✅ DEBUG: ${nodosNuevos.length} nodos válidos encontrados');
+        if (nodosInvalidos > 0) {
+          print('⚠️  DEBUG: $nodosInvalidos nodos inválidos filtrados');
+        }
         print('-' * 60);
         for (int i = 0; i < nodosNuevos.length; i++) {
           final nodo = nodosNuevos[i];
@@ -1512,6 +1537,280 @@ class _PantallaMapaState extends State<PantallaMapa> {
     );
   }
 
+  Future<void> _migrarNodosConTipo() async {
+    try {
+      if (kDebugMode) {
+        print('\n${'=' * 60}');
+        print('🔄 MIGRACIÓN: Agregando tipos a nodos existentes');
+        print('=' * 60);
+      }
+
+      final raw = await rootBundle.loadString(rutaGrafoJson);
+      final data = json.decode(raw) as Map<String, dynamic>;
+      final nodos = List<Map<String, dynamic>>.from(
+        data['nodos'] as List<dynamic>,
+      );
+      final conexiones = data['conexiones'] as List<dynamic>;
+
+      int nodosActualizados = 0;
+      int nodosSinCambios = 0;
+
+      // Procesar cada nodo
+      final nodosConTipo = nodos.map((nodo) {
+        // Saltar nodos vacíos
+        if (nodo['id'] == null || (nodo['id'] as String).isEmpty) {
+          return nodo;
+        }
+
+        final id = nodo['id'] as String;
+
+        // Si ya tiene tipo, no hacer nada
+        if (nodo['tipo'] != null) {
+          nodosSinCambios++;
+          return nodo;
+        }
+
+        // Inferir tipo por ID
+        final tipoInferido = _obtenerTipoNodoPorId(id);
+
+        if (tipoInferido != null) {
+          nodosActualizados++;
+          return {
+            'id': nodo['id'],
+            'x': nodo['x'],
+            'y': nodo['y'],
+            'tipo': tipoInferido.name,
+          };
+        }
+
+        nodosSinCambios++;
+        return nodo;
+      }).toList();
+
+      // Crear JSON actualizado con formato bonito
+      final jsonActualizado = JsonEncoder.withIndent('  ').convert({
+        'nodos': nodosConTipo,
+        'conexiones': conexiones,
+      });
+
+      // Mostrar resultado en consola
+      if (kDebugMode) {
+        print('\n📊 RESULTADOS DE LA MIGRACIÓN:');
+        print('   Nodos actualizados: $nodosActualizados');
+        print('   Nodos sin cambios: $nodosSinCambios');
+        print('   Total: ${nodos.length}');
+        print('\n📋 Detalle de tipos asignados:');
+
+        final estadisticas = <String, int>{};
+        for (final nodo in nodosConTipo) {
+          final tipo = nodo['tipo'] as String?;
+          if (tipo != null && tipo.isNotEmpty) {
+            estadisticas[tipo] = (estadisticas[tipo] ?? 0) + 1;
+          }
+        }
+
+        estadisticas.forEach((tipo, cantidad) {
+          try {
+            final tipoEnum = TipoNodo.values.firstWhere((t) => t.name == tipo);
+            print('   ${tipoEnum.nombre}: $cantidad nodos');
+          } catch (e) {
+            print('   $tipo: $cantidad nodos');
+          }
+        });
+
+        print('\n${'=' * 60}\n');
+      }
+
+      // Copiar JSON al portapapeles
+      await Clipboard.setData(ClipboardData(text: jsonActualizado));
+
+      if (!mounted) return;
+
+      // Mostrar diálogo con resultados
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.sync, color: Colors.green.shade600),
+              const SizedBox(width: 8),
+              const Text('Migración Completada'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.green.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Nodos actualizados: $nodosActualizados',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade900,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Nodos sin cambios: $nodosSinCambios',
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '✓ JSON actualizado copiado al portapapeles',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Pasos siguientes:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '1. Abre el archivo:\n   $rutaGrafoJson',
+                  style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '2. Reemplaza todo el contenido con el portapapeles',
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '3. Guarda el archivo',
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '4. Recarga los nodos en la app',
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.blue.shade700,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Los tipos fueron inferidos automáticamente. Revisa que sean correctos.',
+                          style: TextStyle(fontSize: 11),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Abrir visor de JSON
+                _mostrarVisorJsonMigrado(jsonActualizado);
+              },
+              child: const Text('Ver JSON'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Entendido'),
+            ),
+          ],
+        ),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '✓ $nodosActualizados nodos migrados. JSON copiado al portapapeles.',
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ ERROR en migración: $e');
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error en migración: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _mostrarVisorJsonMigrado(String jsonContent) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('JSON Migrado'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: SelectableText(
+              jsonContent,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: jsonContent));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('JSON copiado nuevamente')),
+              );
+            },
+            child: const Text('Copiar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _mostrarEstadisticasNodos() {
     // Contar nodos por tipo
     final estadisticas = <TipoNodo, int>{};
@@ -1716,6 +2015,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
                     case 'estadisticas':
                       _mostrarEstadisticasNodos();
                       break;
+                    case 'migrar_tipos':
+                      _migrarNodosConTipo();
+                      break;
                     case 'exportar_coordenadas':
                       _exportarCoordenadasDebug();
                       break;
@@ -1750,6 +2052,16 @@ class _PantallaMapaState extends State<PantallaMapa> {
                           Icon(Icons.analytics, size: 20),
                           SizedBox(width: 12),
                           Text('Ver Estadísticas'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'migrar_tipos',
+                      child: Row(
+                        children: [
+                          Icon(Icons.sync, size: 20),
+                          SizedBox(width: 12),
+                          Text('Migrar Tipos de Nodos'),
                         ],
                       ),
                     ),
@@ -2254,20 +2566,47 @@ class _PantallaMapaState extends State<PantallaMapa> {
     // Intentar inferir el tipo por el nombre del nodo
     final idLower = id.toLowerCase();
 
+    // Entrada
     if (idLower.contains('entrada')) return TipoNodo.entrada;
-    if (idLower.contains('pasillo')) return TipoNodo.pasillo;
-    if (idLower.contains('interseccion') || idLower.contains('intersección')) {
-      return TipoNodo.interseccion;
-    }
-    if (idLower.contains('esquina')) return TipoNodo.esquina;
-    if (idLower.contains('puerta')) return TipoNodo.puerta;
-    if (idLower.contains('escalera')) return TipoNodo.escalera;
+
+    // Ascensor (debe estar antes de pasillo para evitar conflictos)
     if (idLower.contains('ascensor')) return TipoNodo.ascensor;
+
+    // Escalera
+    if (idLower.contains('escalera')) return TipoNodo.escalera;
+
+    // Baño
     if (idLower.contains('baño') || idLower.contains('bano')) {
       return TipoNodo.bano;
     }
 
-    return null; // Por defecto
+    // Pasillos (debe estar antes de intersección para evitar conflictos)
+    if (idLower.contains('pasillo')) return TipoNodo.pasillo;
+
+    // Intersección
+    if (idLower.contains('interseccion') || idLower.contains('intersección')) {
+      return TipoNodo.interseccion;
+    }
+
+    // Esquina
+    if (idLower.contains('esquina')) return TipoNodo.esquina;
+
+    // Puerta
+    if (idLower.contains('puerta')) return TipoNodo.puerta;
+
+    // Laboratorios y salas (como puntos de interés)
+    if (idLower.contains('lab') ||
+        idLower.contains('sala') ||
+        idLower.contains('aula') ||
+        idLower.contains('oficina') ||
+        idLower.contains('secretaria') ||
+        idLower.contains('administracion') ||
+        idLower.contains('patio')) {
+      return TipoNodo.puntoInteres;
+    }
+
+    // Por defecto, si no se puede identificar
+    return TipoNodo.puntoInteres;
   }
 
   Color _obtenerColorNodo(Map<String, dynamic> nodo) {
