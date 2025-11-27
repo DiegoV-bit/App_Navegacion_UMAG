@@ -12,6 +12,91 @@ import 'package:flutter/services.dart'
 const bool kDebugMode = true;
 // =============================================================
 
+// ==================== TIPOS DE NODOS ====================
+enum TipoNodo {
+  entrada,
+  pasillo,
+  interseccion,
+  esquina,
+  puerta,
+  escalera,
+  ascensor,
+  bano,
+  puntoInteres,
+}
+
+extension TipoNodoExtension on TipoNodo {
+  String get nombre {
+    switch (this) {
+      case TipoNodo.entrada:
+        return 'Entrada';
+      case TipoNodo.pasillo:
+        return 'Pasillo';
+      case TipoNodo.interseccion:
+        return 'Intersección';
+      case TipoNodo.esquina:
+        return 'Esquina';
+      case TipoNodo.puerta:
+        return 'Puerta';
+      case TipoNodo.escalera:
+        return 'Escalera';
+      case TipoNodo.ascensor:
+        return 'Ascensor';
+      case TipoNodo.bano:
+        return 'Baño';
+      case TipoNodo.puntoInteres:
+        return 'Punto de Interés';
+    }
+  }
+
+  IconData get icono {
+    switch (this) {
+      case TipoNodo.entrada:
+        return Icons.door_front_door;
+      case TipoNodo.pasillo:
+        return Icons.straighten;
+      case TipoNodo.interseccion:
+        return Icons.merge_type;
+      case TipoNodo.esquina:
+        return Icons.turn_right;
+      case TipoNodo.puerta:
+        return Icons.meeting_room;
+      case TipoNodo.escalera:
+        return Icons.stairs;
+      case TipoNodo.ascensor:
+        return Icons.elevator;
+      case TipoNodo.bano:
+        return Icons.wc;
+      case TipoNodo.puntoInteres:
+        return Icons.place;
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case TipoNodo.entrada:
+        return Colors.green;
+      case TipoNodo.pasillo:
+        return Colors.blue;
+      case TipoNodo.interseccion:
+        return Colors.orange;
+      case TipoNodo.esquina:
+        return Colors.purple;
+      case TipoNodo.puerta:
+        return Colors.teal;
+      case TipoNodo.escalera:
+        return Colors.red;
+      case TipoNodo.ascensor:
+        return Colors.indigo;
+      case TipoNodo.bano:
+        return Colors.cyan;
+      case TipoNodo.puntoInteres:
+        return Colors.amber;
+    }
+  }
+}
+// =======================================================
+
 void main() {
   // Inicializa la aplicación con la configuración principal.
   runApp(const NavigacionUMAGApp());
@@ -719,122 +804,247 @@ class _PantallaMapaState extends State<PantallaMapa> {
     _mostrarDialogoCoordenadas(svgX, svgY);
   }
 
+  String _generarIdNodo(TipoNodo tipo, double x, double y) {
+    final prefijo = 'P${widget.numeroPiso}';
+    final timestamp = DateTime.now().millisecondsSinceEpoch % 10000;
+
+    switch (tipo) {
+      case TipoNodo.entrada:
+        return '${prefijo}_Entrada_$timestamp';
+      case TipoNodo.pasillo:
+        return '${prefijo}_Pasillo_$timestamp';
+      case TipoNodo.interseccion:
+        return '${prefijo}_Interseccion_$timestamp';
+      case TipoNodo.esquina:
+        return '${prefijo}_Esquina_$timestamp';
+      case TipoNodo.puerta:
+        return '${prefijo}_Puerta_$timestamp';
+      case TipoNodo.escalera:
+        return '${prefijo}_Escalera_$timestamp';
+      case TipoNodo.ascensor:
+        return '${prefijo}_Ascensor_$timestamp';
+      case TipoNodo.bano:
+        return '${prefijo}_Bano_$timestamp';
+      case TipoNodo.puntoInteres:
+        return '${prefijo}_PuntoInteres_$timestamp';
+    }
+  }
+
   void _mostrarDialogoCoordenadas(double x, double y) {
     final TextEditingController idController = TextEditingController();
+    TipoNodo? tipoSeleccionado;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.pin_drop, color: Colors.orange.shade600),
-            const SizedBox(width: 8),
-            const Text('Coordenadas del Mapa'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Coordenadas SVG:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange.shade900,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SelectableText(
-                    'X: ${x.toInt()}',
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 16,
-                    ),
-                  ),
-                  SelectableText(
-                    'Y: ${y.toInt()}',
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: idController,
-              decoration: InputDecoration(
-                labelText: 'ID del nodo (opcional)',
-                hintText: 'Ej: P${widget.numeroPiso}_A101',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.label),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Total de puntos marcados: ${_coordenadasDebug.length}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.pin_drop, color: Colors.orange.shade600),
+              const SizedBox(width: 8),
+              const Text('Nuevo Nodo'),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Clipboard.setData(
-                ClipboardData(
-                  text:
-                      '{"id": "${idController.text}", "x": ${x.toInt()}, "y": ${y.toInt()}}',
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Coordenadas SVG:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange.shade900,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SelectableText(
+                        'X: ${x.toInt()}  Y: ${y.toInt()}',
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              );
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('✓ Coordenadas copiadas al portapapeles'),
-                  duration: Duration(seconds: 2),
+                const SizedBox(height: 16),
+                const Text(
+                  'Tipo de Nodo:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
-              );
-            },
-            child: const Text('Copiar JSON'),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<TipoNodo>(
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    prefixIcon: Icon(
+                      tipoSeleccionado?.icono ?? Icons.category,
+                      color: tipoSeleccionado?.color,
+                    ),
+                    hintText: 'Selecciona el tipo',
+                  ),
+                  initialValue: tipoSeleccionado,
+                  items: TipoNodo.values.map((tipo) {
+                    return DropdownMenuItem(
+                      value: tipo,
+                      child: Row(
+                        children: [
+                          Icon(tipo.icono, size: 20, color: tipo.color),
+                          const SizedBox(width: 8),
+                          Text(tipo.nombre),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setDialogState(() {
+                      tipoSeleccionado = value;
+                      if (value != null) {
+                        idController.text = _generarIdNodo(value, x, y);
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: idController,
+                  decoration: InputDecoration(
+                    labelText: 'ID del nodo',
+                    hintText: 'P${widget.numeroPiso}_Pasillo_1',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.label),
+                    helperText: 'Se genera automáticamente al seleccionar tipo',
+                    helperMaxLines: 2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (tipoSeleccionado != null)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: tipoSeleccionado!.color.withAlpha(30),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: tipoSeleccionado!.color.withAlpha(100),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          tipoSeleccionado!.icono,
+                          color: tipoSeleccionado!.color,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _obtenerDescripcionTipo(tipoSeleccionado!),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: tipoSeleccionado!.color.withAlpha(255),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 8),
+                Text(
+                  'Total de puntos: ${_coordenadasDebug.length}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
           ),
-          if (idController.text.isNotEmpty)
-            FilledButton(
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cerrar'),
+            ),
+            TextButton(
               onPressed: () {
-                setState(() {
-                  _nodos.add({
-                    'id': idController.text,
-                    'x': x.toInt(),
-                    'y': y.toInt(),
-                  });
-                });
+                final id = idController.text.isEmpty
+                    ? 'P${widget.numeroPiso}_Nodo_${DateTime.now().millisecondsSinceEpoch % 10000}'
+                    : idController.text;
+                Clipboard.setData(
+                  ClipboardData(
+                    text: '{"id": "$id", "x": ${x.toInt()}, "y": ${y.toInt()}}',
+                  ),
+                );
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '✓ Nodo ${idController.text} agregado temporalmente',
-                    ),
+                  const SnackBar(
+                    content: Text('✓ Coordenadas copiadas al portapapeles'),
+                    duration: Duration(seconds: 2),
                   ),
                 );
               },
+              child: const Text('Copiar JSON'),
+            ),
+            FilledButton(
+              onPressed: idController.text.isEmpty
+                  ? null
+                  : () {
+                      setState(() {
+                        _nodos.add({
+                          'id': idController.text,
+                          'x': x.toInt(),
+                          'y': y.toInt(),
+                          'tipo': tipoSeleccionado?.name,
+                        });
+                      });
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '✓ Nodo ${idController.text} agregado',
+                          ),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
               child: const Text('Agregar Nodo'),
             ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  String _obtenerDescripcionTipo(TipoNodo tipo) {
+    switch (tipo) {
+      case TipoNodo.entrada:
+        return 'Entrada principal del edificio';
+      case TipoNodo.pasillo:
+        return 'Punto en un pasillo (cada 3-5 metros)';
+      case TipoNodo.interseccion:
+        return 'Cruce de dos o más pasillos';
+      case TipoNodo.esquina:
+        return 'Cambio de dirección en el pasillo';
+      case TipoNodo.puerta:
+        return 'Acceso a sala/oficina/laboratorio';
+      case TipoNodo.escalera:
+        return 'Conexión vertical entre pisos';
+      case TipoNodo.ascensor:
+        return 'Ascensor para accesibilidad';
+      case TipoNodo.bano:
+        return 'Servicios higiénicos';
+      case TipoNodo.puntoInteres:
+        return 'Lugar relevante (cafetería, biblioteca, etc.)';
+    }
   }
 
   double _calcularDistanciaEntreNodos(String idOrigen, String idDestino) {
@@ -1207,11 +1417,32 @@ class _PantallaMapaState extends State<PantallaMapa> {
         )
         .toList();
 
-    final json = JsonEncoder.withIndent(
-      '  ',
-    ).convert({'nodos': nodosJson, 'conexiones': []});
+    // Crear guía de uso con comentarios
+    final guia = '''
+// ==================== GUÍA DE USO ====================
+// 1. Los nodos deben seguir los pasillos transitables
+// 2. Coloca nodos cada 3-5 metros en pasillos largos
+// 3. Marca intersecciones donde se cruzan pasillos
+// 4. Agrega puertas en cada acceso a salas
+// 5. Las conexiones deben ser bidireccionales si es necesario
+//
+// Tipos de nodos recomendados:
+// - Entrada: Accesos principales del edificio
+// - Pasillo: Puntos intermedios en corredores
+// - Intersección: Cruces de pasillos
+// - Esquina: Cambios de dirección
+// - Puerta: Acceso a salas/oficinas
+// - Escalera/Ascensor: Conexiones verticales
+// ====================================================
 
-    Clipboard.setData(ClipboardData(text: json));
+''';
+
+    final jsonData = {'nodos': nodosJson, 'conexiones': []};
+    final json = JsonEncoder.withIndent('  ').convert(jsonData);
+
+    final exportContent = guia + json;
+
+    Clipboard.setData(ClipboardData(text: exportContent));
 
     showDialog(
       context: context,
@@ -1281,6 +1512,170 @@ class _PantallaMapaState extends State<PantallaMapa> {
     );
   }
 
+  void _mostrarEstadisticasNodos() {
+    // Contar nodos por tipo
+    final estadisticas = <TipoNodo, int>{};
+    for (final tipo in TipoNodo.values) {
+      estadisticas[tipo] = 0;
+    }
+
+    int nodosConTipo = 0;
+    int nodosSinTipo = 0;
+
+    for (final nodo in _nodos) {
+      bool encontrado = false;
+
+      // Si tiene tipo guardado
+      if (nodo['tipo'] != null) {
+        try {
+          final tipo = TipoNodo.values.firstWhere(
+            (t) => t.name == nodo['tipo'],
+          );
+          estadisticas[tipo] = (estadisticas[tipo] ?? 0) + 1;
+          nodosConTipo++;
+          encontrado = true;
+        } catch (e) {
+          // Continuar con inferencia
+        }
+      }
+
+      // Inferir por ID
+      if (!encontrado) {
+        final tipoInferido = _obtenerTipoNodoPorId(nodo['id'] as String);
+        if (tipoInferido != null) {
+          estadisticas[tipoInferido] = (estadisticas[tipoInferido] ?? 0) + 1;
+          nodosConTipo++;
+        } else {
+          nodosSinTipo++;
+        }
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.analytics, color: Colors.blue.shade600),
+            const SizedBox(width: 8),
+            const Text('Estadísticas de Nodos'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Total de nodos: ${_nodos.length}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text('Con tipo definido: $nodosConTipo'),
+              Text('Sin tipo: $nodosSinTipo'),
+              const Divider(height: 24),
+              const Text(
+                'Distribución por tipo:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              ...TipoNodo.values.where((tipo) {
+                return (estadisticas[tipo] ?? 0) > 0;
+              }).map((tipo) {
+                final count = estadisticas[tipo] ?? 0;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Icon(tipo.icono, size: 20, color: tipo.color),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(tipo.nombre)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: tipo.color.withAlpha(50),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$count',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: tipo.color,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              if (estadisticas.values.every((v) => v == 0))
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    'No hay nodos con tipo definido aún.',
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                ),
+              const Divider(height: 24),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.lightbulb,
+                          size: 16,
+                          color: Colors.blue.shade700,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Recomendaciones:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade900,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '• Coloca nodos Pasillo cada 3-5 metros\n'
+                      '• Marca Intersecciones en cruces\n'
+                      '• Agrega Puertas en cada sala\n'
+                      '• Usa Esquinas en cambios de dirección',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ==================== FIN FUNCIONES DEBUG ====================
 
   @override
@@ -1318,6 +1713,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
                     case 'crear_conexion':
                       _crearConexion();
                       break;
+                    case 'estadisticas':
+                      _mostrarEstadisticasNodos();
+                      break;
                     case 'exportar_coordenadas':
                       _exportarCoordenadasDebug();
                       break;
@@ -1343,6 +1741,19 @@ class _PantallaMapaState extends State<PantallaMapa> {
                       ],
                     ),
                   ),
+                  if (_nodos.isNotEmpty) ...[
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: 'estadisticas',
+                      child: Row(
+                        children: [
+                          Icon(Icons.analytics, size: 20),
+                          SizedBox(width: 12),
+                          Text('Ver Estadísticas'),
+                        ],
+                      ),
+                    ),
+                  ],
                   if (_coordenadasDebug.isNotEmpty) ...[
                     const PopupMenuDivider(),
                     const PopupMenuItem(
@@ -1839,11 +2250,55 @@ class _PantallaMapaState extends State<PantallaMapa> {
     return [];
   }
 
+  TipoNodo? _obtenerTipoNodoPorId(String id) {
+    // Intentar inferir el tipo por el nombre del nodo
+    final idLower = id.toLowerCase();
+
+    if (idLower.contains('entrada')) return TipoNodo.entrada;
+    if (idLower.contains('pasillo')) return TipoNodo.pasillo;
+    if (idLower.contains('interseccion') || idLower.contains('intersección')) {
+      return TipoNodo.interseccion;
+    }
+    if (idLower.contains('esquina')) return TipoNodo.esquina;
+    if (idLower.contains('puerta')) return TipoNodo.puerta;
+    if (idLower.contains('escalera')) return TipoNodo.escalera;
+    if (idLower.contains('ascensor')) return TipoNodo.ascensor;
+    if (idLower.contains('baño') || idLower.contains('bano')) {
+      return TipoNodo.bano;
+    }
+
+    return null; // Por defecto
+  }
+
+  Color _obtenerColorNodo(Map<String, dynamic> nodo) {
+    // Si el nodo tiene tipo guardado
+    if (nodo['tipo'] != null) {
+      try {
+        final tipo = TipoNodo.values.firstWhere(
+          (t) => t.name == nodo['tipo'],
+        );
+        return tipo.color;
+      } catch (e) {
+        // Si no se encuentra, continuar con la inferencia
+      }
+    }
+
+    // Inferir por ID
+    final tipoInferido = _obtenerTipoNodoPorId(nodo['id'] as String);
+    if (tipoInferido != null) {
+      return tipoInferido.color;
+    }
+
+    // Color por defecto
+    return Colors.blue.shade500;
+  }
+
   // ==================== Marcador de nodos ====================
   Widget _buildNodoMarker(Map<String, dynamic> nodo) {
     final x = (nodo['x'] as num).toDouble();
     final y = (nodo['y'] as num).toDouble();
     final id = nodo['id'] as String;
+    final colorNodo = _obtenerColorNodo(nodo);
 
     // Calcular posición escalada
     final posicionEscalada = _calcularPosicionEscalada(x, y);
@@ -1857,7 +2312,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
           width: 12,
           height: 12,
           decoration: BoxDecoration(
-            color: Colors.blue.shade500,
+            color: colorNodo,
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white, width: 1.5),
             boxShadow: [
