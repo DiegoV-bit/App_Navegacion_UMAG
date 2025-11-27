@@ -22,7 +22,8 @@ class Grafo {
 
   // Buscar un nodo por ID
   Nodo? getNodo(String id) {
-    return nodos.firstWhere((n) => n.id == id, orElse: () => Nodo(id: '', x: 0, y: 0));
+    return nodos.firstWhere((n) => n.id == id,
+        orElse: () => Nodo(id: '', x: 0, y: 0));
   }
 
   // Crear mapa de adyacencia (para Dijkstra)
