@@ -11,18 +11,12 @@
     {"id": "P4_Decanato", "x": 278, "y": 603}
   ],
   "conexiones": [
-    {"origen": "P4_Escalera", "destino": "P4_Pasillo", "distancia": 10},
-
-    {"origen": "P4_Pasillo", "destino": "P4_Secretaria_plan_comun"},
-
-    {"origen": "P4_Pasillo", "destino": "P4_Sala_41"},
-
-    {"origen": "P4_Pasillo", "destino": "P4_Sala_42"},
-
-    {"origen": "P4_Pasillo", "destino": "P4_Sala_43"},
-
-    {"origen": "P4_Pasillo", "destino": "P4_Sala_de_conferencias"},
-
-    {"origen": "P4_Pasillo", "destino": "P4_Decanato"}
+    {"origen": "P4_Escalera", "destino": "P4_Pasillo", "distancia": 116},
+    {"origen": "P4_Pasillo", "destino": "P4_Secretaria_plan_comun", "distancia": 64},
+    {"origen": "P4_Pasillo", "destino": "P4_Sala_41", "distancia": 154},
+    {"origen": "P4_Pasillo", "destino": "P4_Sala_42", "distancia": 342},
+    {"origen": "P4_Pasillo", "destino": "P4_Sala_43", "distancia": 436},
+    {"origen": "P4_Pasillo", "destino": "P4_Sala_de_conferencias", "distancia": 519},
+    {"origen": "P4_Pasillo", "destino": "P4_Decanato", "distancia": 158}
   ]
 }
