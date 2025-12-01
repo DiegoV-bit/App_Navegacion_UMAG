@@ -6,6 +6,8 @@ import 'dart:math';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:flutter/services.dart'
     show rootBundle, Clipboard, ClipboardData;
+import 'models/grafo.dart';
+import 'utils/a_estrella.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
@@ -858,6 +860,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
   void _mostrarDialogoCoordenadas(double x, double y) {
     final TextEditingController idController = TextEditingController();
     TipoNodo? tipoSeleccionado;
+    // Variables para la prueba de rutas dentro del diálogo
+    String? origenRuta;
+    String? destinoRuta;
+    List<String> rutaResultado = [];
+    double rutaDistancia = 0.0;
 
     showDialog(
       context: context,
@@ -991,6 +998,183 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   'Total de puntos: ${_coordenadasDebug.length}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
+                const SizedBox(height: 12),
+                const Divider(),
+                const SizedBox(height: 8),
+                Text('Probar A* (calcular ruta)',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                // Construir lista segura de IDs disponibles (grafo cargado + nodos locales)
+                Builder(builder: (context) {
+                  // IDs disponibles: usamos los nodos ya cargados en _nodos
+                  final idsSet = <String>{};
+                  for (var n in _nodos) {
+                    try {
+                      idsSet.add(n['id'] as String);
+                    } catch (e) {}
+                  }
+
+                  final ids = idsSet.toList()..sort();
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Nodo Origen (A*)',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: ids.map((id) {
+                          return DropdownMenuItem(value: id, child: Text(id));
+                        }).toList(),
+                        value: origenRuta,
+                        onChanged: (v) {
+                          setDialogState(() {
+                            origenRuta = v;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Nodo Destino (A*)',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: ids.map((id) {
+                          return DropdownMenuItem(value: id, child: Text(id));
+                        }).toList(),
+                        value: destinoRuta,
+                        onChanged: (v) {
+                          setDialogState(() {
+                            destinoRuta = v;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      Row(children: [
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: (origenRuta == null || destinoRuta == null)
+                                ? null
+                                : () async {
+                                    // Construir grafo temporal combinando grafo cargado y nodos/conexiones debug
+                                    final nodeJsons = <Map<String, dynamic>>[];
+                                    final conexs = <Map<String, dynamic>>[];
+
+                                    // Añadir nodos desde _nodos (UI) — también serán la fuente
+                                    // primaria de nodos para la prueba.
+                                    for (var m in _nodos) {
+                                      try {
+                                        final id = m['id'] as String;
+                                        final exists = nodeJsons
+                                            .any((jn) => jn['id'] == id);
+                                        if (!exists) {
+                                          // Forzar x/y a double en caso de venir como int
+                                          double _x = 0.0;
+                                          double _y = 0.0;
+                                          try {
+                                            _x = (m['x'] as num).toDouble();
+                                          } catch (e) {
+                                            try {
+                                              _x = double.parse(m['x'].toString());
+                                            } catch (e) {}
+                                          }
+                                          try {
+                                            _y = (m['y'] as num).toDouble();
+                                          } catch (e) {
+                                            try {
+                                              _y = double.parse(m['y'].toString());
+                                            } catch (e) {}
+                                          }
+
+                                          nodeJsons.add({
+                                            'id': id,
+                                            'x': _x,
+                                            'y': _y,
+                                          });
+                                        }
+                                      } catch (e) {}
+                                    }
+
+                                    // Añadir conexiones desde archivo JSON principal (si existe)
+                                    try {
+                                      final rawFile = await rootBundle.loadString(rutaGrafoJson);
+                                      final dataFile = json.decode(rawFile) as Map<String, dynamic>;
+                                      final fileConex =
+                                          List<Map<String, dynamic>>.from(dataFile['conexiones'] as List<dynamic>);
+                                      for (var fc in fileConex) {
+                                        try {
+                                          conexs.add({
+                                            'origen': fc['origen'],
+                                            'destino': fc['destino'],
+                                            'distancia': (fc['distancia'] as num).toDouble(),
+                                          });
+                                        } catch (e) {}
+                                      }
+                                    } catch (e) {
+                                      // archivo inexistente o sin conexiones; seguir
+                                    }
+
+                                    // Añadir conexiones debug
+                                    for (var c in _conexionesDebug) {
+                                      try {
+                                        conexs.add({
+                                          'origen': c['origen'],
+                                          'destino': c['destino'],
+                                          'distancia': (c['distancia'] as num).toDouble(),
+                                        });
+                                      } catch (e) {}
+                                    }
+
+                                    final tempJson = {'nodos': nodeJsons, 'conexiones': conexs};
+                                    final tempGrafo = Grafo.fromJson(tempJson);
+
+                                    final aStar = AStar(tempGrafo);
+                                    final ruta = aStar.calcular(
+                                        origen: origenRuta!, destino: destinoRuta!);
+
+                                    double total = 0.0;
+                                    final mapaAdj = tempGrafo.generarMapaAdyacencia();
+                                    for (var i = 0; i < ruta.length - 1; i++) {
+                                      final a = ruta[i];
+                                      final b = ruta[i + 1];
+                                      try {
+                                        total += mapaAdj[a]![b]!;
+                                      } catch (e) {}
+                                    }
+
+                                    setDialogState(() {
+                                      rutaResultado = ruta;
+                                      rutaDistancia = total;
+                                    });
+                                  },
+                            child: const Text('Calcular ruta A*'),
+                          ),
+                        ),
+                      ]),
+                      const SizedBox(height: 8),
+                      if (rutaResultado.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Ruta encontrada: ${rutaResultado.join(' → ')}'),
+                              const SizedBox(height: 4),
+                              Text('Distancia total: ${rutaDistancia.toStringAsFixed(2)}'),
+                            ],
+                          ),
+                        ),
+                    ],
+                  );
+                }),
               ],
             ),
           ),

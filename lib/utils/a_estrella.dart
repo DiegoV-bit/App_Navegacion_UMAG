@@ -2,6 +2,20 @@ import 'dart:math';
 import '../models/grafo.dart';
 
 class AStar {
+  // Permitir uso instanciable manteniendo la API estática
+  final Grafo grafo;
+
+  AStar(this.grafo);
+
+  /// Método de instancia: delega en la implementación estática
+  List<String> calcular({
+    required String origen,
+    required String destino,
+  }) {
+    return AStar.calcularRuta(grafo: grafo, origen: origen, destino: destino);
+  }
+
+  /// API estática original (mantenerla para compatibilidad)
   static List<String> calcularRuta({
     required Grafo grafo,
     required String origen,
