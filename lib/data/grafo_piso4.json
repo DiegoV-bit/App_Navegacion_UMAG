@@ -14,12 +14,34 @@
     {"id": "P4_Lab_de_computacion", "x": 665, "y": 631}
   ],
   "conexiones": [
-    {"origen": "P4_Escalera", "destino": "P4_Pasillo", "distancia": 116},
-    {"origen": "P4_Pasillo", "destino": "P4_Secretaria_plan_comun", "distancia": 64},
-    {"origen": "P4_Pasillo", "destino": "P4_Sala_41", "distancia": 154},
-    {"origen": "P4_Pasillo", "destino": "P4_Sala_42", "distancia": 342},
-    {"origen": "P4_Pasillo", "destino": "P4_Sala_43", "distancia": 436},
-    {"origen": "P4_Pasillo", "destino": "P4_Sala_de_conferencias", "distancia": 519},
-    {"origen": "P4_Pasillo", "destino": "P4_Decanato", "distancia": 158}
+    {"origen": "P4_Escalera_Norte_ingenieria", "destino": "P4_Pasillo_Norte", "distancia": 120},
+    {"origen": "P4_Pasillo_Norte", "destino": "P4_Escalera_Norte_ingenieria", "distancia": 120},
+    
+    {"origen": "P4_Escalera_Sur_ingenieria", "destino": "P4_Pasillo_Sur", "distancia": 54},
+    {"origen": "P4_Pasillo_Sur", "destino": "P4_Escalera_Sur_ingenieria", "distancia": 54},
+
+    {"origen": "P4_Ascensor", "destino": "P4_Pasillo_Norte", "distancia": 200},
+    {"origen": "P4_Pasillo_Norte", "destino": "P4_Ascensor", "distancia": 200},
+
+    {"origen": "P4_Pasillo_Norte", "destino": "P4_Secretaria_plan_comun", "distancia": 69},
+    {"origen": "P4_Secretaria_plan_comun", "destino": "P4_Pasillo_Norte", "distancia": 69},
+
+    {"origen": "P4_Pasillo_Norte", "destino": "P4_Sala_41", "distancia": 156},
+    {"origen": "P4_Sala_41", "destino": "P4_Pasillo_Norte", "distancia": 156},
+
+    {"origen": "P4_Pasillo_Sur", "destino": "P4_Sala_42", "distancia": 288},
+    {"origen": "P4_Sala_42", "destino": "P4_Pasillo_Sur", "distancia": 288},
+
+    {"origen": "P4_Pasillo_Sur", "destino": "P4_Sala_43", "distancia": 194},
+    {"origen": "P4_Sala_43", "destino": "P4_Pasillo_Sur", "distancia": 194},
+
+    {"origen": "P4_Pasillo_Sur", "destino": "P4_Sala_de_conferencias", "distancia": 119},
+    {"origen": "P4_Sala_de_conferencias", "destino": "P4_Pasillo_Sur", "distancia": 119},
+
+    {"origen": "P4_Pasillo_Norte", "destino": "P4_Decanato", "distancia": 174},
+    {"origen": "P4_Decanato", "destino": "P4_Pasillo_Norte", "distancia": 174},
+
+    {"origen": "P4_Pasillo_Norte", "destino": "P4_Lab_de_computacion", "distancia": 243},
+    {"origen": "P4_Lab_de_computacion", "destino": "P4_Pasillo_Norte", "distancia": 243}
   ]
 }
