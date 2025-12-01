@@ -11,9 +11,10 @@ class Conexion {
 
   factory Conexion.fromJson(Map<String, dynamic> json) {
     return Conexion(
-      origen: json['origen'],
-      destino: json['destino'],
-      distancia: json['distancia'],
+      origen: json['origen'] as String,
+      destino: json['destino'] as String,
+      // Aceptar int o double en JSON convirtiendo desde num
+      distancia: (json['distancia'] as num).toDouble(),
     );
   }
 

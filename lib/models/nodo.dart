@@ -12,9 +12,10 @@ class Nodo {
   // Conversión desde JSON
   factory Nodo.fromJson(Map<String, dynamic> json) {
     return Nodo(
-      id: json['id'],
-      x: json['x'],
-      y: json['y'],
+      id: json['id'] as String,
+      // Aceptar int o double en JSON convirtiendo desde num
+      x: (json['x'] as num).toDouble(),
+      y: (json['y'] as num).toDouble(),
     );
   }
 
