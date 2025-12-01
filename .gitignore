@@ -50,6 +50,7 @@ app.*.map.json
 /macos
 /windows
 /web
+/test
 
 *.aux
 *.log
