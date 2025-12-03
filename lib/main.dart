@@ -1032,7 +1032,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                         items: ids.map((id) {
                           return DropdownMenuItem(value: id, child: Text(id));
                         }).toList(),
-                        value: origenRuta,
+                        initialValue: origenRuta,
                         onChanged: (v) {
                           setDialogState(() {
                             origenRuta = v;
@@ -1048,7 +1048,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                         items: ids.map((id) {
                           return DropdownMenuItem(value: id, child: Text(id));
                         }).toList(),
-                        value: destinoRuta,
+                        initialValue: destinoRuta,
                         onChanged: (v) {
                           setDialogState(() {
                             destinoRuta = v;
@@ -1076,29 +1076,29 @@ class _PantallaMapaState extends State<PantallaMapa> {
                                             .any((jn) => jn['id'] == id);
                                         if (!exists) {
                                           // Forzar x/y a double en caso de venir como int
-                                          double _x = 0.0;
-                                          double _y = 0.0;
+                                          double x0 = 0.0;
+                                          double y0 = 0.0;
                                           try {
-                                            _x = (m['x'] as num).toDouble();
+                                            x0 = (m['x'] as num).toDouble();
                                           } catch (e) {
                                             try {
-                                              _x = double.parse(
+                                              x0 = double.parse(
                                                   m['x'].toString());
                                             } catch (e) {}
                                           }
                                           try {
-                                            _y = (m['y'] as num).toDouble();
+                                            y0 = (m['y'] as num).toDouble();
                                           } catch (e) {
                                             try {
-                                              _y = double.parse(
+                                              y0 = double.parse(
                                                   m['y'].toString());
                                             } catch (e) {}
                                           }
 
                                           nodeJsons.add({
                                             'id': id,
-                                            'x': _x,
-                                            'y': _y,
+                                            'x': x0,
+                                            'y': y0,
                                           });
                                         }
                                       } catch (e) {}
