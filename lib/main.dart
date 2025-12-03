@@ -998,6 +998,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   'Total de puntos: ${_coordenadasDebug.length}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
+
+                // inicio sección A*
                 const SizedBox(height: 12),
                 const Divider(),
                 const SizedBox(height: 8),
@@ -1057,7 +1059,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
                       Row(children: [
                         Expanded(
                           child: FilledButton(
-                            onPressed: (origenRuta == null || destinoRuta == null)
+                            onPressed: (origenRuta == null ||
+                                    destinoRuta == null)
                                 ? null
                                 : () async {
                                     // Construir grafo temporal combinando grafo cargado y nodos/conexiones debug
@@ -1079,14 +1082,16 @@ class _PantallaMapaState extends State<PantallaMapa> {
                                             _x = (m['x'] as num).toDouble();
                                           } catch (e) {
                                             try {
-                                              _x = double.parse(m['x'].toString());
+                                              _x = double.parse(
+                                                  m['x'].toString());
                                             } catch (e) {}
                                           }
                                           try {
                                             _y = (m['y'] as num).toDouble();
                                           } catch (e) {
                                             try {
-                                              _y = double.parse(m['y'].toString());
+                                              _y = double.parse(
+                                                  m['y'].toString());
                                             } catch (e) {}
                                           }
 
@@ -1101,16 +1106,22 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
                                     // Añadir conexiones desde archivo JSON principal (si existe)
                                     try {
-                                      final rawFile = await rootBundle.loadString(rutaGrafoJson);
-                                      final dataFile = json.decode(rawFile) as Map<String, dynamic>;
+                                      final rawFile = await rootBundle
+                                          .loadString(rutaGrafoJson);
+                                      final dataFile = json.decode(rawFile)
+                                          as Map<String, dynamic>;
                                       final fileConex =
-                                          List<Map<String, dynamic>>.from(dataFile['conexiones'] as List<dynamic>);
+                                          List<Map<String, dynamic>>.from(
+                                              dataFile['conexiones']
+                                                  as List<dynamic>);
                                       for (var fc in fileConex) {
                                         try {
                                           conexs.add({
                                             'origen': fc['origen'],
                                             'destino': fc['destino'],
-                                            'distancia': (fc['distancia'] as num).toDouble(),
+                                            'distancia':
+                                                (fc['distancia'] as num)
+                                                    .toDouble(),
                                           });
                                         } catch (e) {}
                                       }
@@ -1124,20 +1135,26 @@ class _PantallaMapaState extends State<PantallaMapa> {
                                         conexs.add({
                                           'origen': c['origen'],
                                           'destino': c['destino'],
-                                          'distancia': (c['distancia'] as num).toDouble(),
+                                          'distancia': (c['distancia'] as num)
+                                              .toDouble(),
                                         });
                                       } catch (e) {}
                                     }
 
-                                    final tempJson = {'nodos': nodeJsons, 'conexiones': conexs};
+                                    final tempJson = {
+                                      'nodos': nodeJsons,
+                                      'conexiones': conexs
+                                    };
                                     final tempGrafo = Grafo.fromJson(tempJson);
 
                                     final aStar = AStar(tempGrafo);
                                     final ruta = aStar.calcular(
-                                        origen: origenRuta!, destino: destinoRuta!);
+                                        origen: origenRuta!,
+                                        destino: destinoRuta!);
 
                                     double total = 0.0;
-                                    final mapaAdj = tempGrafo.generarMapaAdyacencia();
+                                    final mapaAdj =
+                                        tempGrafo.generarMapaAdyacencia();
                                     for (var i = 0; i < ruta.length - 1; i++) {
                                       final a = ruta[i];
                                       final b = ruta[i + 1];
@@ -1166,9 +1183,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Ruta encontrada: ${rutaResultado.join(' → ')}'),
+                              Text(
+                                  'Ruta encontrada: ${rutaResultado.join(' → ')}'),
                               const SizedBox(height: 4),
-                              Text('Distancia total: ${rutaDistancia.toStringAsFixed(2)}'),
+                              Text(
+                                  'Distancia total: ${rutaDistancia.toStringAsFixed(2)}'),
                             ],
                           ),
                         ),
