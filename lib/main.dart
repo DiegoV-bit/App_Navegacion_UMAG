@@ -1163,6 +1163,39 @@ class _PantallaMapaState extends State<PantallaMapa> {
                                       } catch (e) {}
                                     }
 
+                                    // Imprimir resultado claro en la terminal para depuración
+                                    if (kDebugMode) {
+                                      // ignore: avoid_print
+                                      print('\n===== A* Ruta calculada =====');
+                                      // ignore: avoid_print
+                                      print('Origen: ${origenRuta}');
+                                      // ignore: avoid_print
+                                      print('Destino: ${destinoRuta}');
+                                      if (ruta.isEmpty) {
+                                        // ignore: avoid_print
+                                        print('Resultado: NO se encontró ruta');
+                                        // ignore: avoid_print
+                                        print('Posibles causas:');
+                                        // ignore: avoid_print
+                                        print(
+                                            '- Los nodos no están conectados en el grafo.');
+                                        // ignore: avoid_print
+                                        print(
+                                            '- Inconsistencias en los IDs entre nodos y conexiones.');
+                                        // ignore: avoid_print
+                                        print(
+                                            '- Nodo aislado o grafo temporal incompleto.');
+                                      } else {
+                                        // ignore: avoid_print
+                                        print('Ruta: ${ruta.join(" -> ")}');
+                                        // ignore: avoid_print
+                                        print(
+                                            'Distancia total: ${total.toStringAsFixed(2)}');
+                                      }
+                                      // ignore: avoid_print
+                                      print('==============================\n');
+                                    }
+
                                     setDialogState(() {
                                       rutaResultado = ruta;
                                       rutaDistancia = total;

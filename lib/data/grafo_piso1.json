@@ -124,6 +124,33 @@
     {"origen": "P1_Baños_ingenieria", "destino": "P1_Pasillo_Labs_ingenieria_Sur", "distancia": 63},
 
     {"origen": "P1_Baños_ingenieria", "destino": "P1_Pasillo_Ingenieria_Sur", "distancia": 64},
-    {"origen": "P1_Pasillo_Ingenieria_Sur", "destino": "P1_Baños_ingenieria", "distancia": 64}
+    {"origen": "P1_Pasillo_Ingenieria_Sur", "destino": "P1_Baños_ingenieria", "distancia": 64},
+
+    {"origen": "P1_Sala_tesistas_comp", "destino": "P1_Sala_Magister_comp", "distancia": 29},
+    {"origen": "P1_Sala_Magister_comp", "destino": "P1_Sala_tesistas_comp", "distancia": 29},
+
+    {"origen": "P1_Sala_Magister_comp", "destino": "P1_Sala_TI1", "distancia": 43},
+    {"origen": "P1_Sala_TI1", "destino": "P1_Sala_Magister_comp", "distancia": 43},
+
+    {"origen": "P1_Sala_TI1", "destino": "P1_Administracion_TI", "distancia": 48},
+    {"origen": "P1_Administracion_TI", "destino": "P1_Sala_TI1", "distancia": 48},
+
+    {"origen": "P1_Administracion_TI", "destino": "P1_Sala_TI2", "distancia": 48},
+    {"origen": "P1_Sala_TI2", "destino": "P1_Administracion_TI", "distancia": 48},
+
+    {"origen": "P1_Sala_TI2", "destino": "P1_Sala_Redes", "distancia": 43},
+    {"origen": "P1_Sala_Redes", "destino": "P1_Sala_TI2", "distancia": 43},
+
+    {"origen": "P1_Sala_Redes", "destino": "P1_Sala_Proyectos", "distancia": 53},
+    {"origen": "P1_Sala_Proyectos", "destino": "P1_Sala_Redes", "distancia": 53},
+
+    {"origen": "P1_Sala_Redes", "destino": "P1_Sala_Mantenimiento", "distancia": 55},
+    {"origen": "P1_Sala_Mantenimiento", "destino": "P1_Sala_Redes", "distancia": 55},
+
+    {"origen": "P1_Sala_TI1", "destino": "P1_Pasillo_Ingenieria_Centro", "distancia": 106},
+    {"origen": "P1_Pasillo_Ingenieria_Centro", "destino": "P1_Sala_TI1", "distancia": 106},
+
+    {"origen": "P1_Sala_TI2", "destino": "P1_Pasillo_Ingenieria_Centro", "distancia": 54},
+    {"origen": "P1_Pasillo_Ingenieria_Centro", "destino": "P1_Sala_TI2", "distancia": 54}
   ]
 }
