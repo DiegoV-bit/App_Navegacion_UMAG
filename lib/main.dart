@@ -927,7 +927,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                       ),
                     );
                   }).toList(),
-                  value: origenSeleccionado,
+                  initialValue: origenSeleccionado,
                   onChanged: (value) {
                     setDialogState(() {
                       origenSeleccionado = value;
@@ -965,7 +965,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                       ),
                     );
                   }).toList(),
-                  value: destinoSeleccionado,
+                  initialValue: destinoSeleccionado,
                   onChanged: (value) {
                     setDialogState(() {
                       destinoSeleccionado = value;

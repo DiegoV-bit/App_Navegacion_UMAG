@@ -27,46 +27,73 @@
 
   ],
   "conexiones": [
-    {"origen": "P2_Escalera", "destino": "P2_Pasillo_ingenieria", "distancia": 109},
-    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Escalera", "distancia": 109},
+    {"origen": "P2_Escalera_Norte", "destino": "P2_Pasillo_ingenieria_Norte", "distancia": 109},
+    {"origen": "P2_Pasillo_ingenieria_Norte", "destino": "P2_Escalera_Norte", "distancia": 109},
 
-    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Pasillo_ciencias", "distancia": 115},
-    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Pasillo_ingenieria", "distancia": 115},
+    {"origen": "P2_Ascensor", "destino": "P2_Pasillo_Profesores", "distancia": 85},
+    {"origen": "P2_Pasillo_Profesores", "destino": "P2_Ascensor", "distancia": 85},
 
-    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_21", "distancia": 63},
-    {"origen": "P2_Sala_21", "destino": "P2_Pasillo_ingenieria", "distancia": 63},
+    {"origen": "P2_Pasillo_Profesores", "destino": "P2_Escalera_Norte", "distancia": 53},
+    {"origen": "P2_Escalera_Norte", "destino": "P2_Pasillo_Profesores", "distancia": 53},
 
-    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_22", "distancia": 125},
-    {"origen": "P2_Sala_22", "destino": "P2_Pasillo_ingenieria", "distancia": 125},
+    {"origen": "P2_Pasillo_ingenieria_Norte", "destino": "P2_Pasillo_ciencias_Norte", "distancia": 115},
+    {"origen": "P2_Pasillo_ciencias_Norte", "destino": "P2_Pasillo_ingenieria_Norte", "distancia": 115},
 
-    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_23", "distancia": 214},
-    {"origen": "P2_Sala_23", "destino": "P2_Pasillo_ingenieria", "distancia": 214},
+    {"origen": "P2_Pasillo_ingenieria_Norte", "destino": "P2_Secretaria_Electrica", "distancia": 43},
+    {"origen": "P2_Secretaria_Electrica", "destino": "P2_Pasillo_ingenieria_Norte", "distancia": 43},
 
-    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_24", "distancia": 329},
-    {"origen": "P2_Sala_24", "destino": "P2_Pasillo_ingenieria", "distancia": 329},
+    {"origen": "P2_Pasillo_ingenieria_Norte", "destino": "P2_Sala_21", "distancia": 66},
+    {"origen": "P2_Sala_21", "destino": "P2_Pasillo_ingenieria_Norte", "distancia": 66},
 
-    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_25", "distancia": 460},
-    {"origen": "P2_Sala_25", "destino": "P2_Pasillo_ingenieria", "distancia": 460},
+    {"origen": "P2_Pasillo_ingenieria_Norte", "destino": "P2_Sala_22", "distancia": 128},
+    {"origen": "P2_Sala_22", "destino": "P2_Pasillo_ingenieria_Norte", "distancia": 128},
 
-    {"origen": "P2_Pasillo_ingenieria", "destino": "P2_Sala_26", "distancia": 540},
-    {"origen": "P2_Sala_26", "destino": "P2_Pasillo_ingenieria", "distancia": 540},
+    {"origen": "P2_Pasillo_ingenieria_Norte", "destino": "P2_Escalera_Centro_ingenieria", "distancia": 213},
+    {"origen": "P2_Escalera_Centro_ingenieria", "destino": "P2_Pasillo_ingenieria_Norte", "distancia": 213},
 
-    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Lab_comp_facultad_ciencias", "distancia": 62},
-    {"origen": "P2_Lab_comp_facultad_ciencias", "destino": "P2_Pasillo_ciencias", "distancia": 62},
+    {"origen": "P2_Escalera_Centro_ingenieria", "destino": "P2_Sala_23", "distancia": 68},
+    {"origen": "P2_Sala_23", "destino": "P2_Escalera_Centro_ingenieria", "distancia": 68},
 
-    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_52", "distancia": 108},
-    {"origen": "P2_Sala_52", "destino": "P2_Pasillo_ciencias", "distancia": 108},
+    {"origen": "P2_Escalera_Centro_ingenieria", "destino": "P2_Sala_24", "distancia": 125},
+    {"origen": "P2_Sala_24", "destino": "P2_Escalera_Centro_ingenieria", "distancia": 125},
 
-    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_53", "distancia": 180},
-    {"origen": "P2_Sala_53", "destino": "P2_Pasillo_ciencias", "distancia": 180},
+    {"origen": "P2_Escalera_Centro_ingenieria", "destino": "P2_Pasillo_ingenieria_Sur", "distancia": 386},
+    {"origen": "P2_Pasillo_ingenieria_Sur", "destino": "P2_Escalera_Centro_ingenieria", "distancia": 386},
 
-    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_54", "distancia": 265},
-    {"origen": "P2_Sala_54", "destino": "P2_Pasillo_ciencias", "distancia": 265},
+    {"origen": "P2_Pasillo_ingenieria_Sur", "destino": "P2_Sala_25", "distancia": 143},
+    {"origen": "P2_Sala_25", "destino": "P2_Pasillo_ingenieria_Sur", "distancia": 143},
 
-    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_55", "distancia": 340},
-    {"origen": "P2_Sala_55", "destino": "P2_Pasillo_ciencias", "distancia": 340},
+    {"origen": "P2_Pasillo_ingenieria_Sur", "destino": "P2_Sala_26", "distancia": 87},
+    {"origen": "P2_Sala_26", "destino": "P2_Pasillo_ingenieria_Sur", "distancia": 87},
 
-    {"origen": "P2_Pasillo_ciencias", "destino": "P2_Sala_56", "distancia": 435},
-    {"origen": "P2_Sala_56", "destino": "P2_Pasillo_ciencias", "distancia": 435}
+    {"origen": "P2_Pasillo_ingenieria_Sur", "destino": "P2_Escalera_Sur_ingenieria", "distancia": 44},
+    {"origen": "P2_Escalera_Sur_ingenieria", "destino": "P2_Pasillo_ingenieria_Sur", "distancia": 44},
+
+    {"origen": "P2_Pasillo_ciencias_Norte", "destino": "P2_Lab_comp_facultad_ciencias", "distancia": 69},
+    {"origen": "P2_Lab_comp_facultad_ciencias", "destino": "P2_Pasillo_ciencias_Norte", "distancia": 69},
+
+    {"origen": "P2_Pasillo_ciencias_Norte", "destino": "P2_Escalera_Centro_ciencias", "distancia": 78},
+    {"origen": "P2_Escalera_Centro_ciencias", "destino": "P2_Pasillo_ciencias_Norte", "distancia": 78},
+
+    {"origen": "P2_Pasillo_ciencias_Norte", "destino": "P2_Sala_52", "distancia": 104},
+    {"origen": "P2_Sala_52", "destino": "P2_Pasillo_ciencias_Norte", "distancia": 104},
+
+    {"origen": "P2_Escalera_Centro_ciencias", "destino": "P2_Sala_53", "distancia": 106},
+    {"origen": "P2_Sala_53", "destino": "P2_Escalera_Centro_ciencias", "distancia": 106},
+
+    {"origen": "P2_Escalera_Centro_ciencias", "destino": "P2_Pasillo_ciencias_Sur", "distancia": 337},
+    {"origen": "P2_Pasillo_ciencias_Sur", "destino": "P2_Escalera_Centro_ciencias", "distancia": 337},
+
+    {"origen": "P2_Pasillo_ciencias_Sur", "destino": "P2_Sala_54", "distancia": 221},
+    {"origen": "P2_Sala_54", "destino": "P2_Pasillo_ciencias_Sur", "distancia": 221},
+
+    {"origen": "P2_Pasillo_ciencias_Sur", "destino": "P2_Sala_55", "distancia": 165},
+    {"origen": "P2_Sala_55", "destino": "P2_Pasillo_ciencias_Sur", "distancia": 165},
+
+    {"origen": "P2_Pasillo_ciencias_Sur", "destino": "P2_Sala_56", "distancia": 87},
+    {"origen": "P2_Sala_56", "destino": "P2_Pasillo_ciencias_Sur", "distancia": 87},
+
+    {"origen": "P2_Pasillo_ciencias_Sur", "destino": "P2_Escalera_Sur_ciencias", "distancia": 65},
+    {"origen": "P2_Escalera_Sur_ciencias", "destino": "P2_Pasillo_ciencias_Sur", "distancia": 65}
   ]
 }
