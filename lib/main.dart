@@ -308,9 +308,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
   final List<Map<String, dynamic>> _conexionesDebug = [];
   final GlobalKey _containerKey = GlobalKey();
 
-  // Variable para visualización de ruta A*
-  List<String> _rutaActiva = [];
-
   // Dimensiones del SVG original (predefinidas para cada piso)
   double _svgWidthOriginal = 1200.0;
   double _svgHeightOriginal = 800.0;
@@ -860,518 +857,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
     }
   }
 
-  void _mostrarDialogoNavegacion() {
-    if (_nodos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No hay nodos disponibles en este piso'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    String? origenSeleccionado;
-    String? destinoSeleccionado;
-    List<String> rutaCalculada = [];
-    double distanciaCalculada = 0.0;
-    bool calculando = false;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.navigation, color: Colors.blue.shade600),
-              const SizedBox(width: 8),
-              const Text('Calcular Ruta'),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Selecciona tu ubicación actual y destino:',
-                  style: TextStyle(fontSize: 14),
-                ),
-                const SizedBox(height: 16),
-                // Selector de origen
-                const Text(
-                  'Ubicación actual:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    prefixIcon: const Icon(Icons.my_location, size: 20),
-                  ),
-                  hint: const Text('Selecciona tu ubicación'),
-                  items: _nodos.map((nodo) {
-                    final id = nodo['id'] as String;
-                    return DropdownMenuItem(
-                      value: id,
-                      child: Text(
-                        id,
-                        style: const TextStyle(fontSize: 13),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  }).toList(),
-                  initialValue: origenSeleccionado,
-                  onChanged: (value) {
-                    setDialogState(() {
-                      origenSeleccionado = value;
-                      rutaCalculada = [];
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Selector de destino
-                const Text(
-                  'Destino:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    prefixIcon: const Icon(Icons.place, size: 20),
-                  ),
-                  hint: const Text('Selecciona el destino'),
-                  items: _nodos.map((nodo) {
-                    final id = nodo['id'] as String;
-                    return DropdownMenuItem(
-                      value: id,
-                      child: Text(
-                        id,
-                        style: const TextStyle(fontSize: 13),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  }).toList(),
-                  initialValue: destinoSeleccionado,
-                  onChanged: (value) {
-                    setDialogState(() {
-                      destinoSeleccionado = value;
-                      rutaCalculada = [];
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-                // Botón calcular
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: (origenSeleccionado == null ||
-                            destinoSeleccionado == null ||
-                            calculando)
-                        ? null
-                        : () async {
-                            if (origenSeleccionado == destinoSeleccionado) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Origen y destino no pueden ser iguales',
-                                  ),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
-                              return;
-                            }
-
-                            setDialogState(() {
-                              calculando = true;
-                            });
-
-                            await _calcularYMostrarRutaAStar(
-                              origenSeleccionado!,
-                              destinoSeleccionado!,
-                              (ruta, distancia) {
-                                setDialogState(() {
-                                  rutaCalculada = ruta;
-                                  distanciaCalculada = distancia;
-                                  calculando = false;
-                                });
-                              },
-                            );
-                          },
-                    icon: calculando
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.route),
-                    label: Text(calculando ? 'Calculando...' : 'Calcular Ruta'),
-                  ),
-                ),
-                // Resultado
-                if (rutaCalculada.isNotEmpty) ...[
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green.shade200),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.check_circle,
-                                color: Colors.green.shade700, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Ruta encontrada',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green.shade900,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(Icons.straighten,
-                                color: Colors.green.shade700, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Distancia: ${distanciaCalculada.toStringAsFixed(1)} unidades',
-                              style: TextStyle(
-                                color: Colors.green.shade800,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.timeline,
-                                color: Colors.green.shade700, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Pasos: ${rutaCalculada.length}',
-                              style: TextStyle(color: Colors.green.shade700),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Recorrido:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          constraints: const BoxConstraints(maxHeight: 200),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children:
-                                  rutaCalculada.asMap().entries.map((entry) {
-                                final index = entry.key;
-                                final nodoId = entry.value;
-                                final esOrigen = index == 0;
-                                final esDestino =
-                                    index == rutaCalculada.length - 1;
-
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 6),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 28,
-                                        height: 28,
-                                        decoration: BoxDecoration(
-                                          color: esDestino
-                                              ? Colors.red.shade400
-                                              : esOrigen
-                                                  ? Colors.green.shade400
-                                                  : Colors.blue.shade400,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Center(
-                                          child: esOrigen
-                                              ? const Icon(Icons.my_location,
-                                                  color: Colors.white, size: 16)
-                                              : esDestino
-                                                  ? const Icon(Icons.place,
-                                                      color: Colors.white,
-                                                      size: 16)
-                                                  : Text(
-                                                      '${index + 1}',
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 11,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          nodoId,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade800,
-                                            fontWeight: esOrigen || esDestino
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                        ),
-                                      ),
-                                      if (!esDestino)
-                                        Icon(
-                                          Icons.arrow_downward,
-                                          size: 16,
-                                          color: Colors.grey.shade400,
-                                        ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              _visualizarRutaEnMapa(rutaCalculada);
-                            },
-                            icon: const Icon(Icons.map, size: 18),
-                            label: const Text('Ver Ruta en el Mapa'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.green.shade700,
-                              side: BorderSide(color: Colors.green.shade700),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cerrar'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _visualizarRutaEnMapa(List<String> ruta) {
-    setState(() {
-      _rutaActiva = ruta;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.map, color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Ruta de ${ruta.length} pasos visualizada en el mapa',
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        action: SnackBarAction(
-          label: 'Limpiar',
-          textColor: Colors.white,
-          onPressed: () {
-            setState(() {
-              _rutaActiva = [];
-            });
-          },
-        ),
-        duration: const Duration(seconds: 8),
-      ),
-    );
-  }
-
-  Future<void> _calcularYMostrarRutaAStar(
-    String origen,
-    String destino,
-    Function(List<String>, double) onResultado,
-  ) async {
-    try {
-      if (kDebugMode) {
-        print('\n${'=' * 60}');
-        print('🗺️  CÁLCULO DE RUTA CON A*');
-        print('=' * 60);
-        print('Origen: $origen');
-        print('Destino: $destino');
-      }
-
-      // 1. Construir mapa de nodos disponibles
-      final nodosMap = <String, Map<String, dynamic>>{};
-      for (var nodo in _nodos) {
-        nodosMap[nodo['id'] as String] = nodo;
-      }
-
-      // 2. Recolectar todas las conexiones (JSON + debug)
-      final conexiones = <Map<String, dynamic>>[];
-
-      // Conexiones del archivo JSON
-      try {
-        final raw = await rootBundle.loadString(rutaGrafoJson);
-        final data = json.decode(raw) as Map<String, dynamic>;
-        if (data['conexiones'] != null) {
-          final conexionesJson = List<Map<String, dynamic>>.from(
-            data['conexiones'] as List<dynamic>,
-          );
-          conexiones.addAll(conexionesJson);
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print(
-              '⚠️  Advertencia: No se pudieron cargar conexiones del JSON: $e');
-        }
-      }
-
-      // Conexiones debug
-      conexiones.addAll(_conexionesDebug);
-
-      if (kDebugMode) {
-        print('Nodos disponibles: ${nodosMap.length}');
-        print('Conexiones totales: ${conexiones.length}');
-      }
-
-      // 3. Validar que origen y destino existen
-      if (!nodosMap.containsKey(origen)) {
-        throw Exception('Nodo origen "$origen" no existe en el grafo');
-      }
-      if (!nodosMap.containsKey(destino)) {
-        throw Exception('Nodo destino "$destino" no existe en el grafo');
-      }
-
-      // 4. Crear grafo temporal para A*
-      final grafoJson = {
-        'nodos': nodosMap.values.map((n) {
-          return {
-            'id': n['id'],
-            'x': (n['x'] as num).toDouble(),
-            'y': (n['y'] as num).toDouble(),
-          };
-        }).toList(),
-        'conexiones': conexiones.map((c) {
-          return {
-            'origen': c['origen'],
-            'destino': c['destino'],
-            'distancia': (c['distancia'] as num).toDouble(),
-          };
-        }).toList(),
-      };
-
-      final grafo = Grafo.fromJson(grafoJson);
-
-      // 5. Ejecutar algoritmo A*
-      final aStar = AStar(grafo);
-      final ruta = aStar.calcular(origen: origen, destino: destino);
-
-      if (ruta.isEmpty) {
-        throw Exception(
-          'No se encontró ruta entre los nodos.\n\n'
-          'Posibles causas:\n'
-          '• Los nodos no están conectados\n'
-          '• Falta crear conexiones entre ellos\n'
-          '• Hay nodos aislados en el grafo',
-        );
-      }
-
-      // 6. Calcular distancia total real
-      double distanciaTotal = 0.0;
-      final mapaAdyacencia = grafo.generarMapaAdyacencia();
-
-      for (var i = 0; i < ruta.length - 1; i++) {
-        final nodoActual = ruta[i];
-        final nodoSiguiente = ruta[i + 1];
-
-        try {
-          // Usa la distancia REAL del grafo (no euclidiana)
-          distanciaTotal += mapaAdyacencia[nodoActual]![nodoSiguiente]!;
-        } catch (e) {
-          if (kDebugMode) {
-            print(
-                '⚠️  Advertencia: No se encontró distancia entre $nodoActual y $nodoSiguiente');
-          }
-        }
-      }
-
-      if (kDebugMode) {
-        print('\n✅ RUTA ENCONTRADA:');
-        print('Pasos: ${ruta.length}');
-        print('Distancia total: ${distanciaTotal.toStringAsFixed(2)} unidades');
-        print('Camino: ${ruta.join(' → ')}');
-        print('\n📊 DESGLOSE DE DISTANCIAS:');
-        print('  g(n) = Distancia real acumulada del grafo');
-        print('  h(n) = Heurística euclidiana (usada internamente por A*)');
-        print('=' * 60);
-      }
-
-      onResultado(ruta, distanciaTotal);
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ ERROR al calcular ruta: $e');
-      }
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
-          action: SnackBarAction(
-            label: 'OK',
-            textColor: Colors.white,
-            onPressed: () {},
-          ),
-        ),
-      );
-
-      onResultado([], 0);
-    }
-  }
-
   void _mostrarDialogoCoordenadas(double x, double y) {
     final TextEditingController idController = TextEditingController();
     TipoNodo? tipoSeleccionado;
@@ -1578,38 +1063,143 @@ class _PantallaMapaState extends State<PantallaMapa> {
                                     destinoRuta == null)
                                 ? null
                                 : () async {
-                                    // Mostrar indicador de carga
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 16,
-                                              height: 16,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                            SizedBox(width: 12),
-                                            Text('Calculando ruta con A*...'),
-                                          ],
-                                        ),
-                                        duration: Duration(seconds: 2),
-                                      ),
-                                    );
+                                    // Construir grafo temporal combinando grafo cargado y nodos/conexiones debug
+                                    final nodeJsons = <Map<String, dynamic>>[];
+                                    final conexs = <Map<String, dynamic>>[];
 
-                                    // Llamar a la función de cálculo
-                                    await _calcularYMostrarRutaAStar(
-                                      origenRuta!,
-                                      destinoRuta!,
-                                      (ruta, distancia) {
-                                        setDialogState(() {
-                                          rutaResultado = ruta;
-                                          rutaDistancia = distancia;
+                                    // Añadir nodos desde _nodos (UI) — también serán la fuente
+                                    // primaria de nodos para la prueba.
+                                    for (var m in _nodos) {
+                                      try {
+                                        final id = m['id'] as String;
+                                        final exists = nodeJsons
+                                            .any((jn) => jn['id'] == id);
+                                        if (!exists) {
+                                          // Forzar x/y a double en caso de venir como int
+                                          double x0 = 0.0;
+                                          double y0 = 0.0;
+                                          try {
+                                            x0 = (m['x'] as num).toDouble();
+                                          } catch (e) {
+                                            try {
+                                              x0 = double.parse(
+                                                  m['x'].toString());
+                                            } catch (e) {}
+                                          }
+                                          try {
+                                            y0 = (m['y'] as num).toDouble();
+                                          } catch (e) {
+                                            try {
+                                              y0 = double.parse(
+                                                  m['y'].toString());
+                                            } catch (e) {}
+                                          }
+
+                                          nodeJsons.add({
+                                            'id': id,
+                                            'x': x0,
+                                            'y': y0,
+                                          });
+                                        }
+                                      } catch (e) {}
+                                    }
+
+                                    // Añadir conexiones desde archivo JSON principal (si existe)
+                                    try {
+                                      final rawFile = await rootBundle
+                                          .loadString(rutaGrafoJson);
+                                      final dataFile = json.decode(rawFile)
+                                          as Map<String, dynamic>;
+                                      final fileConex =
+                                          List<Map<String, dynamic>>.from(
+                                              dataFile['conexiones']
+                                                  as List<dynamic>);
+                                      for (var fc in fileConex) {
+                                        try {
+                                          conexs.add({
+                                            'origen': fc['origen'],
+                                            'destino': fc['destino'],
+                                            'distancia':
+                                                (fc['distancia'] as num)
+                                                    .toDouble(),
+                                          });
+                                        } catch (e) {}
+                                      }
+                                    } catch (e) {
+                                      // archivo inexistente o sin conexiones; seguir
+                                    }
+
+                                    // Añadir conexiones debug
+                                    for (var c in _conexionesDebug) {
+                                      try {
+                                        conexs.add({
+                                          'origen': c['origen'],
+                                          'destino': c['destino'],
+                                          'distancia': (c['distancia'] as num)
+                                              .toDouble(),
                                         });
-                                      },
-                                    );
+                                      } catch (e) {}
+                                    }
+
+                                    final tempJson = {
+                                      'nodos': nodeJsons,
+                                      'conexiones': conexs
+                                    };
+                                    final tempGrafo = Grafo.fromJson(tempJson);
+
+                                    final aStar = AStar(tempGrafo);
+                                    final ruta = aStar.calcular(
+                                        origen: origenRuta!,
+                                        destino: destinoRuta!);
+
+                                    double total = 0.0;
+                                    final mapaAdj =
+                                        tempGrafo.generarMapaAdyacencia();
+                                    for (var i = 0; i < ruta.length - 1; i++) {
+                                      final a = ruta[i];
+                                      final b = ruta[i + 1];
+                                      try {
+                                        total += mapaAdj[a]![b]!;
+                                      } catch (e) {}
+                                    }
+
+                                    // Imprimir resultado claro en la terminal para depuración
+                                    if (kDebugMode) {
+                                      // ignore: avoid_print
+                                      print('\n===== A* Ruta calculada =====');
+                                      // ignore: avoid_print
+                                      print('Origen: ${origenRuta}');
+                                      // ignore: avoid_print
+                                      print('Destino: ${destinoRuta}');
+                                      if (ruta.isEmpty) {
+                                        // ignore: avoid_print
+                                        print('Resultado: NO se encontró ruta');
+                                        // ignore: avoid_print
+                                        print('Posibles causas:');
+                                        // ignore: avoid_print
+                                        print(
+                                            '- Los nodos no están conectados en el grafo.');
+                                        // ignore: avoid_print
+                                        print(
+                                            '- Inconsistencias en los IDs entre nodos y conexiones.');
+                                        // ignore: avoid_print
+                                        print(
+                                            '- Nodo aislado o grafo temporal incompleto.');
+                                      } else {
+                                        // ignore: avoid_print
+                                        print('Ruta: ${ruta.join(" -> ")}');
+                                        // ignore: avoid_print
+                                        print(
+                                            'Distancia total: ${total.toStringAsFixed(2)}');
+                                      }
+                                      // ignore: avoid_print
+                                      print('==============================\n');
+                                    }
+
+                                    setDialogState(() {
+                                      rutaResultado = ruta;
+                                      rutaDistancia = total;
+                                    });
                                   },
                             child: const Text('Calcular ruta A*'),
                           ),
@@ -2632,13 +2222,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
             ? Colors.orange.shade700
             : Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          // Botón de navegación - Disponible para todos
-          if (_nodos.length >= 2)
-            IconButton(
-              icon: const Icon(Icons.navigation),
-              onPressed: _mostrarDialogoNavegacion,
-              tooltip: 'Calcular ruta',
-            ),
           // Botón Debug - Solo visible si kDebugMode está activado
           if (kDebugMode) ...[
             IconButton(
@@ -2918,8 +2501,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
                         ..._conexionesDebug.map(
                           (conexion) => _buildConexionLinea(conexion),
                         ),
-                      // Visualizar ruta A* activa
-                      if (_rutaActiva.isNotEmpty) _buildRutaVisualizada(),
                       if (_mostrarNodos && _nodos.isNotEmpty)
                         ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
                       // Mostrar marcadores de debug
@@ -3368,106 +2949,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
     );
   }
 
-  // ==================== Visualización de Ruta A* ====================
-  Widget _buildRutaVisualizada() {
-    if (_rutaActiva.isEmpty) return const SizedBox.shrink();
-
-    // Convertir IDs de nodos a coordenadas
-    final List<Offset> puntos = [];
-    for (final nodoId in _rutaActiva) {
-      final nodo = _nodos.firstWhere(
-        (n) => n['id'] == nodoId,
-        orElse: () => {},
-      );
-      if (nodo.isNotEmpty) {
-        final x = (nodo['x'] as num).toDouble();
-        final y = (nodo['y'] as num).toDouble();
-        final posEscalada = _calcularPosicionEscalada(x, y);
-        puntos.add(posEscalada);
-      }
-    }
-
-    if (puntos.length < 2) return const SizedBox.shrink();
-
-    return Stack(
-      children: [
-        // Dibujar líneas de la ruta
-        CustomPaint(
-          size: Size.infinite,
-          painter: RutaPainter(puntos: puntos),
-        ),
-        // Dibujar números de paso en cada punto
-        ...puntos.asMap().entries.map((entry) {
-          final index = entry.key;
-          final punto = entry.value;
-          final esOrigen = index == 0;
-          final esDestino = index == puntos.length - 1;
-
-          if (esOrigen || esDestino) {
-            // Marcadores especiales para origen y destino
-            return Positioned(
-              left: punto.dx - 16,
-              top: punto.dy - 16,
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: esDestino ? Colors.red : Colors.green,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha((0.3 * 255).round()),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  esDestino ? Icons.place : Icons.my_location,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            );
-          } else {
-            // Números para puntos intermedios
-            return Positioned(
-              left: punto.dx - 12,
-              top: punto.dy - 12,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade600,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha((0.2 * 255).round()),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    '${index + 1}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-        }),
-      ],
-    );
-  }
-
   // ==================== Marcador del modo debug ====================
   Widget _buildDebugMarker(Map<String, dynamic> coord) {
     final x = (coord['x'] as num).toDouble();
@@ -3636,84 +3117,5 @@ class ConexionPainter extends CustomPainter {
     return oldDelegate.inicio != inicio ||
         oldDelegate.fin != fin ||
         oldDelegate.distancia != distancia;
-  }
-}
-
-// ==================== Custom Painter para dibujar ruta A* ====================
-class RutaPainter extends CustomPainter {
-  final List<Offset> puntos;
-
-  RutaPainter({required this.puntos});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (puntos.length < 2) return;
-
-    // Configurar pincel para la línea principal
-    final linePaint = Paint()
-      ..color = Colors.blue.shade700
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    // Pincel para el borde blanco (hace que la línea se vea mejor)
-    final borderPaint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 7
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    // Dibujar el camino completo
-    final path = Path();
-    path.moveTo(puntos[0].dx, puntos[0].dy);
-    for (int i = 1; i < puntos.length; i++) {
-      path.lineTo(puntos[i].dx, puntos[i].dy);
-    }
-
-    // Primero dibujar el borde blanco
-    canvas.drawPath(path, borderPaint);
-    // Luego la línea azul encima
-    canvas.drawPath(path, linePaint);
-
-    // Dibujar flechas direccionales en cada segmento
-    for (int i = 0; i < puntos.length - 1; i++) {
-      final inicio = puntos[i];
-      final fin = puntos[i + 1];
-      final centro = Offset(
-        (inicio.dx + fin.dx) / 2,
-        (inicio.dy + fin.dy) / 2,
-      );
-
-      // Calcular ángulo de la flecha
-      final dx = fin.dx - inicio.dx;
-      final dy = fin.dy - inicio.dy;
-      final angle = atan2(dy, dx);
-
-      // Dibujar flecha pequeña
-      final arrowSize = 12.0;
-      final arrowPath = Path();
-      arrowPath.moveTo(
-        centro.dx - arrowSize * cos(angle - 0.5),
-        centro.dy - arrowSize * sin(angle - 0.5),
-      );
-      arrowPath.lineTo(centro.dx, centro.dy);
-      arrowPath.lineTo(
-        centro.dx - arrowSize * cos(angle + 0.5),
-        centro.dy - arrowSize * sin(angle + 0.5),
-      );
-
-      final arrowPaint = Paint()
-        ..color = Colors.blue.shade700
-        ..style = PaintingStyle.fill;
-
-      canvas.drawPath(arrowPath, arrowPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(RutaPainter oldDelegate) {
-    return oldDelegate.puntos != puntos;
   }
 }
