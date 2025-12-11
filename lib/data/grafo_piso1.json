@@ -166,9 +166,6 @@
     {"origen": "P1_Pasillo_Ingenieria_Norte", "destino": "P1_Secretaria_de_Computacion", "distancia": 46},
     {"origen": "P1_Secretaria_de_Computacion", "destino": "P1_Pasillo_Ingenieria_Norte", "distancia": 46},
 
-    {"origen": "P1_Pasillo_Labs_ingenieria_norte", "destino": "P1_Secretaria_de_Computacion", "distancia": 64},
-    {"origen": "P1_Secretaria_de_Computacion", "destino": "P1_Pasillo_Labs_ingenieria_norte", "distancia": 64},
-
     {"origen": "P1_Pasillo_Ingenieria_Centro", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 159},
     {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Pasillo_Ingenieria_Centro", "distancia": 159},
 
@@ -177,6 +174,9 @@
 
     {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Sala_Descanso_Quimica", "distancia": 64},
     {"origen": "P1_Sala_Descanso_Quimica", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 64},
+
+    {"origen": "P1_Pasillo_Labs_ingenieria_norte", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 99},
+    {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Pasillo_Labs_ingenieria_norte", "distancia": 99},
 
     {"origen": "P1_Pasillo_Labs_ingenieria_norte", "destino": "P1_Lab_Austro-UMAG", "distancia": 98},
     {"origen": "P1_Lab_Austro-UMAG", "destino": "P1_Pasillo_Labs_ingenieria_norte", "distancia": 98},
