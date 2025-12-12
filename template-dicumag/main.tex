@@ -6,6 +6,32 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{fancyhdr}
+\usepackage{listings}
+
+% Configuración de listings para código
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  backgroundcolor=\color{white},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  frame=single,
+  rulecolor=\color{black},
+  tabsize=2,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  title=\lstname,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  escapeinside={\%*}{*)},
+  morekeywords={*,...}
+}
 
 % Rutas para los recursos gráficos (permite compilar desde la raíz o desde esta carpeta)
 \graphicspath{{./}{./logo/}{./image/}}
@@ -155,12 +181,221 @@ Despues de analizar las opciones, se opto por usar Flutter, ya que permite crear
 \subsubsection{Preparación del entorno de desarrollo y repositorio de Github}
 Se prepararon los equipos para poder desarrollar la aplicacion movil (los equipos usados tenian como sistemas operativos Windows 10 y Debian 13), instalando Flutter SDK, un editor de codigo (Visual Studio Code) y los emuladores de Android e IOS para poder probar la aplicacion durante el desarrollo. Una vez teniendo el entorno de desarrollo listo, se creo un repositorio en Github para alojar el codigo fuente del proyecto y permitir la colaboracion entre los integrantes del equipo.
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.85\textwidth]{placeholder.png}
-  \caption{Sustituir esta imagen por el diagrama o captura correspondiente}
-\end{figure}
+\subsubsection{Integración de los mapas a la aplicación}
+Con la interfaz gráfica ya creada, se agregaron los mapas al proyecto para poder visualizarlos dentro de la aplicación. Una vez integrados los mapas, estos se logran visualizar bien y su interacción con el usuario es buena.
 
+Un detalle a destacar: el mapa del primer piso y el de los laboratorios al ser mapas independientes sería complicado trabajarlos por separados, por lo que la mejor opción a tomar es fusionar ambos mapas para evitar complicaciones futuras con la aplicación.
+
+\subsubsection{Creación de la interfaz gráfica}
+La interfaz gráfica de la aplicación se desarrolló usando Flutter como framework principal, aprovechando su capacidad de crear interfaces nativas y fluidas con un único código base. El diseño de la app se enfocó en la simplicidad y usabilidad, considerando que los usuarios principales serían estudiantes nuevos y visitantes que necesitan orientarse rápidamente dentro de la facultad.
+
+\paragraph{Estructura de la aplicación}
+La aplicación se estructuró en dos pantallas principales que permiten una navegación intuitiva:
+
+\textbf{Pantalla de inicio (PantallaInicio).} Esta pantalla funciona como punto de entrada de la aplicación y presenta las siguientes características:
+
+\begin{itemize}
+  \item \textbf{Diseño visual atractivo}: Se implementó un gradiente de color que va desde un azul claro en la parte superior hasta blanco en la parte inferior, creando una interfaz agradable visualmente y manteniendo la identidad institucional mediante el uso del color azul.
+
+  \item \textbf{Encabezado informativo}: En la parte superior se muestra un ícono de ubicación de gran tamaño junto con el título ``Navegación Interna'' y un subtítulo descriptivo, lo que permite al usuario identificar inmediatamente el propósito de la aplicación.
+
+  \item \textbf{Sistema de tarjetas por piso}: La funcionalidad principal se presenta mediante cuatro tarjetas interactivas, una por cada piso de la facultad. Cada tarjeta incluye:
+  \begin{itemize}
+    \item Un ícono distintivo que representa el tipo de espacios del piso (ciencia para laboratorios, escuela para aulas, libro para salas de estudio, y edificio para administración)
+    \item Un título claro con el nombre del piso
+    \item Una descripción breve de los espacios que contiene
+    \item Un indicador visual de navegación (flecha)
+    \item Códigos de color diferenciados (verde, naranja, morado y rojo) para facilitar la identificación rápida
+  \end{itemize}
+\end{itemize}
+
+Esta organización permite que el usuario seleccione rápidamente el piso que desea explorar con solo tocar la tarjeta correspondiente.
+
+\textbf{Pantalla de mapa (PantallaMapa).} Una vez seleccionado un piso, el usuario es dirigido a la pantalla de mapa, que constituye el componente central de la aplicación. Esta pantalla implementa las siguientes funcionalidades:
+
+\begin{itemize}
+  \item \textbf{Visualización de mapas SVG}: Se integró el paquete \texttt{flutter\_svg} para cargar y mostrar los mapas arquitectónicos en formato SVG. La aplicación determina dinámicamente qué archivo SVG cargar según el piso seleccionado, utilizando las rutas:
+  \begin{itemize}
+    \item Primer piso: \texttt{Mapas/Primer piso labs\_fac\_ing simple.svg}
+    \item Segundo piso: \texttt{Mapas/Segundo piso fac ing simple.svg}
+    \item Tercer piso: \texttt{Mapas/Tercer piso fac\_ing simple.svg}
+    \item Cuarto piso: \texttt{Mapas/Cuarto piso fac\_ing simple.svg}
+  \end{itemize}
+
+  \item \textbf{Navegación interactiva}: Se implementó el widget \texttt{InteractiveViewer} de Flutter, que proporciona:
+  \begin{itemize}
+    \item Desplazamiento táctil para explorar diferentes áreas del mapa
+    \item Zoom mediante gestos de pellizco en pantallas táctiles
+    \item Límites de escala configurables (mínimo 0.3x, máximo 5.0x) para mantener la visualización en rangos útiles
+  \end{itemize}
+
+  \item \textbf{Controles de zoom}: Se añadieron tres botones flotantes en la parte inferior derecha que permiten:
+  \begin{itemize}
+    \item Acercar el mapa (zoom in) aumentando la escala en un 20\%
+    \item Alejar el mapa (zoom out) reduciendo la escala en un 20\%
+    \item Reiniciar la vista al estado inicial, útil cuando el usuario pierde orientación
+  \end{itemize}
+
+  \item \textbf{Gestión de estados de carga}: La aplicación implementa un sistema robusto para manejar diferentes estados:
+  \begin{itemize}
+    \item Estado de carga: Muestra un indicador circular de progreso con el texto ``Cargando mapa...''
+    \item Estado de error: En caso de que el archivo SVG no se encuentre o no pueda cargarse, se muestra un mensaje de error detallado con el ícono de advertencia, el nombre del archivo que se intentó cargar y la descripción del error específico
+  \end{itemize}
+
+  \item \textbf{Barra informativa}: Se incluyó una barra azul claro debajo del encabezado que muestra el nombre del piso actual y proporciona una indicación visual de que se puede hacer zoom con gestos de pellizco.
+\end{itemize}
+
+\paragraph{Implementación técnica}
+
+\textbf{Widget principal y navegación.} La aplicación utiliza \texttt{MaterialApp} como widget raíz, configurando el tema principal con Material Design 3 (\texttt{useMaterial3: true}) para aprovechar los componentes de diseño más modernos de Flutter. El sistema de navegación se basa en \texttt{Navigator.push()}, que permite transiciones fluidas entre la pantalla de inicio y las pantallas de mapas.
+
+\textbf{Gestión de transformaciones.} Para controlar el zoom y desplazamiento del mapa, se implementó un \texttt{TransformationController} que mantiene una matriz de transformación 4x4 (\texttt{Matrix4}). Esta matriz permite aplicar operaciones de escala y traslación al mapa de forma eficiente, proporcionando una experiencia de usuario fluida incluso con mapas de gran tamaño.
+
+Las operaciones de zoom se realizan clonando la matriz actual, aplicando la escala deseada y actualizando el controlador, lo que garantiza que las transformaciones se realicen de forma acumulativa y coherente.
+
+\textbf{Carga asíncrona de recursos.} La aplicación implementa un patrón de carga asíncrona mediante \texttt{FutureBuilder}, que permite mostrar indicadores de progreso mientras se cargan los archivos SVG. Este enfoque mejora significativamente la experiencia del usuario, especialmente en dispositivos con menor rendimiento o cuando los archivos de mapa son de gran tamaño.
+
+\paragraph{Consideraciones de diseño}
+
+Durante el desarrollo de la interfaz se tomaron varias decisiones importantes:
+
+\begin{enumerate}
+  \item \textbf{Material Design}: Se adoptó el sistema de diseño Material de Google para garantizar consistencia visual y aprovechar componentes probados en cuanto a usabilidad.
+
+  \item \textbf{Retroalimentación visual}: Todos los elementos interactivos proporcionan retroalimentación visual mediante efectos de elevación (\texttt{elevation}) en las tarjetas y efectos de onda (\texttt{InkWell}) al tocar.
+
+  \item \textbf{Accesibilidad}: Se implementaron tooltips en todos los botones de acción para ayudar a los usuarios a comprender la funcionalidad de cada control.
+
+  \item \textbf{Manejo de errores}: Se diseñó una pantalla de error informativa que no solo indica que algo salió mal, sino que proporciona detalles técnicos útiles para diagnosticar el problema.
+\end{enumerate}
+
+Esta implementación inicial de la interfaz gráfica estableció las bases para el desarrollo posterior de funcionalidades más avanzadas, como el sistema de navegación basado en grafos y el cálculo de rutas óptimas entre diferentes puntos de la facultad.
+
+\subsubsection{Modelado del grafo de salas y conexiones}
+La aplicación hace uso de un modelo de grafo para poder representar la topología de cada piso del edificio (dicho de otra forma se representa mediante el grafo las salas de clase, oficinas y laboratorio de toda la facultad de ingeniería). Este modelo permite calcular las mejores rutas entre distintos puntos de interés mediante algoritmos de búsqueda en grafos.
+
+\paragraph{Estructura del modelo de datos}
+\textbf{Clase Nodo.} Representa un punto de interés en el mapa (Sala, laboratorio, oficina, etc.).
+\begin{lstlisting}[language=Java, caption={Clase Nodo}]
+class Nodo {
+  final String id; // Ejemplo: "P1_A101"
+  final double x; // Coordenada X en el mapa SVG
+  final double y; // Coordenada Y en el mapa SVG
+
+  Nodo({required this.id, required this.x, required this.y});
+
+  factory Nodo.fromJson(Map<String, dynamic> json) {
+    return Nodo(id: json['id'], x: json['x'], y: json['y']);
+  }
+
+  Map<String, dynamic> toJson() => {'id': id, 'x': x, 'y': y};
+}
+\end{lstlisting}
+
+\textbf{Clase Conexion.} Representa una arista entre dos nodos, con la información de distancia.
+\begin{lstlisting}[language=Java, caption={Clase Conexion}]
+class Conexion {
+  final String origen;      // ID del nodo origen
+  final String destino;     // ID del nodo destino
+  final double distancia;   // Distancia euclidiana
+  
+  const Conexion({required this.origen, 
+                  required this.destino, 
+                  required this.distancia});
+  
+  factory Conexion.fromJson(Map<String, dynamic> json) {
+    return Conexion(
+      origen: json['origen'] as String,
+      destino: json['destino'] as String,
+      distancia: (json['distancia'] as num).toDouble(),
+    );
+  }
+}
+\end{lstlisting}
+
+\textbf{Clase Grafo.} Contenedor principal que agrupa los nodos y conexiones de un piso.
+\begin{lstlisting}[language=Java, caption={Clase Grafo}]
+class Grafo {
+  final List<Nodo> nodos;
+  final List<Conexion> conexiones;
+  
+  const Grafo({required this.nodos, required this.conexiones});
+  
+  factory Grafo.fromJson(Map<String, dynamic> json) {
+    return Grafo(
+      nodos: (json['nodos'] as List<dynamic>)
+          .map((e) => Nodo.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      conexiones: (json['conexiones'] as List<dynamic>)
+          .map((e) => Conexion.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+\end{lstlisting}
+
+\paragraph{Sistema de tipificación de nodos}
+La aplicación implementa un sistema de clasificación de nodos mediante un \texttt{enum} que permite separar por categorías a los diferentes nodos que hay en el mapa. Se definió el \texttt{enum TipoNodo} con los valores: entrada, pasillo, intersección, esquina, puerta, escalera, ascensor, baño y punto de interés.
+
+Cada tipo de nodo tiene asociado un nombre legible, un icono representativo y un color distintivo mediante una extensión que proporciona propiedades adicionales para facilitar su visualización en la interfaz gráfica.
+
+La aplicación puede inferir el tipo de nodo basándose en el ID del nodo mediante análisis de subcadenas en el identificador. Por ejemplo, si el ID contiene ``entrada'', se clasifica como \texttt{TipoNodo.entrada}; si contiene ``ascensor'', se clasifica como \texttt{TipoNodo.ascensor}, y así sucesivamente.
+
+\paragraph{Sistema de coordenadas}
+\textbf{Normalización SVG.} El sistema utilizado para las coordenadas fue normalizar las coordenadas del archivo SVG a $1200 \times 800$ píxeles, para todos los pisos, independientemente del tamaño real del archivo SVG. Esto permite:
+\begin{itemize}
+  \item Consistencia entre los distintos pisos
+  \item Simplificación del cálculo de las distancias
+  \item Escalado dinámico a cualquier resolución de pantalla
+\end{itemize}
+
+\textbf{Transformación de coordenadas.} La aplicación implementa un sistema de transformación bidireccional. Para la transformación de SVG a pantalla, se calcula la escala manteniendo el aspect ratio (BoxFit.contain), se determinan las dimensiones escaladas y los offsets para centrado, y finalmente se aplica la transformación a las coordenadas. Para la transformación inversa de pantalla a SVG, se aplica la operación inversa restando los offsets y dividiendo por la escala.
+
+\paragraph{Estructura de archivos JSON}
+Cada piso de la facultad tiene su archivo JSON correspondiente con una estructura que incluye un array de nodos (con propiedades id, x, y, tipo y nombre) y un array de conexiones (con origen, destino y distancia).
+
+Los identificadores de nodos siguen el patrón \texttt{P\{piso\}\_\{tipo\}\{numero\}}, por ejemplo:
+\begin{itemize}
+  \item \texttt{P1\_Entrada} para la entrada de la facultad
+  \item \texttt{P2\_Sala\_23} para la sala 23 del segundo piso
+  \item \texttt{P3\_Departamento\_matematica\_fisica} para el departamento de matemática y física del tercer piso
+\end{itemize}
+
+Los archivos se ubican en la ruta \texttt{lib/data/} con los nombres \texttt{grafo\_piso1.json}, \texttt{grafo\_piso2.json}, \texttt{grafo\_piso3.json} y \texttt{grafo\_piso4.json}.
+
+\paragraph{Carga dinámica del grafo}
+La aplicación implementa una utilidad de carga (\texttt{grafo\_loader.dart}) que permite cargar asíncronamente los archivos JSON desde los assets del proyecto. La función determina dinámicamente qué archivo cargar según el número de piso seleccionado, lee el contenido del archivo mediante \texttt{rootBundle.loadString()}, decodifica el JSON y crea las instancias de las clases del modelo de datos.
+
+La inicialización del mapa se realiza de forma asíncrona, cargando primero los nodos y esperando al primer frame para tener el RenderBox disponible antes de marcar el componente como inicializado.
+
+\paragraph{Visualización de nodos}
+Los nodos se visualizan en el mapa como marcadores circulares sobre el mapa SVG. Cada marcador se posiciona utilizando las coordenadas transformadas del sistema SVG al sistema de la pantalla, con un tamaño de 12×12 píxeles.
+
+Los marcadores incluyen:
+\begin{itemize}
+  \item Color de fondo según el tipo de nodo (inferido o explícito)
+  \item Forma circular con borde blanco de 1.5 píxeles
+  \item Sombra para mejorar la visibilidad
+  \item Icono representativo del tipo de nodo (puerta, pasillo, escalera, etc.)
+  \item Interactividad mediante \texttt{GestureDetector} para mostrar información al tocar
+\end{itemize}
+
+\paragraph{Herramientas de desarrollo}
+La aplicación incluye un modo de desarrollo para facilitar la creación del grafo. Este modo permite:
+
+\begin{itemize}
+  \item \textbf{Captura de coordenadas}: Tocar el mapa en modo debug registra las coordenadas SVG del punto seleccionado
+  \item \textbf{Creación de nodos}: Un diálogo permite especificar el tipo y el ID del nodo, generando automáticamente el JSON correspondiente
+  \item \textbf{Generación automática de IDs}: Los identificadores se generan siguiendo el patrón establecido, incluyendo el número de piso y un timestamp
+  \item \textbf{Creación de conexiones}: Interfaz para seleccionar nodo origen y destino, calculando automáticamente la distancia euclidiana
+  \item \textbf{Visualización de conexiones}: Las conexiones se muestran como líneas con flechas direccionales y etiquetas de distancia
+  \item \textbf{Exportación de datos}: Funcionalidad para copiar al portapapeles el JSON generado de nodos y conexiones
+  \item \textbf{Estadísticas}: Visualización de la cantidad de nodos por tipo y validación de la integridad del grafo
+  \item \textbf{Migración de tipos}: Herramienta para agregar automáticamente tipos a nodos existentes mediante inferencia
+  \item \textbf{Recarga dinámica}: Capacidad de recargar los nodos desde el archivo JSON sin reiniciar la aplicación
+\end{itemize}
+
+El modo debug utiliza marcadores visuales de color naranja para diferenciar los puntos capturados de los nodos permanentes del grafo, y permite activarse o desactivarse mediante un botón en la interfaz.
 % ============================================================
 % CONCLUSIONES Y RECOMENDACIONES
 % ============================================================
