@@ -112,9 +112,6 @@
     {"origen": "P1_Pasillo_Labs_ciencias_Norte", "destino": "P1_Pasillo_Labs_ciencias_Sur", "distancia": 358},
     {"origen": "P1_Pasillo_Labs_ciencias_Sur", "destino": "P1_Pasillo_Labs_ciencias_Norte", "distancia": 358},
 
-    {"origen": "P1_Pasillo_Ingenieria_Norte", "destino": "P1_Pasillo_Labs_ingenieria_norte", "distancia": 111},
-    {"origen": "P1_Pasillo_Labs_ingenieria_norte", "destino": "P1_Pasillo_Ingenieria_Norte", "distancia": 111},
-
     {"origen": "P1_Pasillo_Labs_ingenieria_norte", "destino": "P1_Pasillo_Labs_ingenieria_centro", "distancia": 332},
     {"origen": "P1_Pasillo_Labs_ingenieria_centro", "destino": "P1_Pasillo_Labs_ingenieria_norte", "distancia": 332},
 
@@ -169,14 +166,17 @@
     {"origen": "P1_Pasillo_Ingenieria_Centro", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 159},
     {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Pasillo_Ingenieria_Centro", "distancia": 159},
 
-    {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Sala_Descanso_Electrica", "distancia": 32},
-    {"origen": "P1_Sala_Descanso_Electrica", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 32},
-
-    {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Sala_Descanso_Quimica", "distancia": 64},
-    {"origen": "P1_Sala_Descanso_Quimica", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 64},
+    {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Pasillo_Ingenieria_Norte", "distancia": 48},
+    {"origen": "P1_Pasillo_Ingenieria_Norte", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 48},
 
     {"origen": "P1_Pasillo_Labs_ingenieria_norte", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 99},
     {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Pasillo_Labs_ingenieria_norte", "distancia": 99},
+
+    {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Sala_Descanso_Electrica", "distancia": 20},
+    {"origen": "P1_Sala_Descanso_Electrica", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 20},
+
+    {"origen": "P1_Puerta_Pasillo_Centro_ingenieria", "destino": "P1_Sala_Descanso_Quimica", "distancia": 65},
+    {"origen": "P1_Sala_Descanso_Quimica", "destino": "P1_Puerta_Pasillo_Centro_ingenieria", "distancia": 65},
 
     {"origen": "P1_Pasillo_Labs_ingenieria_norte", "destino": "P1_Lab_Austro-UMAG", "distancia": 98},
     {"origen": "P1_Lab_Austro-UMAG", "destino": "P1_Pasillo_Labs_ingenieria_norte", "distancia": 98},
