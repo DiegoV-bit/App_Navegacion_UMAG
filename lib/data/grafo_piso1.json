@@ -100,9 +100,6 @@
     {"origen": "P1_Pasillo_Ciencias_Norte", "destino": "P1_Escaleras_Centro_ciencias", "distancia":  170},
     {"origen": "P1_Escaleras_Centro_ciencias", "destino": "P1_Pasillo_Ciencias_Norte", "distancia":  170},
 
-    {"origen": "P1_Pasillo_Ciencias_Norte", "destino": "P1_Pasillo_Labs_ciencias_Norte", "distancia": 110},
-    {"origen": "P1_Pasillo_Labs_ciencias_Norte", "destino": "P1_Pasillo_Ciencias_Norte", "distancia": 110},
-
     {"origen": "P1_Pasillo_Ciencias_Sur", "destino": "P1_Baños_ciencias", "distancia": 85},
     {"origen": "P1_Baños_ciencias", "destino": "P1_Pasillo_Ciencias_Sur", "distancia": 85},
 
@@ -199,11 +196,11 @@
     {"origen": "P1_Pasillo_Ciencias_Norte", "destino": "P1_Sala_51", "distancia": 85},
     {"origen": "P1_Sala_51", "destino": "P1_Pasillo_Ciencias_Norte", "distancia": 85},
 
-    {"origen": "P1_Pasillo_Labs_ciencias_Norte", "destino": "P1_Lab_Microbiologia", "distancia": 64},
-    {"origen": "P1_Lab_Microbiologia", "destino": "P1_Pasillo_Labs_ciencias_Norte", "distancia": 64},
+    {"origen": "P1_Pasillo_Ciencias_Norte", "destino": "P1_Lab_Microbiologia", "distancia": 66},
+    {"origen": "P1_Lab_Microbiologia", "destino": "P1_Pasillo_Ciencias_Norte", "distancia": 66},
 
-    {"origen": "P1_Pasillo_Labs_ciencias_Norte", "destino": "P1_Lab_Biologia", "distancia": 103},
-    {"origen": "P1_Lab_Biologia", "destino": "P1_Pasillo_Labs_ciencias_Norte", "distancia": 103},
+    {"origen": "P1_Pasillo_Ciencias_Norte", "destino": "P1_Lab_Biologia", "distancia": 105},
+    {"origen": "P1_Lab_Biologia", "destino": "P1_Pasillo_Ciencias_Norte", "distancia": 105},
 
     {"origen": "P1_Pasillo_Labs_ciencias_Norte", "destino": "P1_Lab_Tesla", "distancia": 79},
     {"origen": "P1_Lab_Tesla", "destino": "P1_Pasillo_Labs_ciencias_Norte", "distancia": 79},
