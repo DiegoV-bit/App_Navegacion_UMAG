@@ -12,6 +12,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_svg: ^2.0.9
   vector_math: ^2.1.0
+  qr_code_scanner: ^1.0.1
+  qr_flutter: ^4.1.0  # Para generar QR en modo debug
 
 dev_dependencies:
   flutter_test:

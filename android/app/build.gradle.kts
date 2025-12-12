@@ -13,6 +13,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // Enable core library desugaring required by some AARs (eg. qr_code_scanner)
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -41,4 +43,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Required to support Java 8+ APIs in libraries that need desugaring (e.g. qr_code_scanner)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
