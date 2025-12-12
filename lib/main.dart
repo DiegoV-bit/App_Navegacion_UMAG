@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mi_facultad_umag/utils/codigo_qr.dart';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
@@ -8,6 +9,8 @@ import 'package:flutter/services.dart'
     show rootBundle, Clipboard, ClipboardData;
 import 'models/grafo.dart';
 import 'utils/a_estrella.dart';
+import 'utils/navegacion_qr.dart';
+import 'utils/pantalla_lectora_qr.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
@@ -404,6 +407,35 @@ class _PantallaMapaState extends State<PantallaMapa> {
     }
   }
 
+  Future<void> _abrirScannerQR() async {
+    try {
+      // Cargar grafo actual
+      final raw = await rootBundle.loadString(rutaGrafoJson);
+      final data = json.decode(raw) as Map<String, dynamic>;
+      final grafo = Grafo.fromJson(data);
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QRScannerScreen(
+            pisoActual: widget.numeroPiso,
+            grafo: grafo,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error al abrir scanner QR: $e');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al abrir scanner: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Offset _calcularPosicionEscalada(double x, double y) {
     if (!_inicializado) {
       return Offset(x, y);
@@ -593,6 +625,14 @@ class _PantallaMapaState extends State<PantallaMapa> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cerrar'),
           ),
+          if (_modoDebugActivo) // Boton para generar qr en modo debug
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _generarQRParaNodoActual(nodo);
+              },
+              child: const Text('Generar QR'),
+            ),
           FilledButton(
             onPressed: () {
               Navigator.of(context).pop();
@@ -2211,6 +2251,59 @@ class _PantallaMapaState extends State<PantallaMapa> {
     );
   }
 
+  void _generarQRParaNodoActual(Map<String, dynamic> nodo) {
+    final qrData =
+        QRUtils.generarQRParaNodo(nodo['id'] as String, widget.numeroPiso);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Código QR Generado'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Necesitarías qr_flutter para esto
+            // QrImageView(data: qrData, size: 200),
+            Container(
+              width: 200,
+              height: 200,
+              color: Colors.grey.shade200,
+              child: const Center(
+                child: Icon(Icons.qr_code, size: 100, color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SelectableText(
+              qrData,
+              style: const TextStyle(fontFamily: 'monospace'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'ID: ${nodo['id']}',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              QRUtils.copiarQRAlPortapapeles(qrData);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('QR copiado al portapapeles')),
+              );
+            },
+            child: const Text('Copiar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ==================== FIN FUNCIONES DEBUG ====================
 
   @override
@@ -2357,6 +2450,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
             onPressed: _toggleNodos,
             tooltip: _mostrarNodos ? 'Ocultar nodos' : 'Mostrar nodos',
           ),
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: _abrirScannerQR,
+            tooltip: 'Escanear QR',
+          ),
+
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
