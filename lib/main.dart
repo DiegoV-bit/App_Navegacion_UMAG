@@ -9,7 +9,6 @@ import 'package:flutter/services.dart'
     show rootBundle, Clipboard, ClipboardData;
 import 'models/grafo.dart';
 import 'utils/a_estrella.dart';
-import 'utils/navegacion_qr.dart';
 import 'utils/pantalla_lectora_qr.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================

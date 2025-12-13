@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import '../models/grafo.dart';
 import '../utils/a_estrella.dart';
@@ -158,7 +156,7 @@ class QRUtils {
       case TipoQRResultado.nodo:
         // Buscar nodo en el grafo
         final nodo = grafo.getNodo(resultado.id!);
-        if (nodo == null || nodo.id.isEmpty) {
+        if (nodo == null) {
           throw Exception('Nodo ${resultado.id} no encontrado en el grafo');
         }
 
@@ -217,9 +215,6 @@ class QRUtils {
 
       case TipoQRResultado.error:
         throw Exception(resultado.mensajeError);
-
-      default:
-        throw Exception('Tipo de resultado no manejado: ${resultado.tipo}');
     }
   }
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/grafo.dart';
-import 'a_estrella.dart';
 import 'codigo_qr.dart';
 import 'grafo_loader.dart';
 import 'pantalla_lectora_qr.dart';
@@ -50,14 +49,6 @@ class QRNavigation {
   Future<void> _navegarANodo(Map<String, dynamic> nodoData) async {
     // Navegar de regreso al mapa con el nodo seleccionado
     Navigator.pop(context); // Cerrar scanner
-
-    // Enviar el nodo a la pantalla del mapa
-    // Esto asume que PantallaMapa tiene un callback para manejar nodos
-    final Map<String, dynamic> arguments = {
-      'piso': pisoActual,
-      'nodoSeleccionado': nodoData,
-      'qrData': nodoData['qrData'],
-    };
 
     // Buscar la instancia de PantallaMapa en la pila de navegación
     Navigator.of(context).popUntil((route) {
