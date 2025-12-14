@@ -315,6 +315,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
   double _svgHeightOriginal = 800.0;
   bool _inicializado = false;
 
+  // Variable para almacenar la ruta activa calculada con A*
+  List<String> _rutaActiva = [];
+
   @override
   void initState() {
     super.initState();
@@ -1207,9 +1210,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
                                       // ignore: avoid_print
                                       print('\n===== A* Ruta calculada =====');
                                       // ignore: avoid_print
-                                      print('Origen: ${origenRuta}');
+                                      print('Origen: $origenRuta');
                                       // ignore: avoid_print
-                                      print('Destino: ${destinoRuta}');
+                                      print('Destino: $destinoRuta');
                                       if (ruta.isEmpty) {
                                         // ignore: avoid_print
                                         print('Resultado: NO se encontró ruta');
@@ -2599,6 +2602,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
                         ..._conexionesDebug.map(
                           (conexion) => _buildConexionLinea(conexion),
                         ),
+                      // Mostrar ruta activa calculada con A*
+                      if (_rutaActiva.isNotEmpty) _buildRutaVisualizada(),
                       if (_mostrarNodos && _nodos.isNotEmpty)
                         ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
                       // Mostrar marcadores de debug

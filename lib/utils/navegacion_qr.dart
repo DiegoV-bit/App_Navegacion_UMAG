@@ -118,6 +118,7 @@ class QRNavigation {
                             : index == ruta.length - 1
                                 ? Colors.red
                                 : Colors.blue,
+                        radius: 14,
                         child: Text(
                           '${index + 1}',
                           style: const TextStyle(
@@ -125,7 +126,6 @@ class QRNavigation {
                             fontSize: 12,
                           ),
                         ),
-                        radius: 14,
                       ),
                       title: Text(
                         alias,
