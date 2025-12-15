@@ -299,10 +299,14 @@ class QRUtils {
           if (type == 'nodo' && jsonData.containsKey('id')) return true;
           if (type == 'ruta' &&
               jsonData.containsKey('origen') &&
-              jsonData.containsKey('destino')) return true;
+              jsonData.containsKey('destino')) {
+            return true;
+          }
           if ((type == 'coordenadas' || type == 'coord') &&
               jsonData.containsKey('x') &&
-              jsonData.containsKey('y')) return true;
+              jsonData.containsKey('y')) {
+            return true;
+          }
         }
       } catch (e) {
         // No es JSON válido, continuar con otros formatos
