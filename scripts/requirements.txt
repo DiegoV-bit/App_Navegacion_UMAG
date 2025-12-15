@@ -1,0 +1,11 @@
+# Dependencias para el Generador de Códigos QR
+# Sistema de Navegación Interior - UMAG
+
+# Librería principal para generar códigos QR
+qrcode[pil]==8.2
+
+# Pillow (PIL) para procesamiento de imágenes
+Pillow>=11.0.0
+
+# Opcional: Para generar QRs con mejor calidad
+# pypng>=0.20220715.0
