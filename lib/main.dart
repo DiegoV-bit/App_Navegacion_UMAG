@@ -316,7 +316,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
   bool _inicializado = false;
 
   // Variable para almacenar la ruta activa calculada con A*
-  List<String> _rutaActiva = [];
+  final List<String> _rutaActiva = [];
 
   @override
   void initState() {

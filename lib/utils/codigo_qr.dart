@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'dart:convert';
 import '../models/grafo.dart';
 import '../utils/a_estrella.dart';
 
@@ -11,6 +12,8 @@ class QRUtils {
     'piso:', // piso:1|nodo:P1_Entrada_1
     'coord:', // coord:1004,460 (coordenadas SVG)
     'ubicacion:', // ubicacion:Entrada Principal (alias)
+    // Formato JSON también soportado:
+    // {"type": "nodo", "id": "P1_Entrada_1", "piso": 1, "x": 100, "y": 200}
   ];
 
   // ==================== ALIAS DE UBICACIONES (para códigos legibles) ====================
@@ -35,6 +38,58 @@ class QRUtils {
     }
 
     qrData = qrData.trim();
+
+    // 0. Formato JSON (nuevo - generado por el script de Python)
+    // Ejemplo: {"type": "nodo", "id": "P1_Entrada_1", "piso": 1, "x": 100, "y": 200}
+    if (qrData.startsWith('{') && qrData.endsWith('}')) {
+      try {
+        final Map<String, dynamic> jsonData = json.decode(qrData);
+
+        // Validar que tenga el campo 'type'
+        if (jsonData.containsKey('type')) {
+          final type = jsonData['type'] as String?;
+
+          if (type == 'nodo') {
+            final id = jsonData['id'] as String?;
+            final piso = jsonData['piso'] as int?;
+
+            if (id != null) {
+              return QRResult.nodo(
+                id: id,
+                piso: piso ?? _extraerPisoDeId(id) ?? pisoActual,
+              );
+            }
+          } else if (type == 'ruta') {
+            final origen = jsonData['origen'] as String?;
+            final destino = jsonData['destino'] as String?;
+
+            if (origen != null && destino != null) {
+              return QRResult.ruta(
+                origen: origen,
+                destino: destino,
+                piso: jsonData['piso'] as int? ?? pisoActual,
+              );
+            }
+          } else if (type == 'coordenadas' || type == 'coord') {
+            final x = (jsonData['x'] as num?)?.toDouble();
+            final y = (jsonData['y'] as num?)?.toDouble();
+
+            if (x != null && y != null) {
+              return QRResult.coordenadasSVG(
+                x: x,
+                y: y,
+                piso: jsonData['piso'] as int? ?? pisoActual,
+              );
+            }
+          }
+        }
+
+        return QRResult.error('Formato JSON QR inválido o incompleto');
+      } catch (e) {
+        // Si falla el parsing JSON, continuar con otros formatos
+        // No es JSON válido, intentar otros formatos
+      }
+    }
 
     // 1. Formato: nodo:id (ej: nodo:P1_Entrada_1)
     if (qrData.startsWith('nodo:')) {
@@ -233,6 +288,26 @@ class QRUtils {
 
   static bool esQRValido(String qrData) {
     if (qrData.isEmpty) return false;
+
+    // Verificar formato JSON
+    if (qrData.startsWith('{') && qrData.endsWith('}')) {
+      try {
+        final Map<String, dynamic> jsonData = json.decode(qrData);
+        // Debe tener al menos 'type' e 'id' o coordenadas
+        if (jsonData.containsKey('type')) {
+          final type = jsonData['type'];
+          if (type == 'nodo' && jsonData.containsKey('id')) return true;
+          if (type == 'ruta' &&
+              jsonData.containsKey('origen') &&
+              jsonData.containsKey('destino')) return true;
+          if ((type == 'coordenadas' || type == 'coord') &&
+              jsonData.containsKey('x') &&
+              jsonData.containsKey('y')) return true;
+        }
+      } catch (e) {
+        // No es JSON válido, continuar con otros formatos
+      }
+    }
 
     // Verificar formatos soportados
     if (formatosSoportados.any(qrData.startsWith)) {
