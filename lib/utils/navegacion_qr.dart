@@ -3,6 +3,7 @@ import '../models/grafo.dart';
 import 'codigo_qr.dart';
 import 'grafo_loader.dart';
 import 'pantalla_lectora_qr.dart';
+import 'pantalla_seleccion_destino.dart';
 
 class QRNavigation {
   final BuildContext context;
@@ -47,31 +48,27 @@ class QRNavigation {
   }
 
   Future<void> _navegarANodo(Map<String, dynamic> nodoData) async {
-    // Navegar de regreso al mapa con el nodo seleccionado
-    Navigator.pop(context); // Cerrar scanner
+    final nodoId = nodoData['id'] as String;
 
-    // Buscar la instancia de PantallaMapa en la pila de navegación
-    Navigator.of(context).popUntil((route) {
-      if (route.settings.name == '/mapa' || route.settings.name == null) {
-        // Actualizar el estado del mapa si es posible
-        if (route.settings.arguments != null) {
-          final args = route.settings.arguments as Map<String, dynamic>;
-          args['nodoSeleccionado'] = nodoData;
-        }
-        return true;
-      }
-      return false;
-    });
-
-    // Mostrar mensaje de éxito
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-            'Navegando a: ${QRUtils.obtenerAliasParaNodo(nodoData['id'])}'),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
+    // Abrir la pantalla de selección de destino (sin cerrar el scanner aún)
+    final resultado = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PantallaSeleccionDestino(
+          nodoOrigenId: nodoId,
+          pisoActual: pisoActual,
+          grafo: grafo,
+        ),
       ),
     );
+
+    // Si se calculó una ruta, cerrar el scanner y regresar al mapa con la ruta
+    if (resultado != null && resultado is Map<String, dynamic>) {
+      Navigator.pop(context, resultado);
+    } else {
+      // Si se canceló, solo cerrar el scanner sin resultado
+      Navigator.pop(context);
+    }
   }
 
   Future<void> _mostrarRuta(Map<String, dynamic> rutaData) async {

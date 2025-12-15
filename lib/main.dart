@@ -416,7 +416,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       final data = json.decode(raw) as Map<String, dynamic>;
       final grafo = Grafo.fromJson(data);
 
-      await Navigator.push(
+      final resultado = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => QRScannerScreen(
@@ -425,6 +425,33 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
         ),
       );
+
+      // Si se retornó una ruta calculada, actualizarla en el estado
+      if (resultado != null && resultado is Map<String, dynamic>) {
+        final ruta = resultado['ruta'] as List<String>?;
+        if (ruta != null && ruta.isNotEmpty) {
+          setState(() {
+            _rutaActiva.clear();
+            _rutaActiva.addAll(ruta);
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Ruta calculada: ${ruta.length} pasos',
+              ),
+              backgroundColor: Colors.green,
+              action: SnackBarAction(
+                label: 'Ver',
+                textColor: Colors.white,
+                onPressed: () {
+                  // La ruta ya está visible en el mapa
+                },
+              ),
+            ),
+          );
+        }
+      }
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error al abrir scanner QR: $e');
