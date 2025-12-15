@@ -30,7 +30,17 @@
   commentstyle=\color{gray},
   stringstyle=\color{red},
   escapeinside={\%*}{*)},
-  morekeywords={*,...}
+  morekeywords={*,var,final,const,dynamic,void,String,int,double,bool,List,Map,Set,Future,async,await,class,extends,implements,with,mixin,enum,required,factory,static,this,super,null,true,false,new,return,if,else,for,while,do,switch,case,default,break,continue,try,catch,finally,throw,rethrow,assert}
+}
+
+% Definir Dart como alias de Java con palabras clave adicionales
+\lstdefinelanguage{Dart}[]{Java}{
+  morekeywords={var,final,const,dynamic,void,String,int,double,bool,List,Map,Set,Future,async,await,required,factory,late,part,library,import,export,show,hide,as,deferred,covariant,mixin,extension,on},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
 }
 
 % Rutas para los recursos gráficos (permite compilar desde la raíz o desde esta carpeta)
@@ -276,7 +286,7 @@ La aplicación hace uso de un modelo de grafo para poder representar la topolog�
 
 \paragraph{Estructura del modelo de datos}
 \textbf{Clase Nodo.} Representa un punto de interés en el mapa (Sala, laboratorio, oficina, etc.).
-\begin{lstlisting}[language=Java, caption={Clase Nodo}]
+\begin{lstlisting}[language=Dart, caption={Clase Nodo}]
 class Nodo {
   final String id; // Ejemplo: "P1_A101"
   final double x; // Coordenada X en el mapa SVG
@@ -293,7 +303,7 @@ class Nodo {
 \end{lstlisting}
 
 \textbf{Clase Conexion.} Representa una arista entre dos nodos, con la información de distancia.
-\begin{lstlisting}[language=Java, caption={Clase Conexion}]
+\begin{lstlisting}[language=Dart, caption={Clase Conexion}]
 class Conexion {
   final String origen;      // ID del nodo origen
   final String destino;     // ID del nodo destino
@@ -314,7 +324,7 @@ class Conexion {
 \end{lstlisting}
 
 \textbf{Clase Grafo.} Contenedor principal que agrupa los nodos y conexiones de un piso.
-\begin{lstlisting}[language=Java, caption={Clase Grafo}]
+\begin{lstlisting}[language=Dart, caption={Clase Grafo}]
 class Grafo {
   final List<Nodo> nodos;
   final List<Conexion> conexiones;
@@ -396,6 +406,204 @@ La aplicación incluye un modo de desarrollo para facilitar la creación del gra
 \end{itemize}
 
 El modo debug utiliza marcadores visuales de color naranja para diferenciar los puntos capturados de los nodos permanentes del grafo, y permite activarse o desactivarse mediante un botón en la interfaz.
+
+\subsubsection{Implementación del algoritmo A* para cálculo de rutas}
+Para calcular las mejores rutas entre los distintos puntos de interés dentro de la facultad, se implementó un algoritmo de búsqueda en grafos. El algoritmo elegido fue \textbf{A* (A estrella)}, un método de búsqueda heurística que encuentra la ruta más corta entre dos puntos dentro de un grafo.
+
+\paragraph{Fundamentos del algoritmo A*}
+A* es un algoritmo de búsqueda informada que combina dos valores fundamentales:
+\begin{itemize}
+  \item $g(n)$: el costo real acumulado desde el nodo inicial hasta el nodo $n$
+  \item $h(n)$: una heurística que estima el costo faltante desde el nodo $n$ hacia el objetivo
+\end{itemize}
+
+De este modo, evalúa cada nodo mediante la función:
+\begin{equation}
+f(n) = g(n) + h(n)
+\end{equation}
+
+Esta combinación permite que A* sea eficiente y encuentre rutas óptimas siempre que la heurística sea admisible (no sobreestima el costo real). La heurística utilizada en la aplicación es la \textbf{distancia euclidiana} basada en las coordenadas $(x, y)$ de los nodos:
+\begin{equation}
+h(n_1, n_2) = \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}
+\end{equation}
+
+\paragraph{Implementación en Dart}
+La implementación se realizó en el archivo \texttt{a\_estrella.dart}, integrándose con la clase \texttt{Grafo} que modela los nodos (con sus coordenadas) y la adyacencia entre ellos.
+
+\textbf{Estructura de la clase AStar.} Se creó la clase \texttt{AStar}, que funciona en dos modos para mantener flexibilidad:
+\begin{itemize}
+  \item Como \textbf{instancia}, recibiendo un objeto \texttt{Grafo} y proporcionando un método \texttt{calcular()}
+  \item Como \textbf{API estática}, mediante \texttt{AStar.calcularRuta()}, manteniendo compatibilidad con versiones previas
+\end{itemize}
+
+\begin{lstlisting}[language=Dart, caption={Estructura de la clase AStar}]
+class AStar {
+  final Grafo grafo;
+  AStar(this.grafo);
+
+  List<String> calcular({required String origen, 
+                         required String destino}) {
+    return AStar.calcularRuta(
+      grafo: grafo, 
+      origen: origen, 
+      destino: destino
+    );
+  }
+}
+\end{lstlisting}
+
+\textbf{Mapa de adyacencias.} El algoritmo genera primero un mapa de adyacencias a partir del grafo, donde cada nodo queda asociado a sus vecinos con los costos de distancia correspondientes:
+
+\begin{lstlisting}[language=Dart]
+final mapa = grafo.generarMapaAdyacencia();
+final nodos = grafo.nodos;
+final nodosMap = {for (var n in nodos) n.id: n};
+\end{lstlisting}
+
+\textbf{Tablas internas del algoritmo.} Se inicializan tres estructuras de datos esenciales:
+\begin{itemize}
+  \item \texttt{gScore}: almacena el costo acumulado desde el origen
+  \item \texttt{fScore}: almacena el costo estimado total ($f = g + h$)
+  \item \texttt{prev}: registra los predecesores para reconstruir la ruta
+\end{itemize}
+
+Todos los valores comienzan como infinito excepto el nodo inicial:
+\begin{lstlisting}[language=Dart]
+for (var n in mapa.keys) {
+  gScore[n] = double.infinity;
+  fScore[n] = double.infinity;
+  prev[n] = null;
+}
+gScore[origen] = 0;
+fScore[origen] = _heuristica(nodosMap[origen]!, 
+                              nodosMap[destino]!);
+\end{lstlisting}
+
+\textbf{Proceso principal del algoritmo.} El algoritmo itera sobre un conjunto de nodos abiertos siguiendo estos pasos:
+
+\begin{enumerate}
+  \item Selecciona el nodo con menor \texttt{fScore} del conjunto abierto
+  \item Si es el destino, reconstruye la ruta y finaliza
+  \item Si no, revisa cada vecino del nodo actual:
+  \begin{itemize}
+    \item Calcula un costo tentativo: $g_{tentativo} = g_{actual} + distancia(actual, vecino)$
+    \item Si es menor al costo conocido, actualiza \texttt{gScore}, \texttt{fScore} y \texttt{prev}
+    \item Agrega el vecino al conjunto abierto
+  \end{itemize}
+\end{enumerate}
+
+\begin{lstlisting}[language=Dart, caption={Bucle principal de A*}]
+final abiertos = <String>{origen};
+
+while (abiertos.isNotEmpty) {
+  final actual = abiertos.reduce(
+    (a, b) => fScore[a]! < fScore[b]! ? a : b
+  );
+  
+  if (actual == destino) {
+    return _reconstruir(prev, destino);
+  }
+  
+  abiertos.remove(actual);
+  
+  for (var vecino in mapa[actual]!.keys) {
+    final tentativeG = gScore[actual]! + mapa[actual]![vecino]!;
+    
+    if (tentativeG < gScore[vecino]!) {
+      prev[vecino] = actual;
+      gScore[vecino] = tentativeG;
+      fScore[vecino] = tentativeG + 
+          _heuristica(nodosMap[vecino]!, nodosMap[destino]!);
+      abiertos.add(vecino);
+    }
+  }
+}
+return []; // No se encontro ruta
+\end{lstlisting}
+
+\textbf{Reconstrucción de la ruta.} Cuando se alcanza el nodo destino, se reconstruye el camino recorriendo el mapa de predecesores desde el objetivo hacia el origen:
+
+\begin{lstlisting}[language=Dart, caption={Reconstrucción de la ruta}]
+static List<String> _reconstruir(
+    Map<String, String?> prev, 
+    String destino) {
+  final ruta = <String>[];
+  var actual = destino;
+  
+  while (prev[actual] != null) {
+    ruta.insert(0, actual);
+    actual = prev[actual]!;
+  }
+  
+  ruta.insert(0, actual); // Agregar origen
+  return ruta;
+}
+\end{lstlisting}
+
+\paragraph{Integración con la interfaz gráfica}
+El algoritmo se integró con la interfaz desarrollada en Flutter mediante la pantalla de selección de destino (\texttt{pantalla\_seleccion\_destino.dart}). El proceso de uso es el siguiente:
+
+\begin{enumerate}
+  \item El usuario escanea un código QR que identifica su ubicación actual (nodo origen)
+  \item Se abre una pantalla que muestra el origen y permite seleccionar el destino mediante un menú desplegable
+  \item Al presionar ``Calcular Ruta'', se crea una instancia de \texttt{AStar}:
+  \begin{lstlisting}[language=Dart]
+final ruta = AStar.calcularRuta(
+  grafo: widget.grafo,
+  origen: widget.nodoOrigenId,
+  destino: _nodoDestinoSeleccionado!,
+);
+  \end{lstlisting}
+  \item La ruta resultante es una lista ordenada de IDs de nodos
+  \item La distancia total se calcula sumando las distancias euclidianas entre nodos consecutivos
+  \item La aplicación visualiza el recorrido paso a paso en una lista numerada
+  \item Al confirmar, la ruta se dibuja sobre el mapa SVG mediante un \texttt{CustomPainter} (\texttt{RutaPainter})
+\end{enumerate}
+
+\paragraph{Visualización de rutas en el mapa}
+La clase \texttt{RutaPainter} implementa un pintor personalizado que dibuja la ruta calculada sobre el mapa:
+
+\begin{itemize}
+  \item Convierte los IDs de nodos a coordenadas de pantalla
+  \item Dibuja líneas conectando los nodos secuencialmente
+  \item Utiliza colores distintivos (azul para el camino, verde para origen, rojo para destino)
+  \item Agrega efectos visuales como sombras y gradientes para mejorar la legibilidad
+  \item Dibuja círculos en cada nodo de la ruta para destacar los puntos de paso
+\end{itemize}
+
+Este proceso permite navegación precisa entre salas, laboratorios, oficinas y pasillos, proporcionando al usuario una guía visual clara para desplazarse dentro de la facultad.
+
+\paragraph{Ventajas de A* sobre alternativas}
+La elección de A* sobre el algoritmo de Dijkstra se justifica por varias razones:
+\begin{itemize}
+  \item \textbf{Eficiencia}: A* explora menos nodos al usar la heurística para guiar la búsqueda hacia el objetivo
+  \item \textbf{Optimalidad}: Garantiza encontrar la ruta más corta cuando la heurística es admisible
+  \item \textbf{Rendimiento}: En grafos espaciales como los mapas de edificios, la distancia euclidiana es una excelente heurística que reduce significativamente el espacio de búsqueda
+  \item \textbf{Escalabilidad}: El algoritmo funciona eficientemente incluso con grafos grandes (los 4 pisos suman más de 100 nodos)
+\end{itemize}
+
+\paragraph{Integración con el sistema de navegación por QR}
+El sistema de códigos QR permite a los usuarios escanear marcadores físicos ubicados en puntos estratégicos de la facultad. Cada código QR contiene información en formato JSON que identifica un nodo específico del grafo:
+
+\begin{lstlisting}[language=Dart, caption={Formato de códigos QR}]
+{
+  "type": "nodo",
+  "id": "P1_Entrada_1",
+  "piso": 1,
+  "x": 100,
+  "y": 200
+}
+\end{lstlisting}
+
+La aplicación valida y parsea estos códigos mediante la clase \texttt{QRUtils} en \texttt{codigo\_qr.dart}, que soporta múltiples formatos (JSON moderno y formatos legacy) para mantener compatibilidad. Una vez identificado el nodo origen, A* calcula la ruta óptima al destino seleccionado por el usuario.
+
+\paragraph{Conclusión sobre la implementación de A*}
+La integración del algoritmo A* con el modelo de grafos y la interfaz gráfica permite una experiencia de navegación interna eficiente y clara. El algoritmo determina rutas óptimas usando distancias reales y una heurística adecuada para espacios 2D, mientras Flutter proporciona la visualización interactiva del plano de la facultad.
+
+Este diseño modular facilita extender la aplicación a nuevos pisos o edificios simplemente añadiendo los mapas SVG correspondientes y sus archivos JSON de grafos, sin necesidad de modificar la lógica del algoritmo de búsqueda.
+
+
+
 % ============================================================
 % CONCLUSIONES Y RECOMENDACIONES
 % ============================================================
