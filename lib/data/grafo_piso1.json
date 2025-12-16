@@ -130,12 +130,6 @@
     {"origen": "P1_Sala_Magister_comp", "destino": "P1_Sala_TI1", "distancia": 43},
     {"origen": "P1_Sala_TI1", "destino": "P1_Sala_Magister_comp", "distancia": 43},
 
-    {"origen": "P1_Sala_TI1", "destino": "P1_Administracion_TI", "distancia": 48},
-    {"origen": "P1_Administracion_TI", "destino": "P1_Sala_TI1", "distancia": 48},
-
-    {"origen": "P1_Administracion_TI", "destino": "P1_Sala_TI2", "distancia": 48},
-    {"origen": "P1_Sala_TI2", "destino": "P1_Administracion_TI", "distancia": 48},
-
     {"origen": "P1_Sala_TI2", "destino": "P1_Sala_Redes", "distancia": 43},
     {"origen": "P1_Sala_Redes", "destino": "P1_Sala_TI2", "distancia": 43},
 
@@ -156,9 +150,6 @@
 
     {"origen": "P1_Pasillo_Ingenieria_Sur", "destino": "P1_Sala_magister_mecanica", "distancia": 35},
     {"origen": "P1_Sala_magister_mecanica", "destino": "P1_Pasillo_Ingenieria_Sur", "distancia": 35},
-
-    {"origen": "P1_Pasillo_Ingenieria_Centro", "destino": "P1_Administracion_TI", "distancia": 62},
-    {"origen": "P1_Administracion_TI", "destino": "P1_Pasillo_Ingenieria_Centro", "distancia": 62},
 
     {"origen": "P1_Pasillo_Ingenieria_Norte", "destino": "P1_Secretaria_de_Computacion", "distancia": 46},
     {"origen": "P1_Secretaria_de_Computacion", "destino": "P1_Pasillo_Ingenieria_Norte", "distancia": 46},
