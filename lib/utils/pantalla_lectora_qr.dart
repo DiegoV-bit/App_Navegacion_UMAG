@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import '../utils/codigo_qr.dart';
 import '../utils/navegacion_qr.dart';
 import '../models/grafo.dart';
@@ -19,14 +19,15 @@ class QRScannerScreen extends StatefulWidget {
 }
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? controller;
+  final MobileScannerController controller = MobileScannerController(
+    formats: [BarcodeFormat.qrCode],
+  );
   bool _isScanning = true;
-  bool _flashOn = false;
+  bool _torchEnabled = false;
 
   @override
   void dispose() {
-    controller?.dispose();
+    controller.dispose();
     super.dispose();
   }
 
@@ -46,15 +47,34 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       body: Stack(
         children: [
           // Vista del scanner
-          QRView(
-            key: qrKey,
-            onQRViewCreated: _onQRViewCreated,
-            overlay: QrScannerOverlayShape(
-              borderColor: Theme.of(context).primaryColor,
-              borderRadius: 10,
-              borderLength: 30,
-              borderWidth: 8,
-              cutOutSize: 250,
+          MobileScanner(
+            controller: controller,
+            onDetect: (BarcodeCapture capture) {
+              if (!_isScanning) return;
+
+              final List<Barcode> barcodes = capture.barcodes;
+              if (barcodes.isEmpty) return;
+
+              final String? qrData = barcodes.first.rawValue;
+              if (qrData != null && qrData.isNotEmpty) {
+                setState(() {
+                  _isScanning = false;
+                });
+
+                controller.stop();
+                _procesarQR(qrData);
+              }
+            },
+          ),
+
+          // Overlay con marco de escaneo
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.5),
+            ),
+            child: CustomPaint(
+              painter: ScannerOverlayPainter(),
+              child: const SizedBox.expand(),
             ),
           ),
 
@@ -67,7 +87,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -105,9 +125,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 FloatingActionButton(
                   heroTag: 'flash',
                   onPressed: _toggleFlash,
-                  backgroundColor: Colors.black.withOpacity(0.7),
+                  backgroundColor: Colors.black.withValues(alpha: 0.7),
                   child: Icon(
-                    _flashOn ? Icons.flash_off : Icons.flash_on,
+                    _torchEnabled ? Icons.flash_off : Icons.flash_on,
                     color: Colors.white,
                   ),
                 ),
@@ -129,24 +149,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     );
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      if (!_isScanning) return;
-
-      setState(() {
-        _isScanning = false;
-      });
-
-      controller.pauseCamera();
-
-      // Procesar el QR
-      _procesarQR(scanData.code);
-    });
-  }
-
-  void _procesarQR(String? qrData) async {
-    if (qrData == null || qrData.isEmpty) {
+  void _procesarQR(String qrData) async {
+    if (qrData.isEmpty) {
       _mostrarError('QR vacío o no legible');
       return;
     }
@@ -168,20 +172,10 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   }
 
   void _toggleFlash() async {
-    try {
-      await controller?.toggleFlash();
-      setState(() {
-        _flashOn = !_flashOn;
-      });
-    } catch (e) {
-      // Flash no disponible
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Flash no disponible en este dispositivo'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    await controller.toggleTorch();
+    setState(() {
+      _torchEnabled = !_torchEnabled;
+    });
   }
 
   void _mostrarInstrucciones() {
@@ -199,55 +193,40 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             const Text(
               'Formatos QR Soportados',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
-            _buildInstructionItem(
-              '📍 Nodo individual',
+            _buildFormatoItem(
+              'Nodo',
               'nodo:P1_Entrada_1',
+              Colors.blue,
+            ),
+            _buildFormatoItem(
+              'Ubicación',
+              'ubicacion:Entrada Principal',
               Colors.green,
             ),
-            _buildInstructionItem(
-              '🔄 Ruta completa',
-              'ruta:P1_Entrada_1|P1_Pasillo_Ingenieria_Centro',
+            _buildFormatoItem(
+              'Ruta',
+              'ruta:P1_Entrada_1|P1_Pasillo_Norte',
               Colors.orange,
             ),
-            _buildInstructionItem(
-              '🏢 Piso específico',
+            _buildFormatoItem(
+              'Piso + Nodo',
               'piso:1|nodo:P1_Entrada_1',
               Colors.purple,
             ),
-            _buildInstructionItem(
-              '🗺️ Coordenadas SVG',
+            _buildFormatoItem(
+              'Coordenadas',
               'coord:1004,460',
-              Colors.blue,
-            ),
-            _buildInstructionItem(
-              '🏷️ Alias de ubicación',
-              'ubicacion:Entrada Principal',
               Colors.teal,
             ),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                '💡 Consejo: Los códigos QR se pueden generar desde el modo debug en la pantalla del mapa.',
-                style: TextStyle(fontSize: 12),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Entendido'),
-              ),
+            const Text(
+              'Apunte la cámara al código QR para escanearlo automáticamente.',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
         ),
@@ -255,14 +234,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     );
   }
 
-  Widget _buildInstructionItem(String titulo, String ejemplo, Color color) {
+  Widget _buildFormatoItem(String titulo, String ejemplo, Color color) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,17 +271,106 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       SnackBar(
         content: Text(mensaje),
         backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Reintentar',
+          textColor: Colors.white,
+          onPressed: () {
+            setState(() {
+              _isScanning = true;
+            });
+            controller.start();
+          },
+        ),
       ),
     );
 
-    // Reanudar escaneo después de 2 segundos
+    // Reiniciar scanner después de 2 segundos
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted && controller != null) {
+      if (mounted) {
         setState(() {
           _isScanning = true;
         });
-        controller?.resumeCamera();
+        controller.start();
       }
     });
   }
+}
+
+// Custom Painter para el overlay del scanner
+class ScannerOverlayPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const double scanAreaSize = 250.0;
+    final double left = (size.width - scanAreaSize) / 2;
+    final double top = (size.height - scanAreaSize) / 2;
+    final Rect scanRect = Rect.fromLTWH(left, top, scanAreaSize, scanAreaSize);
+
+    // Dibujar área oscura alrededor
+    final Paint backgroundPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.5);
+
+    canvas.drawPath(
+      Path.combine(
+        PathOperation.difference,
+        Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height)),
+        Path()
+          ..addRRect(
+              RRect.fromRectAndRadius(scanRect, const Radius.circular(12))),
+      ),
+      backgroundPaint,
+    );
+
+    // Dibujar esquinas del marco
+    final Paint cornerPaint = Paint()
+      ..color = Colors.blue
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+
+    const double cornerLength = 30;
+    const double cornerRadius = 12;
+
+    // Esquina superior izquierda
+    canvas.drawPath(
+      Path()
+        ..moveTo(left + cornerRadius, top)
+        ..lineTo(left + cornerLength, top)
+        ..moveTo(left, top + cornerRadius)
+        ..lineTo(left, top + cornerLength),
+      cornerPaint,
+    );
+
+    // Esquina superior derecha
+    canvas.drawPath(
+      Path()
+        ..moveTo(left + scanAreaSize - cornerLength, top)
+        ..lineTo(left + scanAreaSize - cornerRadius, top)
+        ..moveTo(left + scanAreaSize, top + cornerRadius)
+        ..lineTo(left + scanAreaSize, top + cornerLength),
+      cornerPaint,
+    );
+
+    // Esquina inferior izquierda
+    canvas.drawPath(
+      Path()
+        ..moveTo(left, top + scanAreaSize - cornerLength)
+        ..lineTo(left, top + scanAreaSize - cornerRadius)
+        ..moveTo(left + cornerRadius, top + scanAreaSize)
+        ..lineTo(left + cornerLength, top + scanAreaSize),
+      cornerPaint,
+    );
+
+    // Esquina inferior derecha
+    canvas.drawPath(
+      Path()
+        ..moveTo(left + scanAreaSize, top + scanAreaSize - cornerLength)
+        ..lineTo(left + scanAreaSize, top + scanAreaSize - cornerRadius)
+        ..moveTo(left + scanAreaSize - cornerLength, top + scanAreaSize)
+        ..lineTo(left + scanAreaSize - cornerRadius, top + scanAreaSize),
+      cornerPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

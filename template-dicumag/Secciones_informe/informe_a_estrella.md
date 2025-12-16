@@ -126,4 +126,3 @@ La integración del algoritmo A* con la interfaz gráfica permite una experienci
 El algoritmo determina rutas óptimas usando distancias reales y una heurística adecuada, mientras Flutter ofrece la visualización interactiva del plano de la facultad.
 
 Este diseño modular facilita extender la aplicación a nuevos pisos o edificios simplemente añadiendo mapas y datos del grafo correspondientes.
-

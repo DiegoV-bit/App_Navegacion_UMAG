@@ -9,7 +9,6 @@ import 'package:flutter/services.dart'
     show rootBundle, Clipboard, ClipboardData;
 import 'models/grafo.dart';
 import 'utils/a_estrella.dart';
-import 'utils/navegacion_qr.dart';
 import 'utils/pantalla_lectora_qr.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
@@ -316,6 +315,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
   double _svgHeightOriginal = 800.0;
   bool _inicializado = false;
 
+  // Variable para almacenar la ruta activa calculada con A*
+  final List<String> _rutaActiva = [];
+
   @override
   void initState() {
     super.initState();
@@ -414,7 +416,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       final data = json.decode(raw) as Map<String, dynamic>;
       final grafo = Grafo.fromJson(data);
 
-      await Navigator.push(
+      final resultado = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => QRScannerScreen(
@@ -423,6 +425,33 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
         ),
       );
+
+      // Si se retornó una ruta calculada, actualizarla en el estado
+      if (resultado != null && resultado is Map<String, dynamic>) {
+        final ruta = resultado['ruta'] as List<String>?;
+        if (ruta != null && ruta.isNotEmpty) {
+          setState(() {
+            _rutaActiva.clear();
+            _rutaActiva.addAll(ruta);
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Ruta calculada: ${ruta.length} pasos',
+              ),
+              backgroundColor: Colors.green,
+              action: SnackBarAction(
+                label: 'Ver',
+                textColor: Colors.white,
+                onPressed: () {
+                  // La ruta ya está visible en el mapa
+                },
+              ),
+            ),
+          );
+        }
+      }
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error al abrir scanner QR: $e');
@@ -1208,9 +1237,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
                                       // ignore: avoid_print
                                       print('\n===== A* Ruta calculada =====');
                                       // ignore: avoid_print
-                                      print('Origen: ${origenRuta}');
+                                      print('Origen: $origenRuta');
                                       // ignore: avoid_print
-                                      print('Destino: ${destinoRuta}');
+                                      print('Destino: $destinoRuta');
                                       if (ruta.isEmpty) {
                                         // ignore: avoid_print
                                         print('Resultado: NO se encontró ruta');
@@ -2600,6 +2629,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
                         ..._conexionesDebug.map(
                           (conexion) => _buildConexionLinea(conexion),
                         ),
+                      // Mostrar ruta activa calculada con A*
+                      if (_rutaActiva.isNotEmpty) _buildRutaVisualizada(),
                       if (_mostrarNodos && _nodos.isNotEmpty)
                         ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
                       // Mostrar marcadores de debug
@@ -2977,6 +3008,19 @@ class _PantallaMapaState extends State<PantallaMapa> {
     // Calcular posición escalada
     final posicionEscalada = _calcularPosicionEscalada(x, y);
 
+    // Si estamos mostrando una ruta y este nodo está en la ruta (excepto origen/destino),
+    // NO lo dibujamos para evitar tapar el mapa
+    if (_rutaActiva.isNotEmpty) {
+      // Verificar si este nodo está en la ruta
+      final posicionEnRuta = _rutaActiva.indexOf(id);
+
+      // Si está en la ruta pero NO es origen (primero) ni destino (último), no mostrarlo
+      if (posicionEnRuta != -1 &&
+          posicionEnRuta != 0 &&
+          posicionEnRuta != _rutaActiva.length - 1) {
+        return const SizedBox.shrink();
+      }
+    }
     return Positioned(
       left: (posicionEscalada.dx - 6).roundToDouble(),
       top: (posicionEscalada.dy - 6).roundToDouble(),
@@ -3045,6 +3089,106 @@ class _PantallaMapaState extends State<PantallaMapa> {
         fin: destinoEscalado,
         distancia: conexion['distancia'] as int,
       ),
+    );
+  }
+
+  // ==================== Visualización de Ruta A* ====================
+  Widget _buildRutaVisualizada() {
+    if (_rutaActiva.isEmpty) return const SizedBox.shrink();
+
+    // Convertir IDs de nodos a coordenadas
+    final List<Offset> puntos = [];
+    for (final nodoId in _rutaActiva) {
+      final nodo = _nodos.firstWhere(
+        (n) => n['id'] == nodoId,
+        orElse: () => {},
+      );
+      if (nodo.isNotEmpty) {
+        final x = (nodo['x'] as num).toDouble();
+        final y = (nodo['y'] as num).toDouble();
+        final posEscalada = _calcularPosicionEscalada(x, y);
+        puntos.add(posEscalada);
+      }
+    }
+
+    if (puntos.length < 2) return const SizedBox.shrink();
+
+    return Stack(
+      children: [
+        // Dibujar líneas de la ruta
+        CustomPaint(
+          size: Size.infinite,
+          painter: RutaPainter(puntos: puntos),
+        ),
+        // Dibujar números de paso en cada punto
+        ...puntos.asMap().entries.map((entry) {
+          final index = entry.key;
+          final punto = entry.value;
+          final esOrigen = index == 0;
+          final esDestino = index == puntos.length - 1;
+
+          if (esOrigen || esDestino) {
+            // Marcadores especiales para origen y destino - MÁS PEQUEÑOS
+            return Positioned(
+              left: punto.dx - 10,
+              top: punto.dy - 10,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: esDestino ? Colors.red : Colors.green,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha((0.3 * 255).round()),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  esDestino ? Icons.place : Icons.my_location,
+                  color: Colors.white,
+                  size: 12,
+                ),
+              ),
+            );
+          } else {
+            // Números para puntos intermedios - MÁS PEQUEÑOS
+            return Positioned(
+              left: punto.dx - 8,
+              top: punto.dy - 8,
+              child: Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade600,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha((0.2 * 255).round()),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+        }),
+      ],
     );
   }
 
@@ -3216,5 +3360,98 @@ class ConexionPainter extends CustomPainter {
     return oldDelegate.inicio != inicio ||
         oldDelegate.fin != fin ||
         oldDelegate.distancia != distancia;
+  }
+}
+
+// ==================== Custom Painter para dibujar ruta A* ====================
+class RutaPainter extends CustomPainter {
+  final List<Offset> puntos;
+
+  RutaPainter({required this.puntos});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (puntos.length < 2) return;
+
+    // Configurar pincel para la línea principal - MÁS GRUESA
+    final linePaint = Paint()
+      ..color = Colors.blue.shade700
+      ..strokeWidth = 5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    // Pincel para el borde blanco (hace que la línea se vea mejor)
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 8
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    // Dibujar el camino completo
+    final path = Path();
+    path.moveTo(puntos[0].dx, puntos[0].dy);
+    for (int i = 1; i < puntos.length; i++) {
+      path.lineTo(puntos[i].dx, puntos[i].dy);
+    }
+
+    // Primero dibujar el borde blanco
+    canvas.drawPath(path, borderPaint);
+    // Luego la línea azul encima
+    canvas.drawPath(path, linePaint);
+
+    // Dibujar flechas direccionales MÁS GRANDES en cada segmento
+    for (int i = 0; i < puntos.length - 1; i++) {
+      final inicio = puntos[i];
+      final fin = puntos[i + 1];
+      final centro = Offset(
+        (inicio.dx + fin.dx) / 2,
+        (inicio.dy + fin.dy) / 2,
+      );
+
+      // Calcular ángulo de la flecha
+      final dx = fin.dx - inicio.dx;
+      final dy = fin.dy - inicio.dy;
+      final angle = atan2(dy, dx);
+
+      // Dibujar flecha MÁS GRANDE
+      final arrowSize = 16.0;
+      final arrowPath = Path();
+      arrowPath.moveTo(
+        centro.dx - arrowSize * cos(angle - 0.4),
+        centro.dy - arrowSize * sin(angle - 0.4),
+      );
+      arrowPath.lineTo(centro.dx, centro.dy);
+      arrowPath.lineTo(
+        centro.dx - arrowSize * cos(angle + 0.4),
+        centro.dy - arrowSize * sin(angle + 0.4),
+      );
+
+      // Pintura para sombra de flecha
+      final arrowShadowPaint = Paint()
+        ..color = Colors.black.withAlpha((0.3 * 255).round())
+        ..style = PaintingStyle.fill
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+
+      final arrowPaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill;
+
+      final arrowBorderPaint = Paint()
+        ..color = Colors.blue.shade900
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+
+      // Dibujar sombra, relleno y borde de flecha
+      canvas.drawPath(arrowPath, arrowShadowPaint);
+      canvas.drawPath(arrowPath, arrowPaint);
+      canvas.drawPath(arrowPath, arrowBorderPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(RutaPainter oldDelegate) {
+    return oldDelegate.puntos != puntos;
   }
 }
