@@ -318,6 +318,10 @@ class _PantallaMapaState extends State<PantallaMapa> {
   // Variable para almacenar la ruta activa calculada con A*
   final List<String> _rutaActiva = [];
 
+  // Variables para selección manual de origen y destino
+  String? _origenSeleccionado;
+  String? _destinoSeleccionado;
+
   @override
   void initState() {
     super.initState();
@@ -616,17 +620,56 @@ class _PantallaMapaState extends State<PantallaMapa> {
   }
 
   void _mostrarInfoNodo(Map<String, dynamic> nodo) {
+    final String nodoId = nodo['id'] as String;
+    final bool esOrigen = _origenSeleccionado == nodoId;
+    final bool esDestino = _destinoSeleccionado == nodoId;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.location_on, color: Colors.blue.shade600, size: 5),
+            Icon(
+              esOrigen
+                  ? Icons.trip_origin
+                  : esDestino
+                      ? Icons.location_on
+                      : Icons.place,
+              color: esOrigen
+                  ? Colors.green.shade600
+                  : esDestino
+                      ? Colors.red.shade600
+                      : Colors.blue.shade600,
+              size: 28,
+            ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(
-                nodo['id'] as String,
-                style: const TextStyle(fontSize: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nodoId,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  if (esOrigen)
+                    Text(
+                      'Origen actual',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade600,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  if (esDestino)
+                    Text(
+                      'Destino actual',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.red.shade600,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
               ),
             ),
           ],
@@ -637,16 +680,41 @@ class _PantallaMapaState extends State<PantallaMapa> {
           children: [
             ListTile(
               dense: true,
-              leading: const Icon(Icons.info_outline, size: 5),
+              leading: const Icon(Icons.info_outline, size: 20),
               title: const Text('Tipo de lugar'),
-              subtitle: Text(_obtenerTipoLugar(nodo['id'] as String)),
+              subtitle: Text(_obtenerTipoLugar(nodoId)),
             ),
             ListTile(
               dense: true,
-              leading: const Icon(Icons.straighten, size: 5),
+              leading: const Icon(Icons.straighten, size: 20),
               title: const Text('Coordenadas'),
               subtitle: Text('X: ${nodo['x']}, Y: ${nodo['y']}'),
             ),
+            if (_origenSeleccionado != null && _origenSeleccionado != nodoId)
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info, size: 20, color: Colors.blue.shade600),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Origen: $_origenSeleccionado',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue.shade800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
         actions: [
@@ -662,19 +730,220 @@ class _PantallaMapaState extends State<PantallaMapa> {
               },
               child: const Text('Generar QR'),
             ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Navegando a ${nodo['id']}...'),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            child: const Text('Navegar aquí'),
-          ),
+          // Botón para limpiar selección si es origen o destino actual
+          if (esOrigen || esDestino)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _limpiarSeleccion();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.orange,
+              ),
+              child: const Text('Limpiar selección'),
+            ),
+          // Botón principal: Establecer origen o destino según el estado
+          if (!esOrigen && !esDestino)
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (_origenSeleccionado == null) {
+                  _establecerOrigen(nodoId);
+                } else {
+                  _establecerDestino(nodoId);
+                }
+              },
+              child: Text(
+                _origenSeleccionado == null
+                    ? 'Establecer origen'
+                    : 'Establecer destino',
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  void _establecerOrigen(String nodoId) {
+    setState(() {
+      _origenSeleccionado = nodoId;
+      _destinoSeleccionado = null;
+      _rutaActiva.clear();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.trip_origin, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                  'Origen establecido: $nodoId\nAhora selecciona un destino'),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green.shade600,
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Limpiar',
+          textColor: Colors.white,
+          onPressed: _limpiarSeleccion,
+        ),
+      ),
+    );
+  }
+
+  void _establecerDestino(String nodoId) async {
+    if (_origenSeleccionado == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Primero debes establecer un origen'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (nodoId == _origenSeleccionado) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('El destino debe ser diferente al origen'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _destinoSeleccionado = nodoId;
+    });
+
+    // Calcular la ruta con A*
+    await _calcularYMostrarRuta(_origenSeleccionado!, nodoId);
+  }
+
+  Future<void> _calcularYMostrarRuta(String origen, String destino) async {
+    try {
+      // Cargar el grafo del piso actual
+      final String jsonString = await rootBundle.loadString(rutaGrafoJson);
+      final Map<String, dynamic> jsonData = json.decode(jsonString);
+      final Grafo grafo = Grafo.fromJson(jsonData);
+
+      // Ejecutar el algoritmo A*
+      final resultado = AStar.calcularRuta(
+        grafo: grafo,
+        origen: origen,
+        destino: destino,
+      );
+
+      if (resultado != null && resultado.isNotEmpty) {
+        setState(() {
+          _rutaActiva.clear();
+          _rutaActiva.addAll(resultado);
+        });
+
+        final distanciaTotal = _calcularDistanciaRuta(resultado);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Ruta calculada',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text('Desde: $origen'),
+                Text('Hasta: $destino'),
+                Text('Nodos: ${resultado.length}'),
+                Text(
+                  'Distancia: ${distanciaTotal.toStringAsFixed(1)} metros',
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Limpiar',
+              textColor: Colors.white,
+              onPressed: _limpiarSeleccion,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text('No se encontró una ruta entre estos puntos'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red.shade600,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        _limpiarSeleccion();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error al calcular ruta: $e');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al calcular la ruta: $e'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+      _limpiarSeleccion();
+    }
+  }
+
+  double _calcularDistanciaRuta(List<String> ruta) {
+    double distanciaTotal = 0.0;
+    for (int i = 0; i < ruta.length - 1; i++) {
+      final nodoActual = _nodos.firstWhere((n) => n['id'] == ruta[i]);
+      final nodoSiguiente = _nodos.firstWhere((n) => n['id'] == ruta[i + 1]);
+
+      final dx = (nodoSiguiente['x'] as num) - (nodoActual['x'] as num);
+      final dy = (nodoSiguiente['y'] as num) - (nodoActual['y'] as num);
+      distanciaTotal += sqrt(dx * dx + dy * dy);
+    }
+    return distanciaTotal;
+  }
+
+  void _limpiarSeleccion() {
+    setState(() {
+      _origenSeleccionado = null;
+      _destinoSeleccionado = null;
+      _rutaActiva.clear();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.clear, color: Colors.white),
+            SizedBox(width: 12),
+            Text('Selección limpiada'),
+          ],
+        ),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -2992,14 +3261,36 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final x = (nodo['x'] as num).toDouble();
     final y = (nodo['y'] as num).toDouble();
     final id = nodo['id'] as String;
-    final colorNodo = _obtenerColorNodo(nodo);
+
+    // Verificar si este nodo es el origen o destino seleccionado
+    final bool esOrigen = _origenSeleccionado == id;
+    final bool esDestino = _destinoSeleccionado == id;
+
+    // Obtener el color del nodo según su tipo o si es origen/destino
+    final Color colorNodo;
+    final IconData iconoNodo;
+    final double tamano;
+
+    if (esOrigen) {
+      colorNodo = Colors.green.shade600;
+      iconoNodo = Icons.trip_origin;
+      tamano = 20; // Más grande para destacar
+    } else if (esDestino) {
+      colorNodo = Colors.red.shade600;
+      iconoNodo = Icons.location_on;
+      tamano = 20;
+    } else {
+      colorNodo = _obtenerColorNodo(nodo);
+      iconoNodo = _obtenerIconoNodo(id);
+      tamano = 12;
+    }
 
     // Calcular posición escalada
     final posicionEscalada = _calcularPosicionEscalada(x, y);
 
     // Si estamos mostrando una ruta y este nodo está en la ruta (excepto origen/destino),
     // NO lo dibujamos para evitar tapar el mapa
-    if (_rutaActiva.isNotEmpty) {
+    if (_rutaActiva.isNotEmpty && !esOrigen && !esDestino) {
       // Verificar si este nodo está en la ruta
       final posicionEnRuta = _rutaActiva.indexOf(id);
 
@@ -3010,28 +3301,36 @@ class _PantallaMapaState extends State<PantallaMapa> {
         return const SizedBox.shrink();
       }
     }
+
     return Positioned(
-      left: (posicionEscalada.dx - 6).roundToDouble(),
-      top: (posicionEscalada.dy - 6).roundToDouble(),
+      left: (posicionEscalada.dx - (tamano / 2)).roundToDouble(),
+      top: (posicionEscalada.dy - (tamano / 2)).roundToDouble(),
       child: GestureDetector(
         onTap: () => _mostrarInfoNodo(nodo),
         child: Container(
-          width: 12,
-          height: 12,
+          width: tamano,
+          height: tamano,
           decoration: BoxDecoration(
             color: colorNodo,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 1.5),
+            border: Border.all(
+              color: (esOrigen || esDestino) ? Colors.yellow : Colors.white,
+              width: (esOrigen || esDestino) ? 2.5 : 1.5,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withAlpha((0.3 * 255).round()),
-                blurRadius: 3,
-                offset: const Offset(0, 1),
+                blurRadius: (esOrigen || esDestino) ? 5 : 3,
+                offset: Offset(0, (esOrigen || esDestino) ? 2 : 1),
               ),
             ],
           ),
           child: Center(
-            child: Icon(_obtenerIconoNodo(id), color: Colors.white, size: 7),
+            child: Icon(
+              iconoNodo,
+              color: Colors.white,
+              size: (esOrigen || esDestino) ? 12 : 7,
+            ),
           ),
         ),
       ),
