@@ -2475,17 +2475,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
             ],
           ],
           IconButton(
-            icon: Icon(_mostrarNodos ? Icons.visibility : Icons.visibility_off),
-            onPressed: _toggleNodos,
-            tooltip: _mostrarNodos ? 'Ocultar nodos' : 'Mostrar nodos',
-          ),
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
-            onPressed: _abrirScannerQR,
-            tooltip: 'Escanear QR',
-          ),
-
-          IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
               // Muestra diálogo con detalles del mapa actual.
@@ -2673,10 +2662,10 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
-            heroTag: "graph_demo",
-            onPressed: _mostrarDemoGrafo,
-            tooltip: 'Ver grafo',
-            child: const Icon(Icons.route),
+            heroTag: "qr_scanner",
+            onPressed: _abrirScannerQR,
+            tooltip: 'Escanear código QR',
+            child: const Icon(Icons.qr_code_scanner),
           ),
         ],
       ),
