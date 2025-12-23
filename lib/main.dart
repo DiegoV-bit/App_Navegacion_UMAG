@@ -13,7 +13,7 @@ import 'utils/pantalla_lectora_qr.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
-const bool kDebugMode = true;
+const bool kDebugMode = false;
 // =============================================================
 
 // ==================== TIPOS DE NODOS ====================
@@ -837,7 +837,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
         destino: destino,
       );
 
-      if (resultado != null && resultado.isNotEmpty) {
+      if (resultado.isNotEmpty) {
         setState(() {
           _rutaActiva.clear();
           _rutaActiva.addAll(resultado);
@@ -2657,6 +2657,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
                     case 'limpiar_conexiones':
                       _limpiarConexionesDebug();
                       break;
+                    case 'toggle_nodos':
+                      _toggleNodos();
+                      break;
+                    case 'demo_grafo':
+                      _mostrarDemoGrafo();
+                      break;
                   }
                 },
                 itemBuilder: (context) => [
@@ -2689,6 +2695,32 @@ class _PantallaMapaState extends State<PantallaMapa> {
                           Icon(Icons.sync, size: 20),
                           SizedBox(width: 12),
                           Text('Migrar Tipos de Nodos'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'toggle_nodos',
+                      child: Row(
+                        children: [
+                          Icon(
+                              _mostrarNodos
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 20),
+                          const SizedBox(width: 12),
+                          Text(_mostrarNodos
+                              ? 'Ocultar Nodos'
+                              : 'Mostrar Nodos'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'demo_grafo',
+                      child: Row(
+                        children: [
+                          Icon(Icons.account_tree, size: 20),
+                          SizedBox(width: 12),
+                          Text('Ver Demo Grafo'),
                         ],
                       ),
                     ),
