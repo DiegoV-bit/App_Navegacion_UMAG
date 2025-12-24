@@ -10,10 +10,12 @@ import 'models/grafo.dart';
 import 'utils/a_estrella.dart';
 import 'utils/navegacion_qr.dart';
 import 'utils/pantalla_lectora_qr.dart';
+import 'utils/gestor_multipiso.dart';
+import 'screens/pantalla_opciones_ruta.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
-const bool kDebugMode = true;
+const bool kDebugMode = false;
 // =============================================================
 
 // ==================== TIPOS DE NODOS ====================
@@ -323,12 +325,39 @@ class _PantallaMapaState extends State<PantallaMapa> {
   final double _minScale = 0.8;
   final double _maxScale = 4.0;
 
+  // Variables para selección manual de origen y destino
+  String? _origenSeleccionado;
+  String? _destinoSeleccionado;
+
+  // Variables para navegación multi-piso
+  final GestorMultiPiso _gestorMultiPiso = GestorMultiPiso();
+  int _pasoActualRuta = 0;
+  List<SegmentoRuta> _segmentosRuta = [];
+  // OpcionRuta? _rutaActivaMultiPiso; // TODO: Implementar selección de opciones de ruta
+
   @override
   void initState() {
     super.initState();
     // inicializa configuración y carga del mapa
     _configurarDimensionesSVG();
     _inicializarMapa();
+    _inicializarGestorMultiPiso();
+  }
+
+  // Inicializar gestor multi-piso
+  Future<void> _inicializarGestorMultiPiso() async {
+    try {
+      await _gestorMultiPiso.cargarTodosLosPisos();
+      if (kDebugMode) {
+        print('✓ Gestor multi-piso inicializado');
+        print(
+            '  Conexiones verticales: ${_gestorMultiPiso.conexionesVerticales.length}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('✗ Error al inicializar gestor multi-piso: $e');
+      }
+    }
   }
 
   // Configurar dimensiones según el piso (sin cargar el archivo completo)
@@ -627,17 +656,56 @@ class _PantallaMapaState extends State<PantallaMapa> {
   }
 
   void _mostrarInfoNodo(Map<String, dynamic> nodo) {
+    final String nodoId = nodo['id'] as String;
+    final bool esOrigen = _origenSeleccionado == nodoId;
+    final bool esDestino = _destinoSeleccionado == nodoId;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.location_on, color: Colors.blue.shade600, size: 5),
+            Icon(
+              esOrigen
+                  ? Icons.trip_origin
+                  : esDestino
+                      ? Icons.location_on
+                      : Icons.place,
+              color: esOrigen
+                  ? Colors.green.shade600
+                  : esDestino
+                      ? Colors.red.shade600
+                      : Colors.blue.shade600,
+              size: 28,
+            ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(
-                nodo['id'] as String,
-                style: const TextStyle(fontSize: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nodoId,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  if (esOrigen)
+                    Text(
+                      'Origen actual',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade600,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  if (esDestino)
+                    Text(
+                      'Destino actual',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.red.shade600,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
               ),
             ),
           ],
@@ -648,16 +716,41 @@ class _PantallaMapaState extends State<PantallaMapa> {
           children: [
             ListTile(
               dense: true,
-              leading: const Icon(Icons.info_outline, size: 5),
+              leading: const Icon(Icons.info_outline, size: 20),
               title: const Text('Tipo de lugar'),
-              subtitle: Text(_obtenerTipoLugar(nodo['id'] as String)),
+              subtitle: Text(_obtenerTipoLugar(nodoId)),
             ),
             ListTile(
               dense: true,
-              leading: const Icon(Icons.straighten, size: 5),
+              leading: const Icon(Icons.straighten, size: 20),
               title: const Text('Coordenadas'),
               subtitle: Text('X: ${nodo['x']}, Y: ${nodo['y']}'),
             ),
+            if (_origenSeleccionado != null && _origenSeleccionado != nodoId)
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info, size: 20, color: Colors.blue.shade600),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Origen: $_origenSeleccionado',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue.shade800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
         actions: [
@@ -673,19 +766,223 @@ class _PantallaMapaState extends State<PantallaMapa> {
               },
               child: const Text('Generar QR'),
             ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Navegando a ${nodo['id']}...'),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            child: const Text('Navegar aquí'),
-          ),
+          // Botón para limpiar selección si es origen o destino actual
+          if (esOrigen || esDestino)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _limpiarSeleccion();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.orange,
+              ),
+              child: const Text('Limpiar selección'),
+            ),
+          // Botón principal: Establecer origen o destino según el estado
+          if (!esOrigen && !esDestino)
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (_origenSeleccionado == null) {
+                  _establecerOrigen(nodoId);
+                } else {
+                  _establecerDestino(nodoId);
+                }
+              },
+              child: Text(
+                _origenSeleccionado == null
+                    ? 'Establecer origen'
+                    : 'Establecer destino',
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  void _establecerOrigen(String nodoId) {
+    setState(() {
+      _origenSeleccionado = nodoId;
+      _destinoSeleccionado = null;
+      _rutaActiva.clear();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.trip_origin, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                  'Origen establecido: $nodoId\nAhora selecciona un destino'),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green.shade600,
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Limpiar',
+          textColor: Colors.white,
+          onPressed: _limpiarSeleccion,
+        ),
+      ),
+    );
+  }
+
+  void _establecerDestino(String nodoId) async {
+    if (_origenSeleccionado == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Primero debes establecer un origen'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (nodoId == _origenSeleccionado) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('El destino debe ser diferente al origen'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _destinoSeleccionado = nodoId;
+    });
+
+    // Calcular la ruta con A*
+    await _calcularYMostrarRuta(_origenSeleccionado!, nodoId);
+  }
+
+  Future<void> _calcularYMostrarRuta(String origen, String destino) async {
+    try {
+      // Cargar el grafo del piso actual
+      final String jsonString = await rootBundle.loadString(rutaGrafoJson);
+      final Map<String, dynamic> jsonData = json.decode(jsonString);
+      final Grafo grafo = Grafo.fromJson(jsonData);
+
+      // Ejecutar el algoritmo A*
+      final resultado = AStar.calcularRuta(
+        grafo: grafo,
+        origen: origen,
+        destino: destino,
+      );
+
+      if (resultado.isNotEmpty) {
+        setState(() {
+          _rutaActiva.clear();
+          _rutaActiva.addAll(resultado);
+        });
+
+        final distanciaTotal = _calcularDistanciaRuta(resultado);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Ruta calculada',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text('Desde: $origen'),
+                Text('Hasta: $destino'),
+                Text('Nodos: ${resultado.length}'),
+                Text(
+                  'Distancia: ${distanciaTotal.toStringAsFixed(1)} metros',
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Limpiar',
+              textColor: Colors.white,
+              onPressed: _limpiarSeleccion,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text('No se encontró una ruta entre estos puntos'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red.shade600,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        _limpiarSeleccion();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error al calcular ruta: $e');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al calcular la ruta: $e'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+      _limpiarSeleccion();
+    }
+  }
+
+  double _calcularDistanciaRuta(List<String> ruta) {
+    double distanciaTotal = 0.0;
+    for (int i = 0; i < ruta.length - 1; i++) {
+      final nodoActual = _nodos.firstWhere((n) => n['id'] == ruta[i]);
+      final nodoSiguiente = _nodos.firstWhere((n) => n['id'] == ruta[i + 1]);
+
+      final dx = (nodoSiguiente['x'] as num) - (nodoActual['x'] as num);
+      final dy = (nodoSiguiente['y'] as num) - (nodoActual['y'] as num);
+      distanciaTotal += sqrt(dx * dx + dy * dy);
+    }
+    return distanciaTotal;
+  }
+
+  void _limpiarSeleccion() {
+    setState(() {
+      _origenSeleccionado = null;
+      _destinoSeleccionado = null;
+      _rutaActiva.clear();
+      _pasoActualRuta = 0;
+      _segmentosRuta.clear();
+      // _rutaActivaMultiPiso = null;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.clear, color: Colors.white),
+            SizedBox(width: 12),
+            Text('Selección limpiada'),
+          ],
+        ),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -713,6 +1010,271 @@ class _PantallaMapaState extends State<PantallaMapa> {
     if (id.contains('Ascensor')) return Icons.elevator;
     return Icons.place;
   }
+
+  // ==================== FUNCIONES NAVEGACIÓN MULTI-PISO ====================
+
+  /// Avanza al siguiente paso en la ruta
+  void _avanzarPaso() {
+    if (_segmentosRuta.isEmpty) return;
+
+    setState(() {
+      // Calcular el total de pasos en todos los segmentos
+      int totalPasos = 0;
+      for (final segmento in _segmentosRuta) {
+        totalPasos += segmento.nodos.length;
+      }
+
+      if (_pasoActualRuta < totalPasos - 1) {
+        _pasoActualRuta++;
+
+        // Verificar si necesitamos cambiar de piso
+        _verificarCambioPiso();
+      } else {
+        // Llegó al destino
+        _mostrarDialogoLlegada();
+      }
+    });
+  }
+
+  /// Retrocede al paso anterior en la ruta
+  void _retrocederPaso() {
+    if (_pasoActualRuta > 0) {
+      setState(() {
+        _pasoActualRuta--;
+      });
+    }
+  }
+
+  /// Verifica si el usuario debe cambiar de piso
+  void _verificarCambioPiso() {
+    int pasoActual = 0;
+
+    for (int i = 0; i < _segmentosRuta.length; i++) {
+      final segmento = _segmentosRuta[i];
+      final nodosEnSegmento = segmento.nodos.length;
+
+      // Verificar si el paso actual está en este segmento
+      if (_pasoActualRuta >= pasoActual &&
+          _pasoActualRuta < pasoActual + nodosEnSegmento) {
+        // Verificar si es un segmento de cambio de piso
+        if (segmento.tipo == TipoSegmento.escalera ||
+            segmento.tipo == TipoSegmento.ascensor) {
+          // Verificar si estamos en el último nodo de este segmento
+          if (_pasoActualRuta == pasoActual + nodosEnSegmento - 1) {
+            // Mostrar diálogo de cambio de piso
+            _mostrarDialogoCambioPiso(segmento);
+          }
+        }
+        break;
+      }
+
+      pasoActual += nodosEnSegmento;
+    }
+  }
+
+  /// Muestra el diálogo cuando el usuario llega a una escalera/ascensor
+  void _mostrarDialogoCambioPiso(SegmentoRuta segmento) {
+    if (segmento.pisoDestino == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              segmento.tipo == TipoSegmento.escalera
+                  ? Icons.stairs
+                  : Icons.elevator,
+              color: Colors.orange,
+              size: 32,
+            ),
+            const SizedBox(width: 12),
+            const Text('Cambio de Piso'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '¡Has llegado ${segmento.tipo == TipoSegmento.escalera ? 'a la escalera' : 'al ascensor'}!',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Icon(
+              Icons.arrow_upward,
+              size: 64,
+              color: Colors.blue,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Dirígete al Piso ${segmento.pisoDestino}',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              segmento.tipo == TipoSegmento.escalera
+                  ? 'Sube o baja por las escaleras'
+                  : 'Toma el ascensor',
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.qr_code_scanner, color: Colors.orange.shade700),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Escanea el código QR al llegar al piso ${segmento.pisoDestino} para continuar',
+                      style: TextStyle(
+                          fontSize: 12, color: Colors.orange.shade900),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Cambiar al mapa del piso destino
+              _cambiarAPiso(segmento.pisoDestino!);
+            },
+            icon: const Icon(Icons.check),
+            label: Text('Ver mapa del piso ${segmento.pisoDestino}'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.blue,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Cambia la vista al mapa de otro piso
+  void _cambiarAPiso(int nuevoPiso) {
+    // TODO: Implementar continuación de ruta en otro piso
+    // Se podría pasar el nodoInicial y los segmentos restantes al nuevo PantallaMapa
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PantallaMapa(
+          numeroPiso: nuevoPiso,
+          titulo: 'Piso $nuevoPiso',
+        ),
+      ),
+    );
+
+    // Nota: Aquí podrías pasar los segmentos restantes de la ruta
+    // para que continúe la navegación en el nuevo piso
+  }
+
+  /// Muestra el diálogo de llegada al destino
+  void _mostrarDialogoLlegada() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.celebration, color: Colors.green.shade600, size: 32),
+            const SizedBox(width: 12),
+            const Text('¡Llegaste!'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Has completado tu recorrido exitosamente.',
+              style: TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Icon(
+              Icons.check_circle,
+              size: 64,
+              color: Colors.green.shade400,
+            ),
+          ],
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _limpiarSeleccion();
+            },
+            child: const Text('Finalizar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Obtiene el segmento y paso actual
+  Map<String, dynamic>? _obtenerPasoActual() {
+    if (_segmentosRuta.isEmpty) return null;
+
+    int pasoAcumulado = 0;
+
+    for (final segmento in _segmentosRuta) {
+      if (_pasoActualRuta < pasoAcumulado + segmento.nodos.length) {
+        final indicePaso = _pasoActualRuta - pasoAcumulado;
+        final nodoId = segmento.nodos[indicePaso];
+
+        return {
+          'segmento': segmento,
+          'nodoId': nodoId,
+          'indicePaso': indicePaso,
+        };
+      }
+      pasoAcumulado += segmento.nodos.length;
+    }
+
+    return null;
+  }
+
+  /// Obtiene la instrucción para el paso actual
+  String _obtenerInstruccionPaso() {
+    final pasoActual = _obtenerPasoActual();
+    if (pasoActual == null) return '';
+
+    final segmento = pasoActual['segmento'] as SegmentoRuta;
+    final nodoId = pasoActual['nodoId'] as String;
+
+    switch (segmento.tipo) {
+      case TipoSegmento.escalera:
+        return 'Dirígete a la escalera';
+      case TipoSegmento.ascensor:
+        return 'Dirígete al ascensor';
+      case TipoSegmento.caminata:
+        // Inferir instrucción basándose en el ID del nodo
+        if (nodoId.contains('Entrada')) return 'Dirígete a la entrada';
+        if (nodoId.contains('Pasillo')) return 'Continúa por el pasillo';
+        if (nodoId.contains('Escalera')) return 'Dirígete a la escalera';
+        if (nodoId.contains('Ascensor')) return 'Dirígete al ascensor';
+        if (nodoId.contains('Interseccion')) return 'Gira en la intersección';
+        return 'Dirígete al siguiente punto';
+    }
+  }
+
+  // ==================== FIN FUNCIONES NAVEGACIÓN MULTI-PISO ====================
 
   // ==================== FUNCIONES DEBUG ====================
 
@@ -2399,6 +2961,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
                     case 'limpiar_conexiones':
                       _limpiarConexionesDebug();
                       break;
+                    case 'toggle_nodos':
+                      _toggleNodos();
+                      break;
+                    case 'demo_grafo':
+                      _mostrarDemoGrafo();
+                      break;
                   }
                 },
                 itemBuilder: (context) => [
@@ -2431,6 +2999,32 @@ class _PantallaMapaState extends State<PantallaMapa> {
                           Icon(Icons.sync, size: 20),
                           SizedBox(width: 12),
                           Text('Migrar Tipos de Nodos'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'toggle_nodos',
+                      child: Row(
+                        children: [
+                          Icon(
+                              _mostrarNodos
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 20),
+                          const SizedBox(width: 12),
+                          Text(_mostrarNodos
+                              ? 'Ocultar Nodos'
+                              : 'Mostrar Nodos'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'demo_grafo',
+                      child: Row(
+                        children: [
+                          Icon(Icons.account_tree, size: 20),
+                          SizedBox(width: 12),
+                          Text('Ver Demo Grafo'),
                         ],
                       ),
                     ),
@@ -2485,17 +3079,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
               ),
             ],
           ],
-          IconButton(
-            icon: Icon(_mostrarNodos ? Icons.visibility : Icons.visibility_off),
-            onPressed: _toggleNodos,
-            tooltip: _mostrarNodos ? 'Ocultar nodos' : 'Mostrar nodos',
-          ),
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
-            onPressed: _abrirScannerQR,
-            tooltip: 'Escanear QR',
-          ),
-
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
@@ -2663,6 +3246,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
               ),
             ),
           ),
+
+          // 🆕 Barra de progreso de ruta
+          _buildBarraProgresoRuta(),
         ],
       ),
       floatingActionButton: Column(
@@ -2692,10 +3278,10 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
-            heroTag: "graph_demo",
-            onPressed: _mostrarDemoGrafo,
-            tooltip: 'Ver grafo',
-            child: const Icon(Icons.route),
+            heroTag: "qr_scanner",
+            onPressed: _abrirScannerQR,
+            tooltip: 'Escanear código QR',
+            child: const Icon(Icons.qr_code_scanner),
           ),
         ],
       ),
@@ -3022,33 +3608,79 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final x = (nodo['x'] as num).toDouble();
     final y = (nodo['y'] as num).toDouble();
     final id = nodo['id'] as String;
-    final colorNodo = _obtenerColorNodo(nodo);
+
+    // Verificar si este nodo es el origen o destino seleccionado
+    final bool esOrigen = _origenSeleccionado == id;
+    final bool esDestino = _destinoSeleccionado == id;
+
+    // Obtener el color del nodo según su tipo o si es origen/destino
+    final Color colorNodo;
+    final IconData iconoNodo;
+    final double tamano;
+
+    if (esOrigen) {
+      colorNodo = Colors.green.shade600;
+      iconoNodo = Icons.trip_origin;
+      tamano = 20; // Más grande para destacar
+    } else if (esDestino) {
+      colorNodo = Colors.red.shade600;
+      iconoNodo = Icons.location_on;
+      tamano = 20;
+    } else {
+      colorNodo = _obtenerColorNodo(nodo);
+      iconoNodo = _obtenerIconoNodo(id);
+      tamano = 12;
+    }
 
     // Calcular posición escalada
     final posicionEscalada = _calcularPosicionEscalada(x, y);
 
+<<<<<<< HEAD
+=======
+    // Si estamos mostrando una ruta y este nodo está en la ruta (excepto origen/destino),
+    // NO lo dibujamos para evitar tapar el mapa
+    if (_rutaActiva.isNotEmpty && !esOrigen && !esDestino) {
+      // Verificar si este nodo está en la ruta
+      final posicionEnRuta = _rutaActiva.indexOf(id);
+
+      // Si está en la ruta pero NO es origen (primero) ni destino (último), no mostrarlo
+      if (posicionEnRuta != -1 &&
+          posicionEnRuta != 0 &&
+          posicionEnRuta != _rutaActiva.length - 1) {
+        return const SizedBox.shrink();
+      }
+    }
+
+>>>>>>> 89c6985b2dad793e4cd9cb60315d49bc39f30235
     return Positioned(
-      left: (posicionEscalada.dx - 6).roundToDouble(),
-      top: (posicionEscalada.dy - 6).roundToDouble(),
+      left: (posicionEscalada.dx - (tamano / 2)).roundToDouble(),
+      top: (posicionEscalada.dy - (tamano / 2)).roundToDouble(),
       child: GestureDetector(
         onTap: () => _mostrarInfoNodo(nodo),
         child: Container(
-          width: 12,
-          height: 12,
+          width: tamano,
+          height: tamano,
           decoration: BoxDecoration(
             color: colorNodo,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 1.5),
+            border: Border.all(
+              color: (esOrigen || esDestino) ? Colors.yellow : Colors.white,
+              width: (esOrigen || esDestino) ? 2.5 : 1.5,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withAlpha((0.3 * 255).round()),
-                blurRadius: 3,
-                offset: const Offset(0, 1),
+                blurRadius: (esOrigen || esDestino) ? 5 : 3,
+                offset: Offset(0, (esOrigen || esDestino) ? 2 : 1),
               ),
             ],
           ),
           child: Center(
-            child: Icon(_obtenerIconoNodo(id), color: Colors.white, size: 7),
+            child: Icon(
+              iconoNodo,
+              color: Colors.white,
+              size: (esOrigen || esDestino) ? 12 : 7,
+            ),
           ),
         ),
       ),
@@ -3182,6 +3814,151 @@ class _PantallaMapaState extends State<PantallaMapa> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // ==================== Barra de Progreso de Ruta ====================
+  Widget _buildBarraProgresoRuta() {
+    if (_segmentosRuta.isEmpty) return const SizedBox.shrink();
+
+    final pasoActual = _obtenerPasoActual();
+    if (pasoActual == null) return const SizedBox.shrink();
+
+    final segmento = pasoActual['segmento'] as SegmentoRuta;
+    final nodoId = pasoActual['nodoId'] as String;
+    final esConexionVertical = segmento.tipo == TipoSegmento.escalera ||
+        segmento.tipo == TipoSegmento.ascensor;
+
+    // Calcular total de pasos
+    int totalPasos = 0;
+    for (final seg in _segmentosRuta) {
+      totalPasos += seg.nodos.length;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: esConexionVertical ? Colors.orange.shade50 : Colors.blue.shade50,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Progreso
+          Row(
+            children: [
+              Text(
+                'Paso ${_pasoActualRuta + 1} de $totalPasos',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${((_pasoActualRuta / totalPasos) * 100).toInt()}%',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: _pasoActualRuta / totalPasos,
+            backgroundColor: Colors.grey[300],
+            valueColor: AlwaysStoppedAnimation<Color>(
+              esConexionVertical ? Colors.orange : Colors.blue,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Instrucción actual
+          Row(
+            children: [
+              Icon(
+                _obtenerIconoNodo(nodoId),
+                size: 32,
+                color: esConexionVertical ? Colors.orange : Colors.blue,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _obtenerInstruccionPaso(),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      nodoId,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Botones de acción
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _pasoActualRuta > 0 ? _retrocederPaso : null,
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Anterior'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: FilledButton.icon(
+                  onPressed: _avanzarPaso,
+                  icon: const Icon(Icons.check),
+                  label: Text(
+                    _pasoActualRuta == totalPasos - 1
+                        ? '¡Llegué!'
+                        : 'Siguiente',
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Botón especial para escanear QR en escaleras/ascensores
+          if (esConexionVertical) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _abrirScannerQR,
+                icon: const Icon(Icons.qr_code_scanner),
+                label: const Text('Escanear QR para confirmar'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.orange,
+                  side: BorderSide(color: Colors.orange.shade300),
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
