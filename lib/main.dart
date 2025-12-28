@@ -13,7 +13,7 @@ import 'utils/gestor_multipiso.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
-const bool kDebugMode = false;
+const bool kDebugMode = true;
 // =============================================================
 
 // ==================== TIPOS DE NODOS ====================
@@ -148,7 +148,7 @@ class PantallaInicio extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.location_on,
-                      size: 5,
+                      size: 20,
                       color: Colors.blue.shade600,
                     ),
                     const SizedBox(height: 16),
@@ -313,7 +313,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
   // Dimensiones del SVG original (predefinidas para cada piso)
   double _svgWidthOriginal = 1200.0;
   double _svgHeightOriginal = 800.0;
-  bool _inicializado = false;
   // Límites de zoom (coinciden con los de InteractiveViewer más abajo)
   final double _minScale = 1.0;
   final double _maxScale = 4.0;
@@ -376,17 +375,13 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
   Future<void> _inicializarMapa() async {
     try {
-      // Cargar nodos sin setState
+      // Cargar nodos con setState para actualizar la UI
       await _cargarNodos();
 
-      // Esperar al primer frame para tener RenderBox disponible
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            _inicializado = true;
-          });
-        }
-      });
+      // Forzar reconstrucción del widget después de cargar nodos
+      if (mounted) {
+        setState(() {});
+      }
     } catch (e) {
       if (kDebugMode) {
         print('❌ ERROR inicialización: $e');
@@ -470,71 +465,18 @@ class _PantallaMapaState extends State<PantallaMapa> {
   }
 
   Offset _calcularPosicionEscalada(double x, double y) {
-    if (!_inicializado) {
-      return Offset(x, y);
-    }
-
-    // Usar el Container principal como referencia
-    final RenderBox? containerBox =
-        _containerKey.currentContext?.findRenderObject() as RenderBox?;
-
-    if (containerBox == null || !containerBox.hasSize) {
-      return Offset(x, y);
-    }
-
-    final containerSize = containerBox.size;
-
-    if (containerSize.width <= 0 || containerSize.height <= 0) {
-      return Offset(x, y);
-    }
-
-    // Calcular la escala manteniendo aspect ratio (BoxFit.contain)
-    final scaleX = containerSize.width / _svgWidthOriginal;
-    final scaleY = containerSize.height / _svgHeightOriginal;
-    final scale = scaleX < scaleY ? scaleX : scaleY;
-
-    // Calcular dimensiones escaladas del SVG
-    final scaledWidth = _svgWidthOriginal * scale;
-    final scaledHeight = _svgHeightOriginal * scale;
-
-    // Calcular offsets para centrado (BoxFit.contain centra el contenido)
-    final offsetX = (containerSize.width - scaledWidth) / 2;
-    final offsetY = (containerSize.height - scaledHeight) / 2;
-
-    // Aplicar transformación y redondear a enteros para consistencia
-    final scaledX = ((x * scale) + offsetX).roundToDouble();
-    final scaledY = ((y * scale) + offsetY).roundToDouble();
-
-    return Offset(scaledX, scaledY);
+    // Como el SizedBox tiene exactamente las dimensiones del SVG original (_svgWidthOriginal x _svgHeightOriginal),
+    // las coordenadas de los nodos se mapean directamente 1:1 sin necesidad de escalar.
+    // El InteractiveViewer se encarga de hacer zoom y pan sobre este contenedor de tamaño fijo.
+    return Offset(x, y);
   }
 
   // Método inverso: de coordenadas de pantalla a coordenadas SVG
   Offset _calcularCoordenadasSVG(Offset screenPosition) {
-    final RenderBox? containerBox =
-        _containerKey.currentContext?.findRenderObject() as RenderBox?;
-
-    if (containerBox == null) {
-      return screenPosition;
-    }
-
-    final containerSize = containerBox.size;
-
-    // Calcular la escala
-    final scaleX = containerSize.width / _svgWidthOriginal;
-    final scaleY = containerSize.height / _svgHeightOriginal;
-    final scale = scaleX < scaleY ? scaleX : scaleY;
-
-    // Calcular offsets
-    final scaledWidth = _svgWidthOriginal * scale;
-    final scaledHeight = _svgHeightOriginal * scale;
-    final offsetX = (containerSize.width - scaledWidth) / 2;
-    final offsetY = (containerSize.height - scaledHeight) / 2;
-
-    // Transformación inversa y redondear a enteros para consistencia
-    final svgX = ((screenPosition.dx - offsetX) / scale).roundToDouble();
-    final svgY = ((screenPosition.dy - offsetY) / scale).roundToDouble();
-
-    return Offset(svgX, svgY);
+    // Como el SizedBox tiene exactamente las dimensiones del SVG original,
+    // las coordenadas de pantalla dentro del contenedor son directamente las coordenadas SVG.
+    // No necesitamos hacer conversión de escala.
+    return screenPosition;
   }
 
   String get rutaArchivo {
@@ -3202,19 +3144,21 @@ class _PantallaMapaState extends State<PantallaMapa> {
               scaleEnabled: true,
               minScale: _minScale,
               maxScale: _maxScale,
-              boundaryMargin: EdgeInsets.all(double.infinity),
+              boundaryMargin: const EdgeInsets.all(20),
+              constrained: false,
               child: GestureDetector(
                 onTapDown: _modoDebugActivo ? _handleDebugTap : null,
-                child: Container(
+                child: SizedBox(
                   key: _containerKey,
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: Colors.white,
+                  width: _svgWidthOriginal,
+                  height: _svgHeightOriginal,
                   child: Stack(
                     children: [
                       SvgPicture.asset(
                         rutaArchivo,
-                        fit: BoxFit.contain,
+                        width: _svgWidthOriginal,
+                        height: _svgHeightOriginal,
+                        fit: BoxFit.fill,
                         placeholderBuilder: (context) => const Center(
                           child: CircularProgressIndicator(),
                         ),
