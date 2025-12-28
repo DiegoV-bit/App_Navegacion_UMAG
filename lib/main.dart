@@ -8,10 +8,8 @@ import 'package:flutter/services.dart'
     show rootBundle, Clipboard, ClipboardData;
 import 'models/grafo.dart';
 import 'utils/a_estrella.dart';
-import 'utils/navegacion_qr.dart';
 import 'utils/pantalla_lectora_qr.dart';
 import 'utils/gestor_multipiso.dart';
-import 'screens/pantalla_opciones_ruta.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
@@ -189,7 +187,7 @@ class PantallaInicio extends StatelessWidget {
                     _buildPisoCard(
                       context,
                       'Segundo Piso',
-                      'Aulas y oficinas',
+                      'Salas 21-26 y salas 52-56',
                       Icons.school,
                       Colors.orange,
                       2,
@@ -198,7 +196,7 @@ class PantallaInicio extends StatelessWidget {
                     _buildPisoCard(
                       context,
                       'Tercer Piso',
-                      'Salas de estudio',
+                      'Salas 31-36 y departamento de matematicas y fisica',
                       Icons.book,
                       Colors.purple,
                       3,
@@ -207,7 +205,7 @@ class PantallaInicio extends StatelessWidget {
                     _buildPisoCard(
                       context,
                       'Cuarto Piso',
-                      'Administración',
+                      'Salas 41-44 y sala de conferencias',
                       Icons.business,
                       Colors.red,
                       4,
@@ -313,17 +311,15 @@ class _PantallaMapaState extends State<PantallaMapa> {
   final GlobalKey _containerKey = GlobalKey();
 
   // Dimensiones del SVG original (predefinidas para cada piso)
-  // Usamos un único TransformationController para gestos y botones
-  // `_transformationController` ya está declarado arriba y usado por InteractiveViewer.
   double _svgWidthOriginal = 1200.0;
   double _svgHeightOriginal = 800.0;
   bool _inicializado = false;
-  double _currentScale = 1.0;
-  Offset _lastFocalPoint = Offset.zero;
-  AnimationController? _zoomAnimationController;
   // Límites de zoom (coinciden con los de InteractiveViewer más abajo)
-  final double _minScale = 0.8;
+  final double _minScale = 1.0;
   final double _maxScale = 4.0;
+
+  // Variable para almacenar la ruta activa calculada con A*
+  final List<String> _rutaActiva = [];
 
   // Variables para selección manual de origen y destino
   String? _origenSeleccionado;
@@ -332,7 +328,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
   // Variables para navegación multi-piso
   final GestorMultiPiso _gestorMultiPiso = GestorMultiPiso();
   int _pasoActualRuta = 0;
-  List<SegmentoRuta> _segmentosRuta = [];
+  final List<SegmentoRuta> _segmentosRuta = [];
   // OpcionRuta? _rutaActivaMultiPiso; // TODO: Implementar selección de opciones de ruta
 
   @override
@@ -592,11 +588,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
   void _zoomIn(double scaleFactor) {
     // Delegar a la implementación genérica que aplica límites y centra el zoom.
     zoom(scaleFactor);
-  }
-
-  void _zoomOut() {
-    // Delegar a la función genérica `zoom` para un comportamiento consistente.
-    zoom(0.8);
   }
 
   /// Aplica un zoom relativo respecto al centro de la pantalla.
@@ -3635,8 +3626,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
     // Calcular posición escalada
     final posicionEscalada = _calcularPosicionEscalada(x, y);
 
-<<<<<<< HEAD
-=======
     // Si estamos mostrando una ruta y este nodo está en la ruta (excepto origen/destino),
     // NO lo dibujamos para evitar tapar el mapa
     if (_rutaActiva.isNotEmpty && !esOrigen && !esDestino) {
@@ -3651,7 +3640,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
       }
     }
 
->>>>>>> 89c6985b2dad793e4cd9cb60315d49bc39f30235
     return Positioned(
       left: (posicionEscalada.dx - (tamano / 2)).roundToDouble(),
       top: (posicionEscalada.dy - (tamano / 2)).roundToDouble(),
