@@ -40,9 +40,10 @@ gantt
     Algoritmo de rutas (Bruno)                   :done, dev18, 2025-10-27, 6d
     Integración de los mapas (Diego)             :done, dev19, 2025-11-13, 2025-11-23
     Visualización de las rutas (Diego)           :active, dev20, 2025-12-4, 2025-12-12
-    Funcionalidades (QR busqueda selector de piso) (Diego) :active, dev21, 2025-12-10, 2025-12-15
+    Funcionalidades (QR busqueda y selector de piso) (Diego y Bruno) :done, dev21, 2025-12-10, 2025-12-15
+    Escalado a todo el edificio (Diego y Bruno)  :done, dev22, 2025-11-03, 2025-12-12
 
     section Integración final
-    Escalado a todo el edificio (Diego y Bruno)  :done, dev22, 2025-11-03, 2025-12-12
-    Pruebas finales de la aplicación (Diego y Bruno) :dev23, 2025-11-24, 2025-12-07
+    Correccion de errores de la aplicacion (Diego y Bruno) : active, dev23, 2025-12-18, 2026-01-04
+    Pruebas finales de la aplicación (Diego y Bruno) :active, dev24, 2025-11-24, 2026-01-04
 ```
