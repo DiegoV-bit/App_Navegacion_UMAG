@@ -21,7 +21,8 @@
     {"id": "P3_Escalera_Norte_ingenieria", "x": 475, "y": 387},
     {"id": "P3_Escalera_Sur_ingenieria", "x": 1063, "y": 593},
     {"id": "P3_Pasillo_Profesores_Matematicas y fisica", "x": 655, "y": 106},
-    {"id": "P3_Escalera_Sur_ciencias", "x": 720, "y": 45}
+    {"id": "P3_Escalera_Sur_ciencias", "x": 720, "y": 45},
+    {"id": "P3_Banos_ingenieria", "x": 1087, "y": 599}
   ],
   "conexiones": [
     {"origen": "P3_Pasillo_ciencias_Sur", "destino": "P3_Pasillo_Profesores_Matematicas y fisica", "distancia": 99},

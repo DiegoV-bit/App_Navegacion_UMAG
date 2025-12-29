@@ -23,7 +23,9 @@
     {"id": "P2_Sala_53", "x": 485, "y": 311},
     {"id": "P2_Sala_54", "x": 546, "y": 254},
     {"id": "P2_Sala_55", "x": 597, "y": 200},
-    {"id": "P2_Sala_56", "x": 660, "y": 140}
+    {"id": "P2_Sala_56", "x": 660, "y": 140},
+    {"id": "P2_Banos_ingenieria", "x": 940, "y": 617},
+    {"id": "P2_Banos_ciencias", "x": 632, "y": 106}
   ],
   "conexiones": [
     {"origen": "P2_Escalera_Centro_ingenieria", "destino": "P2_Pasillo_ingenieria_Norte", "distancia": 213},
