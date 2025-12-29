@@ -281,6 +281,8 @@ Durante el desarrollo de la interfaz se tomaron varias decisiones importantes:
 
 Esta implementación inicial de la interfaz gráfica estableció las bases para el desarrollo posterior de funcionalidades más avanzadas, como el sistema de navegación basado en grafos y el cálculo de rutas óptimas entre diferentes puntos de la facultad.
 
+\newpage
+
 \subsubsection{Modelado del grafo de salas y conexiones}
 La aplicación hace uso de un modelo de grafo para poder representar la topología de cada piso del edificio (dicho de otra forma se representa mediante el grafo las salas de clase, oficinas y laboratorio de toda la facultad de ingeniería). Este modelo permite calcular las mejores rutas entre distintos puntos de interés mediante algoritmos de búsqueda en grafos.
 
@@ -601,6 +603,201 @@ La aplicación valida y parsea estos códigos mediante la clase \texttt{QRUtils}
 La integración del algoritmo A* con el modelo de grafos y la interfaz gráfica permite una experiencia de navegación interna eficiente y clara. El algoritmo determina rutas óptimas usando distancias reales y una heurística adecuada para espacios 2D, mientras Flutter proporciona la visualización interactiva del plano de la facultad.
 
 Este diseño modular facilita extender la aplicación a nuevos pisos o edificios simplemente añadiendo los mapas SVG correspondientes y sus archivos JSON de grafos, sin necesidad de modificar la lógica del algoritmo de búsqueda.
+
+\subsubsection{Creación y generación automatizada de códigos QR}
+
+Para la implementación del sistema de navegación interior, se desarrolló un programa en Python que automatiza la generación de códigos QR para cada nodo definido en los grafos de navegación. Este sistema permite generar de forma rápida y consistente todos los códigos QR necesarios para los 4 pisos de la Facultad de Ingeniería, facilitando el despliegue físico del sistema.
+
+\paragraph{Arquitectura del sistema de generación}
+El sistema de generación de códigos QR está compuesto por tres scripts principales ubicados en el directorio \texttt{scripts/}:
+
+\begin{enumerate}
+  \item \textbf{generar\_qrs.py}: Script principal que genera códigos QR para todos los pisos del edificio de forma automatizada. Incluye generación masiva de QRs, lectura automática de archivos JSON de grafos, creación de estructura de carpetas organizada, estadísticas detalladas de generación y generación automática de documentación README.
+
+  \item \textbf{generar\_qr\_piso.py}: Script auxiliar de utilidad para regenerar códigos QR de un piso específico, útil durante el desarrollo y mantenimiento. Uso: \texttt{python generar\_qr\_piso.py [número\_piso]}
+
+  \item \textbf{verificar\_formato\_qr.py}: Script de pruebas que valida que los QRs generados sean compatibles con el formato esperado por la aplicación Flutter.
+\end{enumerate}
+
+\paragraph{Dependencias del sistema}
+El sistema utiliza las siguientes bibliotecas de Python, definidas en \texttt{requirements.txt}:
+
+\textbf{qrcode[pil]==8.2}: Biblioteca principal para la generación de códigos QR. Proporciona soporte para diferentes versiones de QR (1-40), múltiples niveles de corrección de errores (L, M, Q, H), personalización de tamaño y borde, y exportación a múltiples formatos de imagen.
+
+\textbf{Pillow$>$=11.0.0}: Biblioteca de procesamiento de imágenes (PIL - Python Imaging Library). Se utiliza para renderización de códigos QR en formato PNG, manipulación de colores y contraste, configuración de la calidad de salida y soporte para diferentes formatos de imagen.
+
+\paragraph{Configuración de generación}
+La configuración principal del sistema establece los parámetros óptimos para la generación de códigos QR:
+
+\begin{lstlisting}[language=Python, caption={Configuración de generación de QR}]
+QR_CONFIG = {
+    'version': 1,  
+    'error_correction': qrcode.constants.ERROR_CORRECT_H,
+    'box_size': 10,
+    'border': 4,
+}
+\end{lstlisting}
+
+Los parámetros significan:
+\begin{itemize}
+  \item \texttt{version: 1} - Define el tamaño del QR. Versión 1 es el QR más pequeño posible (21×21 módulos), que se ajusta automáticamente si el contenido es mayor.
+  \item \texttt{error\_correction: ERROR\_CORRECT\_H} - Nivel de corrección de errores al 30\%. Este nivel permite que el QR funcione incluso si está parcialmente dañado, sucio o deteriorado, ideal para instalaciones físicas en ambientes educativos.
+  \item \texttt{box\_size: 10} - Tamaño en píxeles de cada módulo del QR. Con 10 píxeles, un QR versión 1 genera una imagen de aproximadamente 290×290 píxeles.
+  \item \texttt{border: 4} - Tamaño del borde en módulos. El estándar QR requiere mínimo 4 módulos de borde para garantizar el escaneo correcto.
+\end{itemize}
+
+\paragraph{Funciones principales del sistema}
+
+\textbf{leer\_grafo\_json(ruta\_json)}: Lee y valida archivos JSON de grafos de navegación. Implementa validaciones de existencia del archivo, formato JSON válido, presencia de la clave 'nodos' y manejo robusto de errores con mensajes descriptivos.
+
+\textbf{extraer\_numero\_piso(nodo\_id)}: Extrae el número de piso del identificador del nodo siguiendo la convención de nomenclatura del proyecto. El formato esperado es \texttt{P\{numero\}\_\{descripcion\}} (ejemplo: \texttt{P1\_Entrada\_1}).
+
+\textbf{crear\_datos\_qr(nodo, piso\_default)}: Genera el contenido JSON que será codificado en cada código QR. El formato de salida incluye los campos \texttt{type}, \texttt{id}, \texttt{piso}, \texttt{x} e \texttt{y}.
+
+\textbf{generar\_qr\_imagen(datos\_qr, ruta\_salida)}: Genera la imagen PNG del código QR con la configuración especificada. El proceso interno crea un objeto QRCode, agrega los datos JSON, optimiza el tamaño, genera la imagen en blanco y negro y guarda en formato PNG comprimido.
+
+\textbf{generar\_qrs\_desde\_grafo(ruta\_json, carpeta\_salida, numero\_piso)}: Función principal que coordina la generación masiva de QRs para un piso completo. Lee el archivo JSON del grafo, extrae la lista de nodos, crea la carpeta de salida y genera cada imagen QR reportando el progreso.
+
+\textbf{generar\_qrs\_todos\_los\_pisos(directorio\_base)}: Función de orquestación que genera códigos QR para todos los pisos del edificio. Procesa los 4 pisos secuencialmente y muestra estadísticas completas del proceso.
+
+\paragraph{Especificaciones técnicas del QR}
+
+Los códigos generados tienen las siguientes características: versión QR 1 con auto-ajuste (tamaño mínimo posible, óptimo para datos pequeños), corrección de errores nivel H de 30\% (máxima durabilidad en ambientes de alto tráfico), tamaño de imagen aproximado de 290×290 píxeles (suficiente para impresión a 5×5 cm con 300 DPI), formato PNG (compresión sin pérdida, ideal para impresión), colores blanco y negro (máximo contraste para lectura confiable), y tamaño de datos de 80-120 bytes (JSON compacto con información esencial).
+
+El nivel de corrección de errores H permite recuperar hasta el 30\% de la información del código aunque esté dañada. Esto es crítico porque los stickers pueden sufrir desgaste físico (rayarse o deteriorarse), acumular suciedad (polvo o manchas), enfrentar condiciones de luz adversas (reflejo o sombras durante el escaneo) y tener impresión imperfecta (variaciones en la calidad).
+
+\paragraph{Estructura de salida}
+
+Después de ejecutar el script, se genera la siguiente estructura:
+
+\begin{verbatim}
+qr_codes/
+├── README.md           # Documentación automática
+├── piso1/
+│   ├── QR_P1_Entrada_1.png
+│   ├── QR_P1_Pasillo_Norte.png
+│   └── ... (50 archivos)
+├── piso2/
+│   └── ... (24 archivos)
+├── piso3/
+│   └── ... (22 archivos)
+└── piso4/
+    └── ... (12 archivos)
+\end{verbatim}
+
+Total: 108 códigos QR organizados por piso (50 en piso 1, 24 en piso 2, 22 en piso 3 y 12 en piso 4).
+
+\paragraph{Consideraciones de implementación física}
+
+Para la instalación de los códigos QR, se recomienda un tamaño de 5×5 cm (mínimo funcional 3×3 cm), resolución de 300 DPI o superior, material de stickers vinilo plastificado resistente al agua, e impresora láser preferiblemente para mejor contraste.
+
+La instalación debe realizarse a una altura estándar de 1.5 metros desde el suelo, en superficies planas, visibles y accesibles, con orientación perpendicular a la línea de visión y evitando zonas con reflejo directo de iluminación.
+
+El mantenimiento incluye limpieza con paño húmedo cada 3 meses, inspección mensual para verificar legibilidad y reemplazo cuando el daño supere el 30\%.
+
+\subsubsection{Sistema de lectura e interpretación de códigos QR}
+
+El sistema de códigos QR implementado en la aplicación permite a los usuarios identificar rápidamente ubicaciones, nodos del grafo, rutas completas e incluso coordenadas específicas dentro de los mapas SVG. Este módulo mejora la experiencia de navegación y agiliza el acceso a información relevante dentro de la facultad.
+
+\paragraph{Objetivos de la implementación}
+
+La integración de códigos QR cumple tres objetivos principales: identificación rápida de ubicaciones sin necesidad de buscar manualmente en el mapa, facilitar la navegación automática hacia salas, oficinas, laboratorios o puntos de interés, y compatibilidad con diversos formatos, permitiendo flexibilidad tanto operativa como en la fase de depuración.
+
+\paragraph{Arquitectura del sistema QR}
+
+El sistema se compone de tres módulos esenciales:
+
+\textbf{QRScannerScreen (pantalla\_lectora\_qr.dart)}: Pantalla encargada de activar la cámara, detectar códigos QR en tiempo real, validar y enviar los datos escaneados, y proveer controles como flash, pausa y vista previa.
+
+\textbf{QRUtils (codigo\_qr.dart)}: Este módulo centraliza la lógica completa de interpretación y generación de códigos QR. Soporta múltiples tipos de códigos: formato \texttt{nodo:} para selección directa de nodos (ejemplo: \texttt{nodo:P1\_Entrada\_1}), formato \texttt{ruta:} para cálculo de ruta con A* (ejemplo: \texttt{ruta:P1\_A|P1\_B}), formato \texttt{piso:} para navegación entre pisos (ejemplo: \texttt{piso:1|nodo:P1\_Entrada\_1}), formato \texttt{coord:} para posicionamiento en SVG (ejemplo: \texttt{coord:900,350}), formato \texttt{ubicacion:} para alias amigables (ejemplo: \texttt{ubicacion:Ascensor}), y formato JSON generado por Python (ejemplo: \texttt{\{"type":"nodo","id":"P1\_Entrada\_1"\}}).
+
+Las funciones clave del módulo incluyen \texttt{parseQRCode()}, \texttt{esQRValido()}, \texttt{procesarQRConGrafo()}, conversiones de alias a ID y generación de QR dinámicos.
+
+\textbf{QRNavigation (navegacion\_qr.dart)}: Define la reacción de la app ante cada tipo de QR procesado, incluyendo mostrar nodo, calcular rutas con A*, mostrar coordenadas y navegar automáticamente entre pantallas.
+
+\paragraph{Flujo de funcionamiento}
+
+El proceso completo de escaneo y procesamiento sigue estos pasos:
+
+\begin{enumerate}
+  \item \textbf{Apertura del lector QR}: El usuario abre el lector y la app crea una instancia de \texttt{QRScannerScreen} con el piso y grafo actual.
+
+  \item \textbf{Lectura del QR}: El contenido escaneado se envía a \texttt{parseQRCode()}.
+
+  \item \textbf{Validación de formato}: Si el QR es soportado, se procede; de lo contrario, se avisa al usuario.
+
+  \item \textbf{Interpretación del contenido}: Según el tipo de QR, se extraen IDs de nodos, pisos, alias, coordenadas o rutas.
+
+  \item \textbf{Procesamiento}: La función \texttt{procesarQRConGrafo()} implementa lógica adicional, como buscar nodos en el grafo, calcular rutas usando A*, determinar distancias y convertir coordenadas.
+
+  \item \textbf{Acción final en la interfaz}: Usando \texttt{QRNavigation}, la app regresa al mapa, selecciona nodos, muestra rutas, centra el mapa e inicia navegación paso a paso.
+\end{enumerate}
+
+\paragraph{Ejemplos de uso}
+
+\textbf{Escanear nodo}: \texttt{nodo:P1\_Entrada\_1} selecciona automáticamente la entrada del piso 1.
+
+\textbf{Escanear ruta}: \texttt{ruta:P1\_Entrada\_1|P1\_Lab\_Tesla} calcula la ruta con A*, muestra los pasos e inicia la navegación.
+
+\textbf{Escanear coordenadas}: \texttt{coord:1020,540} centra el mapa en la posición indicada.
+
+\textbf{Escanear alias}: \texttt{ubicacion:Ascensor} se interpreta como \texttt{P1\_Ascensor}.
+
+\paragraph{Generación de códigos QR desde la aplicación}
+
+En modo debug, desde el mapa se puede tocar un nodo y seleccionar "Generar QR", lo que copia al portapapeles un QR válido para ese nodo. Esta funcionalidad facilita el testing y la creación de nuevos códigos durante el desarrollo.
+
+\paragraph{Ventajas del sistema QR}
+
+El sistema proporciona navegación más rápida dentro del edificio, integración completa con el grafo y A*, soporte para mapas complejos con coordenadas, señalización física dentro de la facultad y simplificación del debugging del sistema.
+
+\subsubsection{Solución al problema de compatibilidad de formatos QR}
+
+Durante el desarrollo inicial del sistema, se identificó un problema crítico: los códigos QR generados por el script de Python mostraban el error "formato QR no soportado" al ser escaneados por la aplicación Flutter.
+
+\paragraph{Causa raíz del problema}
+
+El script Python generaba códigos con formato JSON completo: \texttt{\{"type": "nodo", "id": "P1\_Entrada\_1", "piso": 1, "x": 100, "y": 200\}}, mientras que la aplicación esperaba formatos de texto simple como \texttt{nodo:P1\_Entrada\_1}, \texttt{piso:1|nodo:P1\_Entrada\_1}, etc.
+
+\paragraph{Solución implementada}
+
+Se actualizó el archivo \texttt{lib/utils/codigo\_qr.dart} para soportar ambos formatos, manteniendo compatibilidad retroactiva con los códigos existentes.
+
+Los cambios incluyeron:
+
+\begin{enumerate}
+  \item \textbf{Soporte JSON añadido}: Se implementó detección y parsing de formato JSON al inicio del proceso de validación. El sistema verifica si \texttt{qrData} comienza con '\{' y termina con '\}', decodifica el JSON con \texttt{json.decode()}, valida la presencia del campo \texttt{type}, extrae \texttt{id}, \texttt{piso}, \texttt{x} e \texttt{y} según el tipo, y usa fallback a formatos legacy si el JSON falla.
+
+  \item \textbf{Validación actualizada}: La función \texttt{esQRValido()} ahora valida primero si es JSON y mantiene compatibilidad con formatos legacy.
+
+  \item \textbf{Importación de librería}: Se añadió \texttt{import 'dart:convert';} para el manejo de JSON.
+\end{enumerate}
+
+\paragraph{Formatos soportados}
+
+La aplicación ahora reconoce todos estos formatos:
+
+\textbf{JSON (generado por Python)}: \texttt{\{"type": "nodo", "id": "P1\_Entrada\_1", "piso": 1, "x": 100, "y": 200\}}
+
+\textbf{Texto simple (formatos legacy)}: \texttt{nodo:P1\_Entrada\_1}, \texttt{piso:1|nodo:P1\_Entrada\_1}, \texttt{ubicacion:Entrada Principal}, \texttt{coord:1004,460}, \texttt{ruta:P1\_Entrada\_1|P1\_Pasillo\_Norte}
+
+\textbf{ID directo}: \texttt{P1\_Entrada\_1}
+
+\paragraph{Verificación y pruebas}
+
+Se creó el script \texttt{scripts/verificar\_formato\_qr.py} que verifica la compatibilidad de todos los códigos generados. La verificación confirmó que los 108 QRs generados (50 en piso 1, 24 en piso 2, 22 en piso 3 y 12 en piso 4) son válidos y compatibles con la aplicación.
+
+\paragraph{Compatibilidad retroactiva}
+
+La solución mantiene:
+\begin{itemize}
+  \item Funcionamiento de QRs antiguos (formatos legacy)
+  \item Funcionamiento de QRs nuevos (formato JSON)
+  \item Sin cambios en el resto del código
+  \item Sin necesidad de regenerar QRs antiguos
+\end{itemize}
+
+La lógica de parsing JSON utiliza detección por delimitadores, parsing con manejo de excepciones, validación de campos requeridos, extracción segura de datos y fallback silencioso a otros formatos si el JSON falla. El formato JSON se verifica primero antes de intentar otros formatos, asegurando prioridad al formato generado por el sistema automatizado de Python.
 
 
 
