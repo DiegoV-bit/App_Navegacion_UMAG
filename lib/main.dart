@@ -1743,9 +1743,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
                                       // ignore: avoid_print
                                       print('\n===== A* Ruta calculada =====');
                                       // ignore: avoid_print
-                                      print('Origen: ${origenRuta}');
+                                      print('Origen: $origenRuta');
                                       // ignore: avoid_print
-                                      print('Destino: ${destinoRuta}');
+                                      print('Destino: $destinoRuta');
                                       if (ruta.isEmpty) {
                                         // ignore: avoid_print
                                         print('Resultado: NO se encontró ruta');
