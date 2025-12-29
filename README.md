@@ -7,7 +7,6 @@
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart)](https://dart.dev)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 </div>
 
@@ -259,12 +258,6 @@ Las contribuciones son bienvenidas. Para cambios importantes:
 3. Commit tus cambios (`git commit -m 'Agregar nueva función'`)
 4. Push a la rama (`git push origin feature/NuevaFuncion`)
 5. Abre un Pull Request
-
----
-
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ---
 
