@@ -215,6 +215,24 @@
     {"origen": "P1_Laboratorio_Fisica", "destino": "P1_Pasillo_Labs_ciencias_Norte", "distancia": 95},
 
     {"origen": "P1_Pasillo_Profesores", "destino": "P1_Escaleras_Norte_ingenieria", "distancia": 53},
-    {"origen": "P1_Escaleras_Norte_ingenieria", "destino": "P1_Pasillo_Profesores", "distancia": 53}
+    {"origen": "P1_Escaleras_Norte_ingenieria", "destino": "P1_Pasillo_Profesores", "distancia": 53},
+
+    {"origen": "P1_Puerta_Pasillo_Sur_ingenieria", "destino": "P1_Pasillo_Labs_ingenieria_centro", "distancia": 72},
+    {"origen": "P1_Pasillo_Labs_ingenieria_centro", "destino": "P1_Puerta_Pasillo_Sur_ingenieria", "distancia": 72},
+
+    {"origen": "P1_Puerta_Pasillo_Sur_ingenieria", "destino": "P1_Sala_Descanso_Mecanica", "distancia": 21},
+    {"origen": "P1_Sala_Descanso_Mecanica", "destino": "P1_Puerta_Pasillo_Sur_ingenieria", "distancia": 21},
+
+    {"origen": "P1_Puerta_Pasillo_Sur_ingenieria", "destino": "P1_Sala_Magister_comp", "distancia": 39},
+    {"origen": "P1_Sala_Magister_comp", "destino": "P1_Puerta_Pasillo_Sur_ingenieria", "distancia": 39},
+
+    {"origen": "P1_Puerta_Pasillo_Sur_ingenieria", "destino": "P1_Pasillo_Ingenieria_Centro", "distancia": 149},
+    {"origen": "P1_Pasillo_Ingenieria_Centro", "destino": "P1_Puerta_Pasillo_Sur_ingenieria", "distancia": 149},
+
+    {"origen": "P1_Puerta_Pasillo_Sur_ingenieria", "destino": "P1_Pasillo_Ingenieria_Sur", "distancia": 76},
+    {"origen": "P1_Pasillo_Ingenieria_Sur", "destino": "P1_Puerta_Pasillo_Sur_ingenieria", "distancia": 76},
+
+    {"origen": "P1_Sala_Descanso_Construccion", "destino": "P1_Pasillo_Labs_ingenieria_centro", "distancia": 44},
+    {"origen": "P1_Pasillo_Labs_ingenieria_centro", "destino": "P1_Sala_Descanso_Construccion", "distancia": 44}
   ]
 }

@@ -1,17 +1,17 @@
 {
   "nodos": [
-    {"id": "P4_Escalera_Norte_ingenieria", "x": 347, "y": 646},
-    {"id": "P4_Escalera_Sur_ingenieria", "x": 1049, "y": 626},
-    {"id": "P4_Ascensor", "x": 232, "y": 576},
-    {"id": "P4_Pasillo_Norte", "x": 432, "y": 562},
-    {"id": "P4_Pasillo_Sur", "x": 1048, "y": 572},
-    {"id": "P4_Secretaria_plan_comun", "x": 451, "y": 628},
-    {"id": "P4_Sala_41", "x": 573, "y": 628},
-    {"id": "P4_Sala_42", "x": 768, "y": 633},
-    {"id": "P4_Sala_43", "x": 863, "y": 632},
-    {"id": "P4_Sala_de_conferencias", "x": 947, "y": 635},
-    {"id": "P4_Decanato", "x": 278, "y": 603},
-    {"id": "P4_Lab_de_computacion", "x": 665, "y": 631}
+    {"id": "P4_Escalera_Norte_ingenieria", "x": 308, "y": 632},
+    {"id": "P4_Escalera_Sur_ingenieria", "x": 931, "y": 623},
+    {"id": "P4_Ascensor", "x": 206, "y": 558},
+    {"id": "P4_Pasillo_Norte", "x": 351, "y": 557},
+    {"id": "P4_Pasillo_Sur", "x": 934, "y": 559},
+    {"id": "P4_Secretaria_plan_comun", "x": 376, "y": 589},
+    {"id": "P4_Sala_41", "x": 492, "y": 575},
+    {"id": "P4_Sala_42", "x": 710, "y": 577},
+    {"id": "P4_Sala_43", "x": 747, "y": 575},
+    {"id": "P4_Sala_de_conferencias", "x": 874, "y": 575},
+    {"id": "P4_Decanato", "x": 255, "y": 576},
+    {"id": "P4_Lab_de_computacion", "x": 600, "y": 577}
   ],
   "conexiones": [
     {"origen": "P4_Pasillo_Norte", "destino": "P4_Ascensor", "distancia": 200},
