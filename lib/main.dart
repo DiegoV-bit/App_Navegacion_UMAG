@@ -3168,6 +3168,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
                         ..._conexionesDebug.map(
                           (conexion) => _buildConexionLinea(conexion),
                         ),
+                      // Dibujar líneas de la ruta activa
+                      if (_rutaActiva.isNotEmpty) ..._buildLineasRuta(),
                       if (_mostrarNodos && _nodos.isNotEmpty)
                         ..._nodos.map((nodo) => _buildNodoMarker(nodo)),
                       // Mostrar marcadores de debug
@@ -3536,6 +3538,50 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
     // Color por defecto
     return Colors.blue.shade500;
+  }
+
+  // ==================== Líneas de la ruta activa ====================
+  List<Widget> _buildLineasRuta() {
+    if (_rutaActiva.length < 2) return [];
+
+    final List<Widget> lineas = [];
+
+    for (int i = 0; i < _rutaActiva.length - 1; i++) {
+      final nodoOrigenId = _rutaActiva[i];
+      final nodoDestinoId = _rutaActiva[i + 1];
+
+      // Buscar las coordenadas de los nodos
+      final nodoOrigen = _nodos.firstWhere(
+        (n) => n['id'] == nodoOrigenId,
+        orElse: () => <String, dynamic>{},
+      );
+      final nodoDestino = _nodos.firstWhere(
+        (n) => n['id'] == nodoDestinoId,
+        orElse: () => <String, dynamic>{},
+      );
+
+      if (nodoOrigen.isEmpty || nodoDestino.isEmpty) continue;
+
+      final xOrigen = (nodoOrigen['x'] as num).toDouble();
+      final yOrigen = (nodoOrigen['y'] as num).toDouble();
+      final xDestino = (nodoDestino['x'] as num).toDouble();
+      final yDestino = (nodoDestino['y'] as num).toDouble();
+
+      final posInicio = _calcularPosicionEscalada(xOrigen, yOrigen);
+      final posFin = _calcularPosicionEscalada(xDestino, yDestino);
+
+      lineas.add(
+        CustomPaint(
+          size: Size(_svgWidthOriginal, _svgHeightOriginal),
+          painter: RutaPainter(
+            inicio: posInicio,
+            fin: posFin,
+          ),
+        ),
+      );
+    }
+
+    return lineas;
   }
 
   // ==================== Marcador de nodos ====================
@@ -3975,5 +4021,65 @@ class ConexionPainter extends CustomPainter {
     return oldDelegate.inicio != inicio ||
         oldDelegate.fin != fin ||
         oldDelegate.distancia != distancia;
+  }
+}
+
+// ==================== Custom Painter para dibujar rutas ====================
+class RutaPainter extends CustomPainter {
+  final Offset inicio;
+  final Offset fin;
+
+  RutaPainter({
+    required this.inicio,
+    required this.fin,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Línea principal de la ruta (más gruesa y azul)
+    final paint = Paint()
+      ..color = Colors.blue.shade600.withAlpha((0.8 * 255).round())
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(inicio, fin, paint);
+
+    // Borde blanco para mejor visibilidad
+    final paintBorde = Paint()
+      ..color = Colors.white.withAlpha((0.5 * 255).round())
+      ..strokeWidth = 6
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(inicio, fin, paintBorde);
+    canvas.drawLine(inicio, fin, paint);
+
+    // Dibujar flecha direccional
+    final angle = (fin - inicio).direction;
+    final arrowSize = 10.0;
+
+    final arrowPath = Path();
+    arrowPath.moveTo(
+      fin.dx - arrowSize * cos(angle - 0.4),
+      fin.dy - arrowSize * sin(angle - 0.4),
+    );
+    arrowPath.lineTo(fin.dx, fin.dy);
+    arrowPath.lineTo(
+      fin.dx - arrowSize * cos(angle + 0.4),
+      fin.dy - arrowSize * sin(angle + 0.4),
+    );
+    arrowPath.close();
+
+    final arrowPaint = Paint()
+      ..color = Colors.blue.shade700
+      ..style = PaintingStyle.fill;
+
+    canvas.drawPath(arrowPath, arrowPaint);
+  }
+
+  @override
+  bool shouldRepaint(RutaPainter oldDelegate) {
+    return oldDelegate.inicio != inicio || oldDelegate.fin != fin;
   }
 }
