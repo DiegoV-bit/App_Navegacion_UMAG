@@ -13,7 +13,7 @@ import 'utils/gestor_multipiso.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
-const bool kDebugMode = true;
+const bool kDebugMode = false;
 // =============================================================
 
 // ==================== TIPOS DE NODOS ====================
@@ -287,11 +287,17 @@ class PantallaInicio extends StatelessWidget {
 class PantallaMapa extends StatefulWidget {
   final int numeroPiso;
   final String titulo;
+  final String? origenInicial;
+  final List<SegmentoRuta>? segmentosRutaInicial;
+  final bool seleccionandoDestino;
 
   const PantallaMapa({
     super.key,
     required this.numeroPiso,
     required this.titulo,
+    this.origenInicial,
+    this.segmentosRutaInicial,
+    this.seleccionandoDestino = false,
   });
 
   @override
@@ -333,10 +339,50 @@ class _PantallaMapaState extends State<PantallaMapa> {
   @override
   void initState() {
     super.initState();
+
+    // Restaurar estado si viene de navegación multi-piso
+    if (widget.origenInicial != null) {
+      _origenSeleccionado = widget.origenInicial;
+    }
+    if (widget.segmentosRutaInicial != null) {
+      _segmentosRuta.addAll(widget.segmentosRutaInicial!);
+
+      // Restaurar la ruta activa del piso actual
+      final segmentoActual = widget.segmentosRutaInicial!.firstWhere(
+        (s) => s.piso == widget.numeroPiso,
+        orElse: () => widget.segmentosRutaInicial!.first,
+      );
+      _rutaActiva.addAll(segmentoActual.nodos);
+    }
+
     // inicializa configuración y carga del mapa
     _configurarDimensionesSVG();
     _inicializarMapa();
     _inicializarGestorMultiPiso();
+
+    // Mostrar mensaje si está seleccionando destino
+    if (widget.seleccionandoDestino && _origenSeleccionado != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.touch_app, color: Colors.white),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Toca un nodo para establecer el destino',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.purple.shade600,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      });
+    }
   }
 
   // Inicializar gestor multi-piso
@@ -442,7 +488,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       final data = json.decode(raw) as Map<String, dynamic>;
       final grafo = Grafo.fromJson(data);
 
-      await Navigator.push(
+      final nodoEscaneado = await Navigator.push<String>(
         context,
         MaterialPageRoute(
           builder: (context) => QRScannerScreen(
@@ -451,6 +497,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
         ),
       );
+
+      // Si hay una ruta multi-piso activa y el usuario escaneó un nodo
+      if (nodoEscaneado != null && _segmentosRuta.isNotEmpty) {
+        _verificarLlegadaAPuntoCambioPiso(nodoEscaneado);
+      }
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error al abrir scanner QR: $e');
@@ -462,6 +513,53 @@ class _PantallaMapaState extends State<PantallaMapa> {
         ),
       );
     }
+  }
+
+  /// Verifica si el nodo escaneado es un punto de cambio de piso (escalera/ascensor)
+  void _verificarLlegadaAPuntoCambioPiso(String nodoId) {
+    // Buscar si este nodo es parte de un segmento de cambio de piso
+    for (int i = 0; i < _segmentosRuta.length; i++) {
+      final segmento = _segmentosRuta[i];
+
+      // Verificar si es un segmento de escalera/ascensor
+      if (segmento.tipo == TipoSegmento.escalera ||
+          segmento.tipo == TipoSegmento.ascensor) {
+        // Verificar si el nodo escaneado es el último nodo del segmento anterior
+        // (punto de inicio del cambio de piso)
+        if (i > 0) {
+          final segmentoAnterior = _segmentosRuta[i - 1];
+          if (segmentoAnterior.nodos.isNotEmpty &&
+              segmentoAnterior.nodos.last == nodoId) {
+            // El usuario llegó al punto de cambio de piso
+            _mostrarDialogoCambioPiso(segmento);
+            return;
+          }
+        }
+
+        // También verificar si es el primer nodo del segmento de cambio
+        if (segmento.nodos.isNotEmpty && segmento.nodos.first == nodoId) {
+          _mostrarDialogoCambioPiso(segmento);
+          return;
+        }
+      }
+    }
+
+    // Si no es un punto de cambio, solo mostrar confirmación
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text('Ubicación verificada: $nodoId'),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green.shade600,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   Offset _calcularPosicionEscalada(double x, double y) {
@@ -715,11 +813,17 @@ class _PantallaMapaState extends State<PantallaMapa> {
           if (!esOrigen && !esDestino)
             FilledButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Cerrar el diálogo de información
                 if (_origenSeleccionado == null) {
                   _establecerOrigen(nodoId);
                 } else {
-                  _establecerDestino(nodoId);
+                  // Si está en modo selección de destino, regresar con el nodo seleccionado
+                  if (widget.seleccionandoDestino) {
+                    Navigator.pop(context,
+                        nodoId); // Regresar al piso anterior con el destino
+                  } else {
+                    _establecerDestino(nodoId);
+                  }
                 }
               },
               child: Text(
@@ -763,6 +867,116 @@ class _PantallaMapaState extends State<PantallaMapa> {
     );
   }
 
+  // Helper para extraer número de piso de un ID de nodo
+  int _extraerPisoDeNodoId(String nodoId) {
+    // Los nodos tienen formato "P{piso}_{nombre}", ej: "P1_Entrada_1"
+    if (nodoId.startsWith('P') && nodoId.length > 1) {
+      final pisoStr = nodoId.substring(1, 2);
+      return int.tryParse(pisoStr) ?? widget.numeroPiso;
+    }
+    return widget.numeroPiso;
+  }
+
+  /// Muestra un diálogo para seleccionar un destino en otro piso
+  Future<void> _mostrarSelectorPisoDestino() async {
+    if (_origenSeleccionado == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Primero debes establecer un origen'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final pisoSeleccionado = await showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.layers, color: Colors.blue),
+            SizedBox(width: 12),
+            Text('Seleccionar Piso Destino'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Selecciona el piso donde se encuentra tu destino:',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(4, (index) {
+              final piso = index + 1;
+              final esActual = piso == widget.numeroPiso;
+              return Card(
+                color: esActual ? Colors.blue.shade50 : null,
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor:
+                        esActual ? Colors.blue : Colors.grey.shade400,
+                    child: Text(
+                      '$piso',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    'Piso $piso',
+                    style: TextStyle(
+                      fontWeight:
+                          esActual ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  subtitle: esActual ? const Text('Piso actual') : null,
+                  trailing: const Icon(Icons.arrow_forward),
+                  onTap: () => Navigator.of(context).pop(piso),
+                ),
+              );
+            }),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
+
+    if (pisoSeleccionado != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Navegando a Piso $pisoSeleccionado para seleccionar destino'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Navegar al piso seleccionado para que el usuario elija el destino
+      final destinoSeleccionado = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PantallaMapa(
+            numeroPiso: pisoSeleccionado,
+            titulo: 'Piso $pisoSeleccionado - Selecciona destino',
+            origenInicial: _origenSeleccionado,
+            seleccionandoDestino: true,
+          ),
+        ),
+      );
+
+      // Si el usuario seleccionó un destino, establecerlo
+      if (destinoSeleccionado != null) {
+        _establecerDestino(destinoSeleccionado);
+      }
+    }
+  }
+
   void _establecerDestino(String nodoId) async {
     if (_origenSeleccionado == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -788,8 +1002,150 @@ class _PantallaMapaState extends State<PantallaMapa> {
       _destinoSeleccionado = nodoId;
     });
 
-    // Calcular la ruta con A*
-    await _calcularYMostrarRuta(_origenSeleccionado!, nodoId);
+    // Verificar si origen y destino están en el mismo piso
+    final pisoOrigen = _extraerPisoDeNodoId(_origenSeleccionado!);
+    final pisoDestino = _extraerPisoDeNodoId(nodoId);
+
+    if (pisoOrigen == pisoDestino) {
+      // Ruta en el mismo piso
+      await _calcularYMostrarRuta(_origenSeleccionado!, nodoId);
+    } else {
+      // Ruta multi-piso
+      await _calcularYMostrarRutaMultiPiso(
+        _origenSeleccionado!,
+        pisoOrigen,
+        nodoId,
+        pisoDestino,
+      );
+    }
+  }
+
+  /// Calcula y muestra una ruta que involucra múltiples pisos
+  Future<void> _calcularYMostrarRutaMultiPiso(
+    String origenId,
+    int pisoOrigen,
+    String destinoId,
+    int pisoDestino,
+  ) async {
+    try {
+      if (!_gestorMultiPiso.inicializado) {
+        throw Exception('El gestor multi-piso no está inicializado');
+      }
+
+      // Calcular segmentos de la ruta
+      final segmentos = _gestorMultiPiso.calcularRutaMultiPiso(
+        origenId,
+        pisoOrigen,
+        destinoId,
+        pisoDestino,
+      );
+
+      if (segmentos.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text('No se encontró una ruta entre estos pisos'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red.shade600,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        _limpiarSeleccion();
+        return;
+      }
+
+      // Guardar segmentos para navegación
+      setState(() {
+        _segmentosRuta.clear();
+        _segmentosRuta.addAll(segmentos);
+        _pasoActualRuta = 0;
+
+        // Mostrar solo el segmento del piso actual en _rutaActiva
+        _rutaActiva.clear();
+        final segmentoActual = segmentos.firstWhere(
+          (s) => s.piso == widget.numeroPiso,
+          orElse: () => segmentos.first,
+        );
+        _rutaActiva.addAll(segmentoActual.nodos);
+      });
+
+      // Calcular distancia total y tiempo
+      final distanciaTotal = segmentos.fold(0.0, (sum, s) => sum + s.distancia);
+      final tiempoTotal = _gestorMultiPiso
+          .obtenerOpcionesRuta(
+            origenId,
+            pisoOrigen,
+            destinoId,
+            pisoDestino,
+          )
+          .first
+          .tiempoEstimado;
+
+      // Contar cambios de piso
+      final cambiosPiso = segmentos
+          .where((s) =>
+              s.tipo == TipoSegmento.escalera ||
+              s.tipo == TipoSegmento.ascensor)
+          .length;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Ruta Multi-Piso Calculada',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text('Desde: Piso $pisoOrigen → Piso $pisoDestino'),
+              Text('Segmentos: ${segmentos.length}'),
+              Text('Cambios de piso: $cambiosPiso'),
+              Text(
+                'Distancia: ${distanciaTotal.toStringAsFixed(1)} metros',
+              ),
+              Text(
+                'Tiempo estimado: ${(tiempoTotal / 60).ceil()} minutos',
+              ),
+            ],
+          ),
+          backgroundColor: Colors.blue.shade700,
+          duration: const Duration(seconds: 6),
+          action: SnackBarAction(
+            label: 'Limpiar',
+            textColor: Colors.white,
+            onPressed: _limpiarSeleccion,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error al calcular ruta multi-piso: $e');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al calcular la ruta multi-piso: $e'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+      _limpiarSeleccion();
+    }
   }
 
   Future<void> _calcularYMostrarRuta(String origen, String destino) async {
@@ -903,7 +1259,11 @@ class _PantallaMapaState extends State<PantallaMapa> {
       _rutaActiva.clear();
       _pasoActualRuta = 0;
       _segmentosRuta.clear();
-      // _rutaActivaMultiPiso = null;
+
+      // Limpiar también las conexiones debug si están activas
+      if (_modoDebugActivo) {
+        _conexionesDebug.clear();
+      }
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -1102,21 +1462,36 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
   /// Cambia la vista al mapa de otro piso
   void _cambiarAPiso(int nuevoPiso) {
-    // TODO: Implementar continuación de ruta en otro piso
-    // Se podría pasar el nodoInicial y los segmentos restantes al nuevo PantallaMapa
-
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => PantallaMapa(
           numeroPiso: nuevoPiso,
           titulo: 'Piso $nuevoPiso',
+          origenInicial: _origenSeleccionado,
+          segmentosRutaInicial: _segmentosRuta,
         ),
       ),
     );
 
-    // Nota: Aquí podrías pasar los segmentos restantes de la ruta
-    // para que continúe la navegación en el nuevo piso
+    // Mostrar mensaje de confirmación
+    Future.delayed(const Duration(milliseconds: 500), () {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.navigation, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('Continuando navegación en Piso $nuevoPiso'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.blue.shade600,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    });
   }
 
   /// Muestra el diálogo de llegada al destino
@@ -3214,6 +3589,17 @@ class _PantallaMapaState extends State<PantallaMapa> {
             child: const Icon(Icons.center_focus_strong),
           ),
           const SizedBox(height: 8),
+          // Botón para seleccionar destino en otro piso
+          if (_origenSeleccionado != null && _destinoSeleccionado == null)
+            FloatingActionButton(
+              heroTag: "multi_piso",
+              onPressed: _mostrarSelectorPisoDestino,
+              tooltip: 'Seleccionar destino en otro piso',
+              backgroundColor: Colors.purple,
+              child: const Icon(Icons.layers),
+            ),
+          if (_origenSeleccionado != null && _destinoSeleccionado == null)
+            const SizedBox(height: 8),
           FloatingActionButton(
             heroTag: "qr_scanner",
             onPressed: _abrirScannerQR,

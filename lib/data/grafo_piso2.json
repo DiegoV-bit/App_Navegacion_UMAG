@@ -37,8 +37,8 @@
     {"origen": "P2_Escalera_Centro_ciencias", "destino": "P2_Pasillo_ciencias_Norte", "distancia": 78},
     {"origen": "P2_Pasillo_ciencias_Norte", "destino": "P2_Escalera_Centro_ciencias", "distancia": 78},
 
-    {"origen": "P2_Escalera_Centro_ciencias", "destino": "P2_Pasillo_ciencias_Sur", "distancia": 337},
-    {"origen": "P2_Pasillo_ciencias_Sur", "destino": "P2_Escalera_Centro_ciencias", "distancia": 337},
+    {"origen": "P2_Escalera_Sur_ciencias", "destino": "P2_Pasillo_ciencias_Sur", "distancia": 337},
+    {"origen": "P2_Pasillo_ciencias_Sur", "destino": "P2_Escalera_Sur_ciencias", "distancia": 337},
 
     {"origen": "P2_Pasillo_ingenieria_Norte", "destino": "P2_Pasillo_ciencias_Norte", "distancia": 115},
     {"origen": "P2_Pasillo_ciencias_Norte", "destino": "P2_Pasillo_ingenieria_Norte", "distancia": 115},
