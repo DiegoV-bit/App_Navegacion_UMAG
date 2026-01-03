@@ -13,7 +13,7 @@ import 'utils/gestor_multipiso.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
-const bool kDebugMode = false;
+const bool kDebugMode = true;
 // =============================================================
 
 // ==================== TIPOS DE NODOS ====================
@@ -348,11 +348,14 @@ class _PantallaMapaState extends State<PantallaMapa> {
       _segmentosRuta.addAll(widget.segmentosRutaInicial!);
 
       // Restaurar la ruta activa del piso actual
-      final segmentoActual = widget.segmentosRutaInicial!.firstWhere(
-        (s) => s.piso == widget.numeroPiso,
-        orElse: () => widget.segmentosRutaInicial!.first,
-      );
-      _rutaActiva.addAll(segmentoActual.nodos);
+      // Importante: Recopilar TODOS los nodos de TODOS los segmentos que sean de este piso
+      _rutaActiva.clear();
+      for (final segmento in widget.segmentosRutaInicial!) {
+        if (segmento.piso == widget.numeroPiso &&
+            segmento.tipo == TipoSegmento.caminata) {
+          _rutaActiva.addAll(segmento.nodos);
+        }
+      }
     }
 
     // inicializa configuración y carga del mapa
@@ -1066,13 +1069,30 @@ class _PantallaMapaState extends State<PantallaMapa> {
         _segmentosRuta.addAll(segmentos);
         _pasoActualRuta = 0;
 
-        // Mostrar solo el segmento del piso actual en _rutaActiva
+        // Mostrar TODOS los nodos del piso actual en _rutaActiva
+        // Importante: Un piso puede tener múltiples segmentos (antes y después de escalera)
         _rutaActiva.clear();
-        final segmentoActual = segmentos.firstWhere(
-          (s) => s.piso == widget.numeroPiso,
-          orElse: () => segmentos.first,
-        );
-        _rutaActiva.addAll(segmentoActual.nodos);
+        for (final segmento in segmentos) {
+          if (segmento.piso == widget.numeroPiso &&
+              segmento.tipo == TipoSegmento.caminata) {
+            _rutaActiva.addAll(segmento.nodos);
+          }
+        }
+
+        if (kDebugMode) {
+          print('=== DEBUG RUTA MULTI-PISO ===');
+          print('Piso actual: ${widget.numeroPiso}');
+          print('Total segmentos: ${segmentos.length}');
+          for (int i = 0; i < segmentos.length; i++) {
+            final seg = segmentos[i];
+            print(
+                'Segmento $i: Piso ${seg.piso}, Tipo: ${seg.tipo}, Nodos: ${seg.nodos.length}');
+            print('  Nodos: ${seg.nodos.take(3)}...');
+          }
+          print('Nodos agregados a _rutaActiva: ${_rutaActiva.length}');
+          print('_rutaActiva: ${_rutaActiva.take(5)}...');
+          print('==============================');
+        }
       });
 
       // Calcular distancia total y tiempo
@@ -1383,7 +1403,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
               size: 32,
             ),
             const SizedBox(width: 12),
-            const Text('Cambio de Piso'),
+            const Text('¿Ya cambiaste de piso?'),
           ],
         ),
         content: Column(
@@ -1414,23 +1434,93 @@ class _PantallaMapaState extends State<PantallaMapa> {
               style: TextStyle(color: Colors.grey[600], fontSize: 14),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
+            // Botón principal para confirmar manualmente
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _cambiarAPiso(segmento.pisoDestino!);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: Colors.white),
+                          const SizedBox(width: 12),
+                          Text('✅ Continuando en Piso ${segmento.pisoDestino}'),
+                        ],
+                      ),
+                      backgroundColor: Colors.green,
+                      duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.check_circle, size: 28),
+                label: Text(
+                  'Sí, ya estoy en piso ${segmento.pisoDestino}',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Botón alternativo para escanear QR
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _abrirScannerQR();
+                },
+                icon: const Icon(Icons.qr_code_scanner, size: 24),
+                label: const Text(
+                  'Escanear QR para confirmar',
+                  style: TextStyle(fontSize: 14),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.orange.shade700,
+                  side: BorderSide(color: Colors.orange.shade700, width: 2),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Nota informativa
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.shade200),
+                border: Border.all(color: Colors.blue.shade200),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.qr_code_scanner, color: Colors.orange.shade700),
+                  Icon(Icons.info_outline,
+                      color: Colors.blue.shade700, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Escanea el código QR al llegar al piso ${segmento.pisoDestino} para continuar',
+                      'Puedes confirmar manualmente o escanear un QR del piso ${segmento.pisoDestino}',
                       style: TextStyle(
-                          fontSize: 12, color: Colors.orange.shade900),
+                        fontSize: 12,
+                        color: Colors.blue.shade900,
+                      ),
                     ),
                   ),
                 ],
@@ -1442,18 +1532,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancelar'),
-          ),
-          FilledButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // Cambiar al mapa del piso destino
-              _cambiarAPiso(segmento.pisoDestino!);
-            },
-            icon: const Icon(Icons.check),
-            label: Text('Ver mapa del piso ${segmento.pisoDestino}'),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.blue,
-            ),
           ),
         ],
       ),
@@ -3931,6 +4009,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
     if (_rutaActiva.length < 2) return [];
 
     final List<Widget> lineas = [];
+    int nodosNoEncontrados = 0;
 
     for (int i = 0; i < _rutaActiva.length - 1; i++) {
       final nodoOrigenId = _rutaActiva[i];
@@ -3946,7 +4025,15 @@ class _PantallaMapaState extends State<PantallaMapa> {
         orElse: () => <String, dynamic>{},
       );
 
-      if (nodoOrigen.isEmpty || nodoDestino.isEmpty) continue;
+      if (nodoOrigen.isEmpty || nodoDestino.isEmpty) {
+        nodosNoEncontrados++;
+        if (kDebugMode) {
+          print('⚠️ Nodo no encontrado en _nodos: '
+              '${nodoOrigen.isEmpty ? nodoOrigenId : ""} '
+              '${nodoDestino.isEmpty ? nodoDestinoId : ""}');
+        }
+        continue;
+      }
 
       final xOrigen = (nodoOrigen['x'] as num).toDouble();
       final yOrigen = (nodoOrigen['y'] as num).toDouble();
@@ -3965,6 +4052,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
         ),
       );
+    }
+
+    if (kDebugMode && (_rutaActiva.isNotEmpty || nodosNoEncontrados > 0)) {
+      print('🎨 _buildLineasRuta: ${lineas.length} líneas dibujadas, '
+          '$nodosNoEncontrados nodos no encontrados, '
+          'Total nodos en _nodos: ${_nodos.length}');
     }
 
     return lineas;

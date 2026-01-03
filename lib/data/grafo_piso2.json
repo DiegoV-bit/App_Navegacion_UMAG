@@ -1,6 +1,6 @@
 {
   "nodos": [
-    {"id": "P2_Escalera_Norte", "x": 307, "y": 629},
+    {"id": "P2_Escalera_Norte_ingenieria", "x": 307, "y": 629},
     {"id": "P2_Ascensor", "x": 210, "y": 560},
     {"id": "P2_Pasillo_Profesores", "x": 273, "y": 583},
     {"id": "P2_Pasillo_ingenieria_Norte", "x": 347, "y": 558},
@@ -49,8 +49,8 @@
     {"origen": "P2_Pasillo_ciencias_Norte", "destino": "P2_Pasillo_Profesores", "distancia": 170},
     {"origen": "P2_Pasillo_Profesores", "destino": "P2_Pasillo_ciencias_Norte", "distancia": 170},
 
-    {"origen": "P2_Pasillo_Profesores", "destino": "P2_Escalera_Norte", "distancia": 53},
-    {"origen": "P2_Escalera_Norte", "destino": "P2_Pasillo_Profesores", "distancia": 53},
+    {"origen": "P2_Pasillo_Profesores", "destino": "P2_Escalera_Norte_ingenieria", "distancia": 53},
+    {"origen": "P2_Escalera_Norte_ingenieria", "destino": "P2_Pasillo_Profesores", "distancia": 53},
 
     {"origen": "P2_Pasillo_Profesores", "destino": "P2_Ascensor", "distancia": 85},
     {"origen": "P2_Ascensor", "destino": "P2_Pasillo_Profesores", "distancia": 85},

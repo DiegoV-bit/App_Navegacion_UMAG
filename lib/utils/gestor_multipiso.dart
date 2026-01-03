@@ -20,7 +20,7 @@ class GestorMultiPiso {
     try {
       for (int piso = 1; piso <= 4; piso++) {
         final jsonString = await rootBundle.loadString(
-          'assets/data/grafo_piso$piso.json',
+          'lib/data/grafo_piso$piso.json',
         );
         final jsonData = json.decode(jsonString) as Map<String, dynamic>;
         _grafosPorPiso[piso] = Grafo.fromJson(jsonData);

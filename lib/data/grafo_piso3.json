@@ -1,6 +1,6 @@
 {
   "nodos": [
-    {"id": "P3_Escalera_Norte", "x": 345, "y": 602},
+    {"id": "P3_Escalera_Norte_ingenieria", "x": 345, "y": 602},
     {"id": "P3_Ascensor", "x": 228, "y": 533},
     {"id": "P3_Pasillo_ciencias_Norte", "x": 397, "y": 443},
     {"id": "P3_Pasillo_ingenieria_Norte", "x": 390, "y": 528},
@@ -18,7 +18,7 @@
     {"id": "P3_Pasillo_ingenieria_Centro", "x": 588, "y": 527},
     {"id": "P3_Pasillo_ingenieria_Sur", "x": 1058, "y": 534},
     {"id": "P3_Pasillo_ciencias_Sur", "x": 751, "y": 80},
-    {"id": "P3_Escalera_Norte_ingenieria", "x": 475, "y": 387},
+    {"id": "P3_Escalera_Centro_ciencias", "x": 475, "y": 387},
     {"id": "P3_Escalera_Sur_ingenieria", "x": 1053, "y": 601},
     {"id": "P3_Pasillo_Profesores_Matematicas y fisica", "x": 655, "y": 106},
     {"id": "P3_Escalera_Sur_ciencias", "x": 720, "y": 45},
@@ -31,8 +31,8 @@
     {"origen": "P3_Pasillo_ciencias_Sur", "destino": "P3_Escalera_Sur_ciencias", "distancia": 47},
     {"origen": "P3_Escalera_Sur_ciencias", "destino": "P3_Pasillo_ciencias_Sur", "distancia": 47},
 
-    {"origen": "P3_Pasillo_ciencias_Norte", "destino": "P3_Escalera_Norte_ingenieria", "distancia": 102},
-    {"origen": "P3_Escalera_Norte_ingenieria", "destino": "P3_Pasillo_ciencias_Norte", "distancia": 102},
+    {"origen": "P3_Pasillo_ciencias_Norte", "destino": "P3_Escalera_Centro_ciencias", "distancia": 102},
+    {"origen": "P3_Escalera_Centro_ciencias", "destino": "P3_Pasillo_ciencias_Norte", "distancia": 102},
 
     {"origen": "P3_Pasillo_ciencias_Norte", "destino": "P3_Departamento_matematica_y_fisica", "distancia": 68},
     {"origen": "P3_Departamento_matematica_y_fisica", "destino": "P3_Pasillo_ciencias_Norte", "distancia": 68},
@@ -49,8 +49,8 @@
     {"origen": "P3_Pasillo_Profesores", "destino": "P3_Ascensor", "distancia": 75},
     {"origen": "P3_Ascensor", "destino": "P3_Pasillo_Profesores", "distancia": 75},
 
-    {"origen": "P3_Pasillo_Profesores", "destino": "P3_Escalera_Norte", "distancia": 68},
-    {"origen": "P3_Escalera_Norte", "destino": "P3_Pasillo_Profesores", "distancia": 68},
+    {"origen": "P3_Pasillo_Profesores", "destino": "P3_Escalera_Norte_ingenieria", "distancia": 68},
+    {"origen": "P3_Escalera_Norte_ingenieria", "destino": "P3_Pasillo_Profesores", "distancia": 68},
 
     {"origen": "P3_Pasillo_ingenieria_Norte", "destino": "P3_Secretaria_Construccion", "distancia": 58},
     {"origen": "P3_Secretaria_Construccion", "destino": "P3_Pasillo_ingenieria_Norte", "distancia": 58},
