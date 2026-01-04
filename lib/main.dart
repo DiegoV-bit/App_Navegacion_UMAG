@@ -289,6 +289,7 @@ class PantallaMapa extends StatefulWidget {
   final String titulo;
   final String? origenInicial;
   final List<SegmentoRuta>? segmentosRutaInicial;
+  final int pasoActualInicial;
   final bool seleccionandoDestino;
 
   const PantallaMapa({
@@ -297,6 +298,7 @@ class PantallaMapa extends StatefulWidget {
     required this.titulo,
     this.origenInicial,
     this.segmentosRutaInicial,
+    this.pasoActualInicial = 0,
     this.seleccionandoDestino = false,
   });
 
@@ -339,6 +341,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
   @override
   void initState() {
     super.initState();
+
+    // Restaurar el paso actual si se proporciona
+    _pasoActualRuta = widget.pasoActualInicial;
 
     // Restaurar estado si viene de navegación multi-piso
     if (widget.origenInicial != null) {
@@ -1548,6 +1553,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
           titulo: 'Piso $nuevoPiso',
           origenInicial: _origenSeleccionado,
           segmentosRutaInicial: _segmentosRuta,
+          pasoActualInicial: _pasoActualRuta,
         ),
       ),
     );
