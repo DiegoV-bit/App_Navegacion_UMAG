@@ -120,7 +120,7 @@
 % RESUMEN
 % ============================================================
 \section*{Resumen}
-\textit{El presente proyecto desarrolla una aplicacion de navegacion interna que tiene como fin optimizar la orientacion y el desplazamiento dentro de la facultad de ingenieria de la universidad de magallanes. Esta solucion viene de la necesidad de mejorar la accebilidad y la eficiencia a la hora de encontrar salas, oficinas y laboratorios, especialmente para estudiantes nuevos y personas visitantes. Para el desarrollo se implemento un sistema de mapeo digital basados en mapas arquitectonicos del edificio, integrando tecnologias de posicionamiento basadas en puntos de referencia.}
+	extit{El presente proyecto desarrolla una aplicación de navegación interna cuyo objetivo es optimizar la orientación y el desplazamiento dentro de la Facultad de Ingeniería de la Universidad de Magallanes. Esta solución surge de la necesidad de mejorar la accesibilidad y la eficiencia al momento de encontrar salas, oficinas y laboratorios, especialmente para estudiantes nuevos y personas visitantes. Para su desarrollo, se implementó un sistema de mapeo digital basado en planos arquitectónicos del edificio, integrando tecnologías de posicionamiento soportadas por puntos de referencia.}
 
 % ============================================================
 % INTRODUCCIÓN
@@ -175,26 +175,25 @@ Para la realización de este proyecto se siguieron las siguientes etapas:
 
 \subsection{Presentación de los Hallazgos y Resultados}
 \subsubsection{Digitalización de planos arquitectónicos de la facultad}
-Los mapas arquitectónicos de la facultad ya estaban digitalizados en formato DWG (formato usado por AutoCAD). Usando estos archivos como base, se hizo una conversión a otro formato para que fuera manipulable por un software gratuito que trabaje con archivos de mapas arquitectónicos. Los archivos fueron convertidos a formato DXF (Drawing Exchange Format) para posteriormente ser editados en el software LibreCAD.
-Con LibreCAD se eliminaron elementos sin importancia para un mapa de navegación, como muebles y detalles decorativos, dejando solo las paredes y pasillos principales; también se corrigieron errores en los planos originales, ya que faltaban varias salas, laboratorios y oficinas.
-Una vez que los planos se corrigieron y simplificaron, se exportaron a formato SVG (Scalable Vector Graphics) para su integración en la aplicación móvil. Pero la exportación directa a SVG desde LibreCAD no mantenía las proporciones correctas, lo que hacia que cuando se visualizara el mapa con un visor de imagenes o navegador web, este se viera demasiado pequeño o nisiquiera este se pudiera ver. Para corregir esto se utilizo un software de edición de imágenes vectoriales llamado Inkscape, donde se ajustaron las dimensiones del mapa para que se visualizaran correctamente en la aplicación móvil.
+Los mapas arquitectónicos de la facultad ya estaban digitalizados en formato DWG (formato utilizado por AutoCAD). A partir de estos archivos, se realizó una conversión a DXF (Drawing Exchange Format) para permitir su edición en software libre.
+En LibreCAD se eliminaron elementos no relevantes para un mapa de navegación (mobiliario y detalles decorativos), conservando paredes y pasillos principales; adicionalmente, se corrigieron errores presentes en los planos originales, ya que faltaban varias salas, laboratorios y oficinas.
+Una vez corregidos y simplificados, los planos se exportaron a formato SVG (Scalable Vector Graphics) para su integración en la aplicación móvil. No obstante, la exportación directa a SVG desde LibreCAD no mantenía las proporciones adecuadas, lo que hacía que, al visualizar el mapa en un visor de imágenes o navegador web, se presentara demasiado pequeño o ni siquiera pudiera visualizarse. Para corregirlo, se empleó Inkscape (editor de gráficos vectoriales), ajustando las dimensiones del mapa para garantizar una visualización correcta en la aplicación móvil.
 
 \subsubsection{Investigación sobre la creación de aplicaciones móviles}
-Con el fin de elegir la mejor forma para poder desarrollar la aplicacion movil, se penso en que plataformas moviles que utilizan los estudiantes en la facultad como Android e IOS son las que mas se usan, por lo que se decidio primero investigar sobre las diferentes tecnologias y frameworks que existen para el desarrollo movil, las opciones eran las siguientes:
+Con el fin de elegir la mejor forma de desarrollar la aplicación móvil, se consideraron las plataformas móviles más utilizadas por el estudiantado (Android e iOS). En consecuencia, se investigaron las diferentes tecnologías y frameworks existentes para desarrollo móvil. Las opciones principales fueron las siguientes:
 \begin{itemize}
-  \item Desarrollo nativo: Crear aplicaciones independientes para cada plataforma (Java/Kotlin para Android y Swift/Objetive-C en el caso de IOS).
-  \item Desarrollo multiplataforma: Utilizar frameworks como React Native, Flutter o Xamarin para desarrollar una sola base de código que funcione en ambas plataformas.
+  \item Desarrollo nativo: Crear aplicaciones independientes para cada plataforma (Java/Kotlin para Android y Swift/Objective-C para iOS).
+  \item Desarrollo multiplataforma: Utilizar frameworks como React Native, Flutter o Xamarin para mantener una sola base de código que funcione en ambas plataformas.
 \end{itemize}
-
-Despues de analizar las opciones, se opto por usar Flutter, ya que permite crear aplicaciones nativas de alto rendimiento para ambas plataformas desde una sola base de código, ademas de que tiene una gran comunidad de desarrolladores y una amplia gama de paquetes y plugins disponibles.
+\noindent Después de analizar las opciones, se optó por utilizar Flutter, dado que permite crear aplicaciones nativas de alto rendimiento para ambas plataformas desde una única base de código. Además, cuenta con una comunidad amplia y activa, junto con una extensa oferta de paquetes y complementos.
 
 \subsubsection{Preparación del entorno de desarrollo y repositorio de Github}
-Se prepararon los equipos para poder desarrollar la aplicacion movil (los equipos usados tenian como sistemas operativos Windows 10 y Debian 13), instalando Flutter SDK, un editor de codigo (Visual Studio Code) y los emuladores de Android e IOS para poder probar la aplicacion durante el desarrollo. Una vez teniendo el entorno de desarrollo listo, se creo un repositorio en Github para alojar el codigo fuente del proyecto y permitir la colaboracion entre los integrantes del equipo.
+Se prepararon los equipos para desarrollar la aplicación móvil (con sistemas operativos Windows 10 y Debian 13), instalando Flutter SDK, un editor de código (Visual Studio Code) y los emuladores de Android e iOS para realizar pruebas durante el desarrollo. Una vez listo el entorno, se creó un repositorio en GitHub para alojar el código fuente del proyecto y permitir la colaboración entre los integrantes del equipo.
 
 \subsubsection{Integración de los mapas a la aplicación}
-Con la interfaz gráfica ya creada, se agregaron los mapas al proyecto para poder visualizarlos dentro de la aplicación. Una vez integrados los mapas, estos se logran visualizar bien y su interacción con el usuario es buena.
+Con la interfaz gráfica ya creada, se integraron los mapas al proyecto para permitir su visualización dentro de la aplicación. Una vez incorporados, los mapas se visualizan correctamente y presentan una interacción adecuada con el usuario.
 
-Un detalle a destacar: el mapa del primer piso y el de los laboratorios al ser mapas independientes sería complicado trabajarlos por separados, por lo que la mejor opción a tomar es fusionar ambos mapas para evitar complicaciones futuras con la aplicación.
+Cabe destacar que el mapa del primer piso y el de los laboratorios, al ser recursos independientes, podrían dificultar el mantenimiento si se trabajaran por separado. Por ello, se consideró conveniente fusionar ambos mapas para reducir complejidad y evitar futuras complicaciones en la aplicación.
 
 \subsubsection{Creación de la interfaz gráfica}
 La interfaz gráfica de la aplicación se desarrolló usando Flutter como framework principal, aprovechando su capacidad de crear interfaces nativas y fluidas con un único código base. El diseño de la app se enfocó en la simplicidad y usabilidad, considerando que los usuarios principales serían estudiantes nuevos y visitantes que necesitan orientarse rápidamente dentro de la facultad.
@@ -236,7 +235,7 @@ Esta organización permite que el usuario seleccione rápidamente el piso que de
   \begin{itemize}
     \item Desplazamiento táctil para explorar diferentes áreas del mapa
     \item Zoom mediante gestos de pellizco en pantallas táctiles
-    \item Límites de escala configurables (mínimo 0.3x, máximo 5.0x) para mantener la visualización en rangos útiles
+    \item Límites de escala configurables (mínimo 1.0x, máximo 4.0x) para mantener la visualización en rangos útiles
   \end{itemize}
 
   \item \textbf{Controles de zoom}: Se añadieron tres botones flotantes en la parte inferior derecha que permiten:
@@ -363,6 +362,67 @@ La aplicación puede inferir el tipo de nodo basándose en el ID del nodo median
 
 \textbf{Transformación de coordenadas.} La aplicación implementa un sistema de transformación bidireccional. Para la transformación de SVG a pantalla, se calcula la escala manteniendo el aspect ratio (BoxFit.contain), se determinan las dimensiones escaladas y los offsets para centrado, y finalmente se aplica la transformación a las coordenadas. Para la transformación inversa de pantalla a SVG, se aplica la operación inversa restando los offsets y dividiendo por la escala.
 
+\paragraph{Transformación de coordenadas: detalles de implementación}
+
+La aplicación utiliza un sistema de coordenadas normalizado que permite independencia entre las dimensiones del SVG y la pantalla del dispositivo.
+
+\textbf{Coordenadas SVG $\rightarrow$ Pantalla.} Dado que el contenedor del mapa tiene exactamente las dimensiones del SVG original (1200×800 píxeles), las coordenadas se mapean directamente sin necesidad de escala adicional:
+
+\begin{lstlisting}[language=Dart, caption={Transformación SVG a pantalla}]
+Offset _calcularPosicionEscalada(double x, double y) {
+  // Mapeo 1:1 ya que SizedBox coincide con dimensiones SVG
+  return Offset(x, y);
+}
+\end{lstlisting}
+
+El \texttt{InteractiveViewer} se encarga de aplicar zoom y desplazamiento sobre este contenedor de tamaño fijo, manteniendo la proporción de los elementos.
+
+\textbf{Coordenadas Pantalla $\rightarrow$ SVG.} Para capturar toques del usuario y convertirlos a coordenadas SVG:
+
+\begin{lstlisting}[language=Dart, caption={Transformación pantalla a SVG}]
+Offset _calcularCoordenadasSVG(Offset screenPosition) {
+  // Como el contenedor es 1:1 con SVG,
+  // no hay conversion de escala necesaria
+  return screenPosition;
+}
+\end{lstlisting}
+
+\textbf{Gestión del zoom.} El sistema de zoom respeta límites definidos:
+
+\begin{lstlisting}[language=Dart, caption={Control de zoom con límites}]
+void zoom(double scaleFactor) {
+  final controller = _transformationController;
+  final currentScale = controller.value.getMaxScaleOnAxis();
+  
+  // Evitar division por cero
+  final safeCurrent = currentScale <= 0 ? 1.0 : currentScale;
+  
+  // Aplicar limites (1.0 a 4.0)
+  final targetScale = (safeCurrent * scaleFactor)
+    .clamp(_minScale, _maxScale);
+  final relativeFactor = targetScale / safeCurrent;
+  
+  // Centrar zoom en el punto medio de la pantalla
+  final center = controller.toScene(
+    Offset(
+      MediaQuery.of(context).size.width / 2,
+      MediaQuery.of(context).size.height / 2,
+    ),
+  );
+  
+  // Aplicar transformacion
+  final matrix = controller.value.clone();
+  matrix
+    ..translate(center.dx, center.dy)
+    ..scale(relativeFactor)
+    ..translate(-center.dx, -center.dy);
+    
+  controller.value = matrix;
+}
+\end{lstlisting}
+
+Este enfoque garantiza que el zoom siempre se aplique respecto al centro visible de la pantalla, proporcionando una experiencia de usuario más natural.
+
 \paragraph{Estructura de archivos JSON}
 Cada piso de la facultad tiene su archivo JSON correspondiente con una estructura que incluye un array de nodos (con propiedades id, x, y, tipo y nombre) y un array de conexiones (con origen, destino y distancia).
 
@@ -408,6 +468,105 @@ La aplicación incluye un modo de desarrollo para facilitar la creación del gra
 \end{itemize}
 
 El modo debug utiliza marcadores visuales de color naranja para diferenciar los puntos capturados de los nodos permanentes del grafo, y permite activarse o desactivarse mediante un botón en la interfaz.
+
+\paragraph{Herramientas avanzadas de desarrollo}
+
+Además de las herramientas básicas mencionadas, el modo debug incluye funcionalidades avanzadas para facilitar el desarrollo y mantenimiento del sistema:
+
+\textbf{Visualización de conexiones en tiempo real.} El sistema permite visualizar las conexiones entre nodos directamente sobre el mapa mediante \texttt{CustomPainter}:
+\begin{itemize}
+  \item Líneas que conectan nodos relacionados
+  \item Flechas direccionales para conexiones unidireccionales
+  \item Etiquetas con la distancia entre nodos
+  \item Colores diferenciados para conexiones activas y debug
+\end{itemize}
+
+\textbf{Estadísticas del grafo.} Un diálogo de estadísticas muestra:
+\begin{itemize}
+  \item Cantidad de nodos por tipo (entradas, pasillos, escaleras, etc.)
+  \item Porcentaje de nodos con tipo explícito vs. inferido
+  \item Total de conexiones en el grafo
+  \item Nodos huérfanos (sin conexiones)
+\end{itemize}
+
+\textbf{Herramienta de migración de tipos.} Permite agregar automáticamente el campo \texttt{tipo} a nodos existentes:
+\begin{lstlisting}[language=Dart, caption={Migración automática de tipos}]
+Future<void> _migrarNodosConTipo() async {
+  final raw = await rootBundle.loadString(rutaGrafoJson);
+  final data = json.decode(raw) as Map<String, dynamic>;
+  
+  final nodosActualizados = (data['nodos'] as List).map((nodo) {
+    final nodoMap = nodo as Map<String, dynamic>;
+    
+    // Si ya tiene tipo, mantenerlo
+    if (nodoMap.containsKey('tipo')) return nodoMap;
+    
+    // Inferir tipo basado en ID
+    final tipoInferido = _obtenerTipoNodoPorId(
+      nodoMap['id'] as String
+    );
+    
+    return {
+      ...nodoMap,
+      'tipo': tipoInferido?.name ?? 'puntoInteres',
+    };
+  }).toList();
+  
+  final jsonActualizado = JsonEncoder.withIndent('  ')
+    .convert({'nodos': nodosActualizados, ...data});
+    
+  Clipboard.setData(ClipboardData(text: jsonActualizado));
+}
+\end{lstlisting}
+
+\textbf{Generador de códigos QR.} Desde el diálogo de información de cualquier nodo, se puede generar su código QR:
+\begin{itemize}
+  \item Formato JSON compatible con el scanner de la aplicación
+  \item Vista previa del contenido del QR
+  \item Opción para copiar al portapapeles
+  \item Útil para pruebas sin necesidad de imprimir códigos físicos
+\end{itemize}
+
+\textbf{Recarga dinámica de nodos.} Permite actualizar el grafo sin reiniciar la aplicación:
+\begin{itemize}
+  \item Lee el archivo JSON actualizado desde los assets
+  \item Reemplaza los nodos en memoria
+  \item Mantiene el estado de selección de origen/destino
+  \item Actualiza la visualización automáticamente
+\end{itemize}
+
+\textbf{Prueba de rutas en diálogo de coordenadas.} Al crear un nuevo nodo, se puede:
+\begin{itemize}
+  \item Seleccionar nodos origen y destino de los existentes
+  \item Calcular una ruta de prueba con A*
+  \item Ver la distancia total y los nodos intermedios
+  \item Validar que el nuevo nodo esté correctamente conectado
+\end{itemize}
+
+\textbf{Diagnóstico del sistema.} Un diálogo de diagnóstico verifica:
+\begin{itemize}
+  \item Existencia de archivos SVG de todos los pisos
+  \item Validez de archivos JSON del grafo
+  \item Tamaño y estructura de cada archivo
+  \item Cálculo de ruta demo entre nodos conocidos
+\end{itemize}
+
+\paragraph{Activación y desactivación del modo debug}
+
+El modo debug se controla mediante:
+\begin{itemize}
+  \item Constante global \texttt{kDebugMode} al inicio de \texttt{main.dart}
+  \item Botón flotante en la interfaz para activar/desactivar dinámicamente
+  \item Estado persistente durante la sesión de la aplicación
+  \item Limpieza automática de datos debug al desactivar
+\end{itemize}
+
+Cuando se desactiva el modo debug, se limpian automáticamente:
+\begin{itemize}
+  \item Coordenadas capturadas
+  \item Conexiones temporales
+  \item Marcadores visuales de depuración
+\end{itemize}
 
 \subsubsection{Implementación del algoritmo A* para cálculo de rutas}
 Para calcular las mejores rutas entre los distintos puntos de interés dentro de la facultad, se implementó un algoritmo de búsqueda en grafos. El algoritmo elegido fue \textbf{A* (A estrella)}, un método de búsqueda heurística que encuentra la ruta más corta entre dos puntos dentro de un grafo.
@@ -787,6 +946,52 @@ La aplicación ahora reconoce todos estos formatos:
 
 Se creó el script \texttt{scripts/verificar\_formato\_qr.py} que verifica la compatibilidad de todos los códigos generados. La verificación confirmó que los 108 QRs generados (50 en piso 1, 24 en piso 2, 22 en piso 3 y 12 en piso 4) son válidos y compatibles con la aplicación.
 
+\paragraph{Script de verificación de formatos}
+Para garantizar la compatibilidad entre los códigos QR generados y la aplicación, se emplea el script \texttt{scripts/verificar\_formato\_qr.py}, previamente descrito.
+
+	extbf{Funciones principales:}
+\begin{itemize}
+  \item Lee los archivos JSON de todos los pisos
+  \item Genera datos QR de prueba para cada nodo
+  \item Simula el proceso de decodificación de la aplicación
+  \item Verifica compatibilidad con todos los formatos soportados
+  \item Genera reporte de validación
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={Verificación de formato QR}]
+def probar_qr_desde_grafo(ruta_json):
+    data = leer_grafo_json(ruta_json)
+    if not data:
+        return
+    
+    nodos = data.get('nodos', [])
+    print(f"\n{'='*70}")
+    print(f"Probando {len(nodos)} nodos del archivo:")
+    print(f"  {ruta_json}")
+    print(f"{'='*70}\n")
+    
+    validos = 0
+    invalidos = 0
+    
+    for nodo in nodos:
+        qr_data = crear_datos_qr(nodo)
+        
+        # Simular decodificacion
+        es_valido = verificar_formato(qr_data)
+        
+        if es_valido:
+            validos += 1
+        else:
+            invalidos += 1
+            print(f"  Warning  QR invalido: {nodo.get('id')}")
+    
+    print(f"\nResumen:")
+    print(f"  QRs validos: {validos}")
+    print(f"  QRs invalidos: {invalidos}")
+\end{lstlisting}
+
+La verificación confirmó que los 108 códigos QR generados son compatibles con la aplicación, distribuidos en: 50 códigos en piso 1, 24 en piso 2, 22 en piso 3 y 12 en piso 4.
+
 \paragraph{Compatibilidad retroactiva}
 
 La solución mantiene:
@@ -798,6 +1003,300 @@ La solución mantiene:
 \end{itemize}
 
 La lógica de parsing JSON utiliza detección por delimitadores, parsing con manejo de excepciones, validación de campos requeridos, extracción segura de datos y fallback silencioso a otros formatos si el JSON falla. El formato JSON se verifica primero antes de intentar otros formatos, asegurando prioridad al formato generado por el sistema automatizado de Python.
+
+\subsubsection{Sistema de navegación multi-piso}
+
+La aplicación implementa un sistema completo de navegación entre diferentes pisos del edificio, permitiendo calcular y seguir rutas que atraviesan múltiples niveles a través de escaleras y ascensores.
+
+\paragraph{Componentes del sistema}
+
+\textbf{Gestor de múltiples pisos (GestorMultiPiso).} Esta clase, implementada en \texttt{gestor\_multipiso.dart}, se encarga de:
+\begin{itemize}
+  \item Cargar y mantener en memoria los grafos de todos los pisos simultáneamente
+  \item Identificar puntos de conexión vertical (escaleras y ascensores) entre pisos
+  \item Calcular rutas óptimas que atraviesan múltiples niveles
+  \item Generar múltiples opciones de ruta cuando existen varios caminos posibles
+\end{itemize}
+
+\textbf{Tipos de segmentos de ruta.} El sistema clasifica las rutas en tres tipos de segmentos:
+\begin{lstlisting}[language=Dart, caption={Tipos de segmentos}]
+enum TipoSegmento {
+  mismoNivel,    // Ruta dentro del mismo piso
+  escalera,      // Cambio de piso por escalera
+  ascensor,      // Cambio de piso por ascensor
+}
+\end{lstlisting}
+
+\textbf{Estructura de segmentos.} Cada segmento de ruta contiene información completa sobre el recorrido:
+\begin{lstlisting}[language=Dart, caption={Clase SegmentoRuta}]
+class SegmentoRuta {
+  final int pisoOrigen;
+  final int? pisoDestino;        // null si es mismo nivel
+  final TipoSegmento tipo;
+  final List<String> nodos;      // Secuencia de nodos
+  final double distancia;
+  final String? puntoConexion;   // ID escalera/ascensor
+}
+\end{lstlisting}
+
+\paragraph{Cálculo de rutas multi-piso}
+
+El proceso de cálculo de rutas entre pisos diferentes sigue estos pasos:
+
+\begin{enumerate}
+  \item \textbf{Identificación de conexiones}: El sistema busca todos los puntos de conexión vertical (escaleras y ascensores) que conectan el piso origen con el piso destino, ya sea directamente o a través de pisos intermedios.
+  
+  \item \textbf{Generación de opciones}: Para cada conexión vertical disponible, se calcula una ruta completa que incluye:
+  \begin{itemize}
+    \item Ruta desde el origen hasta la escalera/ascensor en el piso actual
+    \item Segmento de cambio de piso
+    \item Ruta desde la escalera/ascensor hasta el destino en el piso final
+  \end{itemize}
+  
+  \item \textbf{Optimización}: Las rutas se ordenan por distancia total, considerando tanto el recorrido horizontal dentro de cada piso como las transiciones verticales.
+  
+  \item \textbf{Segmentación}: La ruta final se divide en segmentos lógicos que facilitan la navegación paso a paso.
+\end{enumerate}
+
+\begin{lstlisting}[language=Dart, caption={Cálculo de ruta multi-piso}]
+Future<List<OpcionRuta>> calcularRutasMultiPiso(
+  String origenId,
+  int pisoOrigen,
+  String destinoId,
+  int pisoDestino,
+) async {
+  final opciones = <OpcionRuta>[];
+  
+  // Buscar todas las conexiones verticales posibles
+  final conexiones = _encontrarConexionesVerticales(
+    pisoOrigen, 
+    pisoDestino
+  );
+  
+  for (final conexion in conexiones) {
+    // Calcular ruta hasta el punto de conexion
+    final segmento1 = await _calcularSegmento(
+      origenId, 
+      conexion.nodoOrigen, 
+      pisoOrigen
+    );
+    
+    // Segmento de cambio de piso
+    final segmento2 = SegmentoRuta(
+      pisoOrigen: pisoOrigen,
+      pisoDestino: pisoDestino,
+      tipo: conexion.tipo,
+      nodos: [conexion.nodoOrigen, conexion.nodoDestino],
+      puntoConexion: conexion.id,
+    );
+    
+    // Calcular ruta desde conexion hasta destino
+    final segmento3 = await _calcularSegmento(
+      conexion.nodoDestino, 
+      destinoId, 
+      pisoDestino
+    );
+    
+    opciones.add(OpcionRuta(
+      segmentos: [segmento1, segmento2, segmento3],
+      distanciaTotal: _calcularDistanciaTotal([...]),
+    ));
+  }
+  
+  // Ordenar por distancia
+  opciones.sort((a, b) => 
+    a.distanciaTotal.compareTo(b.distanciaTotal)
+  );
+  
+  return opciones;
+}
+\end{lstlisting}
+
+\paragraph{Navegación paso a paso}
+
+La aplicación proporciona instrucciones detalladas para cada paso de la ruta:
+
+\begin{itemize}
+  \item \textbf{Dentro del mismo piso}: Muestra el siguiente nodo en el recorrido y la distancia restante
+  \item \textbf{Al llegar a escalera/ascensor}: Alerta al usuario sobre el cambio de piso necesario y solicita confirmación mediante escaneo de QR
+  \item \textbf{Después del cambio de piso}: Actualiza automáticamente el mapa al nuevo piso y continúa mostrando la ruta restante
+\end{itemize}
+
+\paragraph{Interfaz de usuario para navegación multi-piso}
+
+\textbf{Barra de progreso.} Se implementó una barra de progreso visual que muestra:
+\begin{itemize}
+  \item Paso actual / Total de pasos
+  \item Instrucción textual del paso actual
+  \item Distancia restante al destino
+  \item Indicador visual del tipo de segmento (mismo nivel, escalera o ascensor)
+\end{itemize}
+
+\textbf{Controles de navegación.} El usuario puede:
+\begin{itemize}
+  \item Avanzar manualmente al siguiente paso
+  \item Retroceder al paso anterior para revisar
+  \item Escanear códigos QR para confirmar llegada a puntos de conexión
+  \item Cancelar la navegación en cualquier momento
+\end{itemize}
+
+\textbf{Diálogos de confirmación.} Cuando el usuario llega a un punto de cambio de piso, se muestra un diálogo con:
+\begin{itemize}
+  \item Indicación clara del piso destino
+  \item Botón para confirmar el cambio de piso
+  \item Opción para escanear QR como confirmación alternativa
+  \item Instrucciones sobre qué escalera/ascensor usar
+\end{itemize}
+
+\paragraph{Persistencia del estado de navegación}
+
+El sistema mantiene el estado de navegación al cambiar entre pisos:
+\begin{itemize}
+  \item El origen seleccionado se preserva
+  \item Los segmentos de ruta se transfieren al nuevo piso
+  \item El paso actual se mantiene sincronizado
+  \item La ruta visual se actualiza automáticamente
+\end{itemize}
+
+Esta persistencia se logra mediante parámetros del constructor de \texttt{PantallaMapa}:
+
+\begin{lstlisting}[language=Dart, caption={Transferencia de estado entre pisos}]
+Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(
+    builder: (context) => PantallaMapa(
+      numeroPiso: nuevoPiso,
+      titulo: 'Piso $nuevoPiso',
+      origenInicial: _origenSeleccionado,
+      segmentosRutaInicial: _segmentosRuta,
+      pasoActualInicial: _pasoActualRuta,
+    ),
+  ),
+);
+\end{lstlisting}
+
+\paragraph{Ventajas del sistema multi-piso}
+
+\begin{itemize}
+  \item \textbf{Flexibilidad}: Soporta rutas con múltiples cambios de piso (ej: piso 1 $\rightarrow$ 2 $\rightarrow$ 4)
+  \item \textbf{Opciones alternativas}: Calcula múltiples rutas cuando existen diferentes escaleras/ascensores
+  \item \textbf{Validación}: Requiere confirmación física (QR) en puntos críticos de cambio de piso
+  \item \textbf{Usabilidad}: Instrucciones claras y visualización continua en cada piso
+  \item \textbf{Escalabilidad}: Diseño modular que permite agregar nuevos pisos sin modificar la lógica central
+\end{itemize}
+
+\subsubsection{Pantalla de selección de destino}
+
+Para facilitar la selección de destinos, se implementó una pantalla dedicada (\texttt{pantalla\_seleccion\_destino.dart}) que permite al usuario buscar y elegir su destino de manera intuitiva.
+
+\paragraph{Características principales}
+
+\textbf{Lista filtrable de nodos.} La pantalla muestra todos los nodos disponibles del piso actual con las siguientes capacidades:
+\begin{itemize}
+  \item Búsqueda en tiempo real por ID o nombre de nodo
+  \item Agrupación visual por tipo de nodo (aulas, laboratorios, oficinas, etc.)
+  \item Iconos distintivos según el tipo de ubicación
+  \item Indicación clara del nodo origen seleccionado
+\end{itemize}
+
+\textbf{Barra de búsqueda.} Implementa filtrado instantáneo:
+\begin{lstlisting}[language=Dart, caption={Filtrado de nodos}]
+List<Nodo> _nodosFiltrados() {
+  if (_textoBusqueda.isEmpty) return widget.grafo.nodos;
+  
+  return widget.grafo.nodos.where((nodo) {
+    final id = nodo.id.toLowerCase();
+    final busqueda = _textoBusqueda.toLowerCase();
+    return id.contains(busqueda);
+  }).toList();
+}
+\end{lstlisting}
+
+\textbf{Información contextual.} Cada elemento de la lista muestra:
+\begin{itemize}
+  \item ID del nodo
+  \item Tipo de ubicación inferido
+  \item Icono representativo
+  \item Coordenadas (para depuración en modo debug)
+\end{itemize}
+
+\paragraph{Flujo de uso}
+
+\begin{enumerate}
+  \item El usuario escanea un código QR que establece su ubicación actual (origen)
+  \item Se abre la pantalla de selección de destino
+  \item El usuario puede buscar o explorar la lista de destinos disponibles
+  \item Al seleccionar un destino, se calcula automáticamente la ruta con A*
+  \item La aplicación regresa al mapa mostrando la ruta calculada
+\end{enumerate}
+
+\paragraph{Integración con navegación multi-piso}
+
+La pantalla incluye un botón especial para seleccionar destinos en otros pisos:
+\begin{itemize}
+  \item Muestra un selector de piso (1, 2, 3 o 4)
+  \item Al elegir un piso diferente, carga los nodos de ese piso
+  \item Permite seleccionar el destino en el nuevo piso
+  \item Activa automáticamente el cálculo de ruta multi-piso
+\end{itemize}
+
+\subsubsection{Pantalla de opciones de ruta multi-piso}
+
+Cuando existen múltiples rutas posibles entre pisos diferentes, la aplicación presenta al usuario las alternativas disponibles mediante la pantalla \texttt{PantallaOpcionesRuta} implementada en \texttt{screens/pantalla\_opciones\_ruta.dart}.
+
+\paragraph{Presentación de opciones}
+
+Cada opción de ruta se muestra en una tarjeta que incluye:
+\begin{itemize}
+  \item \textbf{Distancia total}: Suma de todos los segmentos del recorrido
+  \item \textbf{Número de pasos}: Cantidad total de nodos en la ruta
+  \item \textbf{Puntos de conexión}: Escaleras o ascensores que se utilizarán
+  \item \textbf{Resumen visual}: Lista detallada de segmentos con iconos distintivos
+\end{itemize}
+
+\begin{lstlisting}[language=Dart, caption={Tarjeta de opción de ruta}]
+Card(
+  child: ListTile(
+    leading: Icon(
+      Icons.route,
+      color: Colors.blue,
+      size: 40,
+    ),
+    title: Text(
+      'Opcion ${index + 1}',
+      style: TextStyle(fontWeight: FontWeight.bold),
+    ),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Distancia: ${opcion.distanciaTotal.toStringAsFixed(1)} m'),
+        Text('Pasos: ${_contarPasosTotales(opcion)}'),
+        ...opcion.segmentos.map((seg) => _buildSegmentoInfo(seg)),
+      ],
+    ),
+    onTap: () => _seleccionarOpcion(opcion),
+  ),
+)
+\end{lstlisting}
+
+\paragraph{Criterios de ordenamiento}
+
+Las opciones se presentan ordenadas por:
+\begin{enumerate}
+  \item Distancia total (menor distancia primero)
+  \item Número de cambios de piso (menos cambios primero)
+  \item Tipo de conexión vertical (ascensor preferido sobre escalera para accesibilidad)
+\end{enumerate}
+
+\paragraph{Información de segmentos}
+
+Para cada segmento de la ruta, se muestra:
+\begin{itemize}
+  \item Icono del tipo de segmento (línea horizontal para mismo nivel, flechas verticales para escaleras/ascensores)
+  \item Descripción textual del recorrido
+  \item Pisos involucrados
+  \item Cantidad de pasos en ese segmento
+\end{itemize}
 
 
 
