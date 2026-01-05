@@ -1,0 +1,74 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{fancyhdr}
+
+% Configuración de página
+\geometry{
+    a4paper,
+    top=2cm,
+    bottom=2cm,
+    left=2cm,
+    right=2cm
+}
+
+% Configuración de encabezado y pie de página
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Sistema de Navegación UMAG}
+\rhead{Código QR}
+\cfoot{\thepage}
+
+% Comando personalizado para crear una tarjeta de QR
+\newcommand{\tarjetaqr}[3]{
+    \begin{center}
+        \begin{tikzpicture}
+            \draw[line width=2pt, rounded corners=10pt] (0,0) rectangle (12,16);
+            
+            % Título superior
+            \node[align=center, font=\Large\bfseries] at (6,14.5) {#1};
+            
+            % Espacio para el código QR
+            \node at (6,8.5) {
+                \includegraphics[width=7cm,height=7cm,keepaspectratio]{#2}
+            };
+            
+            % Nombre del lugar
+            \node[align=center, font=\LARGE\bfseries] at (6,3) {#3};
+            
+            % Instrucciones
+            \node[align=center, font=\small, text width=10cm] at (6,1) {
+                Escanea este código QR con la aplicación\\
+                de navegación para iniciar tu ruta
+            };
+        \end{tikzpicture}
+    \end{center}
+    \newpage
+}
+
+\begin{document}
+
+% ===============================================
+% EJEMPLO DE USO:
+% \tarjetaqr{TÍTULO}{ruta/al/codigo_qr.png}{NOMBRE DEL LUGAR}
+% ===============================================
+
+% Ejemplo 1: Escalera Centro Ciencias
+\tarjetaqr{Sistema de Navegación UMAG}{piso1/P1_Escalera_Centro_ciencias.png}{Escalera Centro\\Ciencias - Piso 1}
+
+% Ejemplo 2: Entrada Principal
+\tarjetaqr{Sistema de Navegación UMAG}{piso1/P1_Entrada_1.png}{Entrada Principal\\Piso 1}
+
+% Ejemplo 3: Patio de Ingeniería
+\tarjetaqr{Sistema de Navegación UMAG}{piso1/P1_Patio_de_ingenieria.png}{Patio de Ingeniería\\Piso 1}
+
+% ===============================================
+% AGREGAR MÁS TARJETAS AQUÍ
+% Simplemente copia y modifica la línea:
+% \tarjetaqr{TÍTULO}{ruta_imagen.png}{NOMBRE}
+% ===============================================
+
+\end{document}
