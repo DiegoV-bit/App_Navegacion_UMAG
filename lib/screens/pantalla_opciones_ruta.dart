@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../utils/gestor_multipiso.dart';
 
 /// Pantalla que muestra las diferentes opciones de ruta al usuario
 class PantallaOpcionesRuta extends StatelessWidget {
