@@ -14,18 +14,19 @@
 
 ## 📋 Descripción
 
-Aplicación móvil de navegación interior desarrollada para facilitar la orientación dentro de la Facultad de Ingeniería de la Universidad de Magallanes. El sistema permite a estudiantes, profesores y visitantes encontrar ubicaciones específicas dentro del edificio de forma rápida e intuitiva.
+Aplicación móvil de navegación interior desarrollada para facilitar la orientación dentro de la Facultad de Ingeniería de la Universidad de Magallanes. El sistema permite a estudiantes, profesores y visitantes encontrar ubicaciones específicas dentro de cada piso del edificio de forma rápida e intuitiva.
 
 ### ✨ Características Principales
 
-- 🗺️ **Navegación Multi-Piso**: Mapas interactivos vectoriales (SVG) de los 4 pisos del edificio
-- 🔍 **Algoritmo A***: Cálculo óptimo de rutas entre ubicaciones
-- 📱 **Códigos QR**: Navegación asistida mediante escaneo de códigos QR ubicados en puntos estratégicos
-- 🎯 **Puntos de Interés**: Identificación de salas, oficinas, baños, escaleras y más
-- 🔄 **Zoom Interactivo**: Controles de zoom suaves con gestos táctiles
-- 📍 **Visualización de Rutas**: Representación visual paso a paso del recorrido
+- 🗺️ **Mapas Interactivos**: Visualización de mapas vectoriales (SVG) de los 4 pisos del edificio
+- 🔍 **Algoritmo A***: Cálculo óptimo de rutas dentro del mismo piso
+- 📱 **Códigos QR**: Identificación de ubicación mediante escaneo de códigos QR estratégicos
+- 🎯 **Puntos de Interés**: Identificación de salas, oficinas, laboratorios, baños y más
+- 🔄 **Zoom Interactivo**: Controles de zoom suaves con gestos táctiles y botones dedicados
+- 📍 **Visualización de Rutas**: Representación visual clara del recorrido sobre el mapa
 - 🏗️ **Modelado por Grafos**: Sistema robusto basado en teoría de grafos para navegación precisa
 - 🛠️ **Modo Debug**: Herramientas avanzadas para desarrolladores (creación de nodos, conexiones y QR)
+- ✅ **Validación de Rutas**: Sistema que asegura origen y destino en el mismo piso
 
 ---
 
@@ -40,14 +41,11 @@ lib/
 │   └── grafo.dart                     # Estructura del grafo
 ├── utils/                             # Utilidades y herramientas
 │   ├── a_estrella.dart                # Implementación del algoritmo A*
-│   ├── codigo_qr.dart                 # Generación de códigos QR
+│   ├── codigo_qr.dart                 # Procesamiento de códigos QR
 │   ├── grafo_loader.dart              # Carga de datos del grafo
-│   ├── gestor_multipiso.dart          # Gestión de navegación multi-piso
 │   ├── navegacion_qr.dart             # Lógica de navegación por QR
 │   ├── pantalla_lectora_qr.dart       # Scanner de códigos QR
-│   └── pantalla_seleccion_destino.dart
-├── screens/                           # Pantallas de la aplicación
-│   └── pantalla_opciones_ruta.dart    # Opciones de ruta
+│   └── pantalla_seleccion_destino.dart # Selección de destino
 └── data/                              # Datos de los grafos
     ├── grafo_piso1.json               # Nodos y conexiones del piso 1
     ├── grafo_piso2.json               # Nodos y conexiones del piso 2
@@ -63,11 +61,11 @@ lib/
 |------------|-----------|
 | ![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=white) | Framework principal |
 | ![Dart](https://img.shields.io/badge/Dart-0175C2?logo=dart&logoColor=white) | Lenguaje de programación |
-| **flutter_svg** | Renderizado de mapas vectoriales |
-| **mobile_scanner** | Escaneo de códigos QR |
-| **qr_flutter** | Generación de códigos QR |
-| **JSON** | Almacenamiento de datos del grafo |
+| **flutter_svg** | Renderizado de mapas vectoriales SVG |
+| **mobile_scanner** | Escaneo de códigos QR con cámara |
+| **JSON** | Almacenamiento de grafos y nodos |
 | **Algoritmo A*** | Búsqueda de caminos óptimos |
+| **Material Design 3** | Sistema de diseño de interfaz |
 
 ---
 
@@ -109,20 +107,25 @@ lib/
 
 ### Navegación Básica
 
-1. **Seleccionar Piso**: En la pantalla principal, elige el piso al que deseas navegar
+1. **Seleccionar Piso**: En la pantalla principal, elige el piso que deseas explorar
 2. **Visualizar Mapa**: Explora el mapa interactivo con gestos de zoom y desplazamiento
-3. **Buscar Ubicación**: Toca sobre cualquier nodo para ver información del lugar
+3. **Buscar Ubicación**: Toca sobre cualquier nodo para ver información detallada del lugar
 4. **Establecer Ruta**: 
-   - Selecciona un nodo como origen
-   - Selecciona un nodo como destino
-   - La aplicación calculará automáticamente la ruta óptima
+   - Selecciona un nodo como origen (punto de partida)
+   - Selecciona un nodo como destino en el **mismo piso**
+   - La aplicación calculará automáticamente la ruta óptima usando A*
+   - La ruta se visualiza con líneas azules sobre el mapa
+
+> **Nota:** Actualmente, origen y destino deben estar en el mismo piso. Para navegar a otro piso, regresa al menú principal y selecciona el piso destino.
 
 ### Navegación por QR
 
-1. Escanea un código QR ubicado en el edificio
-2. La aplicación te ubicará automáticamente en ese punto
-3. Selecciona tu destino
-4. Sigue las instrucciones paso a paso
+1. Toca el botón del escáner QR en la pantalla del mapa
+2. Escanea un código QR ubicado en el edificio
+3. El sistema identificará tu ubicación actual
+4. Selecciona tu destino del menú desplegable
+5. La aplicación calculará y mostrará la ruta óptima
+6. Sigue la visualización de la ruta en el mapa
 
 ### Tipos de Nodos
 
@@ -156,17 +159,21 @@ El modo debug está activado mediante la constante `kDebugMode = true` en [main.
 
 ## 📊 Algoritmo A* (A-Estrella)
 
-El sistema utiliza el algoritmo A* para calcular las rutas óptimas:
+El sistema utiliza el algoritmo A* para calcular las rutas óptimas dentro de cada piso:
 
-- **Heurística**: Distancia euclidiana entre nodos
-- **Costo**: Distancia real acumulada
-- **Optimización**: Encuentra el camino más corto considerando obstáculos y conexiones
+- **Heurística**: Distancia euclidiana entre nodos (coordenadas x, y)
+- **Costo Real**: Distancia acumulada desde el nodo origen
+- **Función de Evaluación**: `f(n) = g(n) + h(n)`
+  - `g(n)` = costo real acumulado desde el origen hasta el nodo n
+  - `h(n)` = estimación heurística desde n hasta el destino
+- **Optimización**: Encuentra el camino más corto garantizado (óptimo) cuando la heurística es admisible
+- **Implementación**: Ubicada en `lib/utils/a_estrella.dart`
 
-```dart
-f(n) = g(n) + h(n)
-// g(n) = costo desde el origen
-// h(n) = heurística al destino
-```
+### Ventajas sobre Dijkstra
+- ✅ Más eficiente: explora menos nodos
+- ✅ Dirigida por objetivo: usa la heurística para priorizar nodos prometedores
+- ✅ Óptima: garantiza encontrar el camino más corto
+- ✅ Escalable: funciona bien con grafos de más de 100 nodos
 
 ---
 
@@ -244,8 +251,8 @@ gantt
 
 | Avatar | Nombre | Rol | Contribuciones |
 |--------|--------|-----|----------------|
-| 👨‍💻 | Diego Vidal | Desarrollador Principal | Interfaz, sistema de navegación, modo debug |
-| 👨‍💻 | Bruno Martinez | Desarrollador | Digitalización de mapas, modelado de grafos, algoritmo A* |
+| 👨‍💻 | Diego Vidal | Desarrollador Principal | Interfaz, sistema de navegación, modo debug, corrección de errores QR |
+| 👨‍💻 | Bruno Martinez | Desarrollador | Digitalización de mapas, modelado de grafos, algoritmo A*, sistema de coordenadas |
 
 ---
 
