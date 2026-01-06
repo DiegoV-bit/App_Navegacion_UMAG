@@ -105,37 +105,98 @@ void main() {
   runApp(const NavigacionUMAGApp());
 }
 
-class NavigacionUMAGApp extends StatelessWidget {
+class NavigacionUMAGApp extends StatefulWidget {
   const NavigacionUMAGApp({super.key});
+
+  @override
+  State<NavigacionUMAGApp> createState() => _NavigacionUMAGAppState();
+}
+
+class _NavigacionUMAGAppState extends State<NavigacionUMAGApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  void _cambiarTema(ThemeMode modo) {
+    setState(() {
+      _themeMode = modo;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     // MaterialApp establece tema, navegación y punto de entrada visual.
     return MaterialApp(
       title: 'Navegación UMAG',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      home: const PantallaInicio(),
+      themeMode: _themeMode,
+
+      // Tema claro
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+      ),
+
+      // Tema oscuro
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+
+      home: PantallaInicio(
+          onCambiarTema: _cambiarTema, themeModeActual: _themeMode),
     );
   }
 }
 
 class PantallaInicio extends StatelessWidget {
-  const PantallaInicio({super.key});
+  final Function(ThemeMode) onCambiarTema;
+  final ThemeMode themeModeActual;
+
+  const PantallaInicio({
+    super.key,
+    required this.onCambiarTema,
+    required this.themeModeActual,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Facultad de Ingeniería UMAG'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Colors.deepPurple.shade700,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Configuración',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PantallaAjustes(
+                    onCambiarTema: onCambiarTema,
+                    themeModeActual: themeModeActual,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
-          // Fondo con degradado suave para darle jerarquía a la pantalla inicial.
+          // Fondo con degradado suave adaptado al modo oscuro/claro
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade50, Colors.white],
+            colors: isDarkMode
+                ? [Colors.grey.shade900, Colors.black]
+                : [Colors.blue.shade50, Colors.white],
           ),
         ),
         child: SafeArea(
@@ -148,7 +209,7 @@ class PantallaInicio extends StatelessWidget {
                     Icon(
                       Icons.location_on,
                       size: 20,
-                      color: Colors.blue.shade600,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -156,14 +217,15 @@ class PantallaInicio extends StatelessWidget {
                       style:
                           Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade800,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Selecciona el piso que deseas explorar',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.grey.shade600,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                   ],
@@ -227,6 +289,8 @@ class PantallaInicio extends StatelessWidget {
     Color color,
     int numeroPiso,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       elevation: 4,
       child: InkWell(
@@ -247,8 +311,9 @@ class PantallaInicio extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  // Reemplazamos `withOpacity` (deprecado) por `withAlpha` para evitar warnings.
-                  color: color.withAlpha((0.1 * 255).round()),
+                  color: isDarkMode
+                      ? color.withAlpha((0.3 * 255).round())
+                      : color.withAlpha((0.1 * 255).round()),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icono, size: 32, color: color),
@@ -268,16 +333,142 @@ class PantallaInicio extends StatelessWidget {
                     Text(
                       descripcion,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey.shade600,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ==================== PANTALLA DE AJUSTES ====================
+class PantallaAjustes extends StatefulWidget {
+  final Function(ThemeMode) onCambiarTema;
+  final ThemeMode themeModeActual;
+
+  const PantallaAjustes({
+    super.key,
+    required this.onCambiarTema,
+    required this.themeModeActual,
+  });
+
+  @override
+  State<PantallaAjustes> createState() => _PantallaAjustesState();
+}
+
+class _PantallaAjustesState extends State<PantallaAjustes> {
+  late ThemeMode _modoSeleccionado;
+
+  @override
+  void initState() {
+    super.initState();
+    _modoSeleccionado = widget.themeModeActual;
+  }
+
+  void _cambiarModo(ThemeMode modo) {
+    setState(() {
+      _modoSeleccionado = modo;
+    });
+    widget.onCambiarTema(modo);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Configuración'),
+        backgroundColor: Colors.deepPurple.shade700,
+      ),
+      body: ListView(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Apariencia',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.brightness_auto),
+            title: const Text('Automático'),
+            subtitle: const Text('Usar tema del sistema'),
+            trailing: Radio<ThemeMode>(
+              value: ThemeMode.system,
+              groupValue: _modoSeleccionado,
+              onChanged: (ThemeMode? value) {
+                if (value != null) {
+                  _cambiarModo(value);
+                }
+              },
+            ),
+            onTap: () => _cambiarModo(ThemeMode.system),
+          ),
+          ListTile(
+            leading: const Icon(Icons.light_mode),
+            title: const Text('Modo Claro'),
+            subtitle: const Text('Interfaz con colores claros'),
+            trailing: Radio<ThemeMode>(
+              value: ThemeMode.light,
+              groupValue: _modoSeleccionado,
+              onChanged: (ThemeMode? value) {
+                if (value != null) {
+                  _cambiarModo(value);
+                }
+              },
+            ),
+            onTap: () => _cambiarModo(ThemeMode.light),
+          ),
+          ListTile(
+            leading: const Icon(Icons.dark_mode),
+            title: const Text('Modo Oscuro'),
+            subtitle: const Text('Interfaz con colores oscuros'),
+            trailing: Radio<ThemeMode>(
+              value: ThemeMode.dark,
+              groupValue: _modoSeleccionado,
+              onChanged: (ThemeMode? value) {
+                if (value != null) {
+                  _cambiarModo(value);
+                }
+              },
+            ),
+            onTap: () => _cambiarModo(ThemeMode.dark),
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Acerca de',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const ListTile(
+            leading: Icon(Icons.info_outline),
+            title: Text('Versión'),
+            subtitle: Text('1.0.0'),
+          ),
+          const ListTile(
+            leading: Icon(Icons.school),
+            title: Text('Universidad de Magallanes'),
+            subtitle: Text('Facultad de Ingeniería'),
+          ),
+        ],
       ),
     );
   }
@@ -2579,7 +2770,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Theme.of(context).colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -2590,14 +2781,16 @@ class _PantallaMapaState extends State<PantallaMapa> {
                         Icon(
                           Icons.lightbulb,
                           size: 16,
-                          color: Colors.blue.shade700,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           'Recomendaciones:',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade900,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
                           ),
                         ),
                       ],
@@ -2610,7 +2803,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                       '• Usa Esquinas en cambios de dirección',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.blue.shade800,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                     ),
                   ],
@@ -2686,6 +2879,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.titulo),
@@ -2874,15 +3069,20 @@ class _PantallaMapaState extends State<PantallaMapa> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            color:
-                _modoDebugActivo ? Colors.orange.shade50 : Colors.blue.shade50,
+            color: _modoDebugActivo
+                ? (isDarkMode ? Colors.orange.shade900 : Colors.orange.shade50)
+                : (isDarkMode ? Colors.blue.shade900 : Colors.blue.shade50),
             child: Row(
               children: [
                 Icon(
                   _modoDebugActivo ? Icons.bug_report : Icons.map,
                   color: _modoDebugActivo
-                      ? Colors.orange.shade600
-                      : Colors.blue.shade600,
+                      ? (isDarkMode
+                          ? Colors.orange.shade300
+                          : Colors.orange.shade600)
+                      : (isDarkMode
+                          ? Colors.blue.shade300
+                          : Colors.blue.shade600),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -2893,8 +3093,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       color: _modoDebugActivo
-                          ? Colors.orange.shade800
-                          : Colors.blue.shade800,
+                          ? (isDarkMode
+                              ? Colors.orange.shade200
+                              : Colors.orange.shade800)
+                          : (isDarkMode
+                              ? Colors.blue.shade200
+                              : Colors.blue.shade800),
                     ),
                   ),
                 ),
@@ -2988,13 +3192,27 @@ class _PantallaMapaState extends State<PantallaMapa> {
                   height: _svgHeightOriginal,
                   child: Stack(
                     children: [
-                      SvgPicture.asset(
-                        rutaArchivo,
-                        width: _svgWidthOriginal,
-                        height: _svgHeightOriginal,
-                        fit: BoxFit.fill,
-                        placeholderBuilder: (context) => const Center(
-                          child: CircularProgressIndicator(),
+                      ColorFiltered(
+                        colorFilter: isDarkMode
+                            ? const ColorFilter.matrix([
+                                // Invertir colores para modo oscuro
+                                -1, 0, 0, 0, 255,
+                                0, -1, 0, 0, 255,
+                                0, 0, -1, 0, 255,
+                                0, 0, 0, 1, 0,
+                              ])
+                            : const ColorFilter.mode(
+                                Colors.transparent,
+                                BlendMode.dst,
+                              ),
+                        child: SvgPicture.asset(
+                          rutaArchivo,
+                          width: _svgWidthOriginal,
+                          height: _svgHeightOriginal,
+                          fit: BoxFit.fill,
+                          placeholderBuilder: (context) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
                       ),
                       // Mostrar líneas de conexiones debug

@@ -107,12 +107,12 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
+                  Text(
                     '🎯 ¿A dónde deseas ir?',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -121,9 +121,11 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[300]!),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.05),
@@ -135,9 +137,12 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         isExpanded: true,
-                        hint: const Text(
+                        hint: Text(
                           'Selecciona tu destino',
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         value: _nodoDestinoSeleccionado,
                         icon: const Icon(Icons.arrow_drop_down),
@@ -219,9 +224,16 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
                         margin: const EdgeInsets.only(top: 16),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.green[50],
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.green[900]
+                              : Colors.green[50],
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.green[200]!),
+                          border: Border.all(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.green[700]!
+                                    : Colors.green[200]!,
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,14 +261,18 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
                                 '📏 Distancia: ${_distanciaTotal!.toStringAsFixed(1)} unidades',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.grey[700],
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                 ),
                               ),
                             Text(
                               '👣 Pasos: ${_rutaCalculada!.length}',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey[700],
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                             ),
                             const SizedBox(height: 16),
