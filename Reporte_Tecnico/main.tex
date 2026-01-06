@@ -120,7 +120,7 @@
 % RESUMEN
 % ============================================================
 \section*{Resumen}
-	extit{El presente proyecto desarrolla una aplicación de navegación interna cuyo objetivo es optimizar la orientación y el desplazamiento dentro de la Facultad de Ingeniería de la Universidad de Magallanes. Esta solución surge de la necesidad de mejorar la accesibilidad y la eficiencia al momento de encontrar salas, oficinas y laboratorios, especialmente para estudiantes nuevos y personas visitantes. Para su desarrollo, se implementó un sistema de mapeo digital basado en planos arquitectónicos del edificio, integrando tecnologías de posicionamiento soportadas por puntos de referencia.}
+\textit{El presente proyecto desarrolla una aplicación de navegación interna cuyo objetivo es optimizar la orientación y el desplazamiento dentro de la Facultad de Ingeniería de la Universidad de Magallanes. Esta solución surge de la necesidad de mejorar la accesibilidad y la eficiencia al momento de encontrar salas, oficinas y laboratorios, especialmente para estudiantes nuevos y personas visitantes. Para su desarrollo, se implementó un sistema de mapeo digital basado en planos arquitectónicos del edificio, integrando tecnologías de posicionamiento soportadas por códigos QR y un algoritmo de búsqueda A* para el cálculo de rutas óptimas dentro de cada piso. El sistema permite a los usuarios navegar de forma eficiente dentro de un piso seleccionado, visualizando rutas claras sobre mapas interactivos.}
 
 % ============================================================
 % INTRODUCCIÓN
@@ -138,14 +138,16 @@ El proyecto fue desarrollado en el segundo semestre del año 2025 en las depende
 
 \subsection{Objetivo General}
 % 
-Desarrollar una aplicación móvil de navegación interna que permita a los usuarios ubicarse y desplazarse eficientemente dentro de la Facultad de Ingeniería, utilizando tecnologías de posicionamiento y mapas digitales interactivos.
+Desarrollar una aplicación móvil de navegación interna que permita a los usuarios ubicarse y desplazarse eficientemente dentro de cada piso de la Facultad de Ingeniería, utilizando algoritmos de búsqueda de rutas óptimas y mapas digitales interactivos.
 
 \subsection{Objetivos Específicos}
 % 
 \begin{itemize}
   \item Analizar la estructura espacial y las necesidades de orientación dentro de la Facultad de Ingeniería.
-  \item Diseñar e implementar una interfaz intuitiva que muestre mapas internos y rutas óptimas hacia los distintos destinos.
-  \item Integrar tecnologías de posicionamiento en interiores (beacons, Wi-Fi o códigos QR) que permitan determinar la ubicación del usuario en tiempo real.
+  \item Diseñar y modelar grafos de navegación para cada piso del edificio, incluyendo salas, pasillos, laboratorios y oficinas.
+  \item Implementar el algoritmo A* para calcular rutas óptimas entre puntos de interés dentro del mismo piso.
+  \item Integrar tecnologías de posicionamiento mediante códigos QR que permitan identificar la ubicación del usuario.
+  \item Desarrollar una interfaz gráfica intuitiva con visualización de mapas SVG interactivos y control de zoom.
 \end{itemize}
 
 % ============================================================
@@ -1004,185 +1006,169 @@ La solución mantiene:
 
 La lógica de parsing JSON utiliza detección por delimitadores, parsing con manejo de excepciones, validación de campos requeridos, extracción segura de datos y fallback silencioso a otros formatos si el JSON falla. El formato JSON se verifica primero antes de intentar otros formatos, asegurando prioridad al formato generado por el sistema automatizado de Python.
 
-\subsubsection{Sistema de navegación multi-piso}
+\subsubsection{Sistema de navegación y cálculo de rutas}
 
-La aplicación implementa un sistema completo de navegación entre diferentes pisos del edificio, permitiendo calcular y seguir rutas que atraviesan múltiples niveles a través de escaleras y ascensores.
+La aplicación implementa un sistema de navegación dentro de cada piso del edificio, permitiendo calcular y visualizar rutas óptimas entre diferentes puntos de interés.
 
-\paragraph{Componentes del sistema}
+\paragraph{Restricción de navegación por piso}
 
-\textbf{Gestor de múltiples pisos (GestorMultiPiso).} Esta clase, implementada en \texttt{gestor\_multipiso.dart}, se encarga de:
-\begin{itemize}
-  \item Cargar y mantener en memoria los grafos de todos los pisos simultáneamente
-  \item Identificar puntos de conexión vertical (escaleras y ascensores) entre pisos
-  \item Calcular rutas óptimas que atraviesan múltiples niveles
-  \item Generar múltiples opciones de ruta cuando existen varios caminos posibles
-\end{itemize}
+El sistema actual está diseñado para navegar dentro de un mismo piso por simplicidad y eficiencia. Cuando el usuario intenta seleccionar un destino en un piso diferente al origen, la aplicación valida esta condición y muestra un mensaje de advertencia:
 
-\textbf{Tipos de segmentos de ruta.} El sistema clasifica las rutas en tres tipos de segmentos:
-\begin{lstlisting}[language=Dart, caption={Tipos de segmentos}]
-enum TipoSegmento {
-  mismoNivel,    // Ruta dentro del mismo piso
-  escalera,      // Cambio de piso por escalera
-  ascensor,      // Cambio de piso por ascensor
-}
-\end{lstlisting}
-
-\textbf{Estructura de segmentos.} Cada segmento de ruta contiene información completa sobre el recorrido:
-\begin{lstlisting}[language=Dart, caption={Clase SegmentoRuta}]
-class SegmentoRuta {
-  final int pisoOrigen;
-  final int? pisoDestino;        // null si es mismo nivel
-  final TipoSegmento tipo;
-  final List<String> nodos;      // Secuencia de nodos
-  final double distancia;
-  final String? puntoConexion;   // ID escalera/ascensor
-}
-\end{lstlisting}
-
-\paragraph{Cálculo de rutas multi-piso}
-
-El proceso de cálculo de rutas entre pisos diferentes sigue estos pasos:
-
-\begin{enumerate}
-  \item \textbf{Identificación de conexiones}: El sistema busca todos los puntos de conexión vertical (escaleras y ascensores) que conectan el piso origen con el piso destino, ya sea directamente o a través de pisos intermedios.
+\begin{lstlisting}[language=Dart, caption={Validación de mismo piso}]
+void _establecerDestino(String nodoId) async {
+  // Verificar que origen y destino esten en el mismo piso
+  final pisoOrigen = _extraerPisoDeNodoId(_origenSeleccionado!);
+  final pisoDestino = _extraerPisoDeNodoId(nodoId);
   
-  \item \textbf{Generación de opciones}: Para cada conexión vertical disponible, se calcula una ruta completa que incluye:
-  \begin{itemize}
-    \item Ruta desde el origen hasta la escalera/ascensor en el piso actual
-    \item Segmento de cambio de piso
-    \item Ruta desde la escalera/ascensor hasta el destino en el piso final
-  \end{itemize}
-  
-  \item \textbf{Optimización}: Las rutas se ordenan por distancia total, considerando tanto el recorrido horizontal dentro de cada piso como las transiciones verticales.
-  
-  \item \textbf{Segmentación}: La ruta final se divide en segmentos lógicos que facilitan la navegación paso a paso.
-\end{enumerate}
-
-\begin{lstlisting}[language=Dart, caption={Cálculo de ruta multi-piso}]
-Future<List<OpcionRuta>> calcularRutasMultiPiso(
-  String origenId,
-  int pisoOrigen,
-  String destinoId,
-  int pisoDestino,
-) async {
-  final opciones = <OpcionRuta>[];
-  
-  // Buscar todas las conexiones verticales posibles
-  final conexiones = _encontrarConexionesVerticales(
-    pisoOrigen, 
-    pisoDestino
-  );
-  
-  for (final conexion in conexiones) {
-    // Calcular ruta hasta el punto de conexion
-    final segmento1 = await _calcularSegmento(
-      origenId, 
-      conexion.nodoOrigen, 
-      pisoOrigen
+  if (pisoOrigen != pisoDestino) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('El origen y destino deben estar en el mismo piso'),
+        backgroundColor: Colors.orange,
+      ),
     );
-    
-    // Segmento de cambio de piso
-    final segmento2 = SegmentoRuta(
-      pisoOrigen: pisoOrigen,
-      pisoDestino: pisoDestino,
-      tipo: conexion.tipo,
-      nodos: [conexion.nodoOrigen, conexion.nodoDestino],
-      puntoConexion: conexion.id,
-    );
-    
-    // Calcular ruta desde conexion hasta destino
-    final segmento3 = await _calcularSegmento(
-      conexion.nodoDestino, 
-      destinoId, 
-      pisoDestino
-    );
-    
-    opciones.add(OpcionRuta(
-      segmentos: [segmento1, segmento2, segmento3],
-      distanciaTotal: _calcularDistanciaTotal([...]),
-    ));
+    return;
   }
   
-  // Ordenar por distancia
-  opciones.sort((a, b) => 
-    a.distanciaTotal.compareTo(b.distanciaTotal)
-  );
-  
-  return opciones;
+  // Continuar con calculo de ruta usando A*
+  setState(() => _destinoSeleccionado = nodoId);
+  await _calcularYMostrarRuta(_origenSeleccionado!, nodoId);
 }
 \end{lstlisting}
 
-\paragraph{Navegación paso a paso}
+Esta decisión de diseño simplifica la experiencia del usuario y evita complejidades relacionadas con el cambio de pisos durante la navegación. Para navegar a otro piso, el usuario debe:
 
-La aplicación proporciona instrucciones detalladas para cada paso de la ruta:
+\begin{enumerate}
+  \item Regresar al menú principal
+  \item Seleccionar el piso destino deseado
+  \item Establecer un nuevo origen y destino dentro de ese piso
+\end{enumerate}
 
-\begin{itemize}
-  \item \textbf{Dentro del mismo piso}: Muestra el siguiente nodo en el recorrido y la distancia restante
-  \item \textbf{Al llegar a escalera/ascensor}: Alerta al usuario sobre el cambio de piso necesario y solicita confirmación mediante escaneo de QR
-  \item \textbf{Después del cambio de piso}: Actualiza automáticamente el mapa al nuevo piso y continúa mostrando la ruta restante
-\end{itemize}
+\paragraph{Cálculo de rutas con A*}
 
-\paragraph{Interfaz de usuario para navegación multi-piso}
+Una vez validado que origen y destino están en el mismo piso, el sistema procede a calcular la ruta óptima:
 
-\textbf{Barra de progreso.} Se implementó una barra de progreso visual que muestra:
-\begin{itemize}
-  \item Paso actual / Total de pasos
-  \item Instrucción textual del paso actual
-  \item Distancia restante al destino
-  \item Indicador visual del tipo de segmento (mismo nivel, escalera o ascensor)
-\end{itemize}
-
-\textbf{Controles de navegación.} El usuario puede:
-\begin{itemize}
-  \item Avanzar manualmente al siguiente paso
-  \item Retroceder al paso anterior para revisar
-  \item Escanear códigos QR para confirmar llegada a puntos de conexión
-  \item Cancelar la navegación en cualquier momento
-\end{itemize}
-
-\textbf{Diálogos de confirmación.} Cuando el usuario llega a un punto de cambio de piso, se muestra un diálogo con:
-\begin{itemize}
-  \item Indicación clara del piso destino
-  \item Botón para confirmar el cambio de piso
-  \item Opción para escanear QR como confirmación alternativa
-  \item Instrucciones sobre qué escalera/ascensor usar
-\end{itemize}
-
-\paragraph{Persistencia del estado de navegación}
-
-El sistema mantiene el estado de navegación al cambiar entre pisos:
-\begin{itemize}
-  \item El origen seleccionado se preserva
-  \item Los segmentos de ruta se transfieren al nuevo piso
-  \item El paso actual se mantiene sincronizado
-  \item La ruta visual se actualiza automáticamente
-\end{itemize}
-
-Esta persistencia se logra mediante parámetros del constructor de \texttt{PantallaMapa}:
-
-\begin{lstlisting}[language=Dart, caption={Transferencia de estado entre pisos}]
-Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(
-    builder: (context) => PantallaMapa(
-      numeroPiso: nuevoPiso,
-      titulo: 'Piso $nuevoPiso',
-      origenInicial: _origenSeleccionado,
-      segmentosRutaInicial: _segmentosRuta,
-      pasoActualInicial: _pasoActualRuta,
-    ),
-  ),
-);
+\begin{lstlisting}[language=Dart, caption={Cálculo de ruta en el mismo piso}]
+Future<void> _calcularYMostrarRuta(String origen, String destino) async {
+  try {
+    final grafoJson = await rootBundle.loadString(rutaGrafoJson);
+    final grafoData = json.decode(grafoJson);
+    final grafo = Grafo.fromJson(grafoData);
+    
+    // Calcular ruta usando A*
+    final ruta = AStar.calcularRuta(
+      grafo: grafo,
+      origen: origen,
+      destino: destino,
+    );
+    
+    if (ruta.isEmpty) {
+      _mostrarError('No se encontro una ruta entre los puntos');
+      return;
+    }
+    
+    // Actualizar estado con la ruta calculada
+    setState(() {
+      _rutaActiva.clear();
+      _rutaActiva.addAll(ruta);
+    });
+    
+    // Calcular y mostrar distancia total
+    final distancia = _calcularDistanciaRuta(ruta);
+    _mostrarConfirmacion(
+      'Ruta calculada: ${distancia.toStringAsFixed(1)} metros'
+    );
+  } catch (e) {
+    _mostrarError('Error al calcular ruta: $e');
+  }
+}
 \end{lstlisting}
 
-\paragraph{Ventajas del sistema multi-piso}
+\paragraph{Visualización de la ruta}
+
+La ruta calculada se visualiza sobre el mapa mediante un sistema de líneas dibujadas con \texttt{CustomPainter}:
 
 \begin{itemize}
-  \item \textbf{Flexibilidad}: Soporta rutas con múltiples cambios de piso (ej: piso 1 $\rightarrow$ 2 $\rightarrow$ 4)
-  \item \textbf{Opciones alternativas}: Calcula múltiples rutas cuando existen diferentes escaleras/ascensores
-  \item \textbf{Validación}: Requiere confirmación física (QR) en puntos críticos de cambio de piso
-  \item \textbf{Usabilidad}: Instrucciones claras y visualización continua en cada piso
-  \item \textbf{Escalabilidad}: Diseño modular que permite agregar nuevos pisos sin modificar la lógica central
+  \item \textbf{Líneas de ruta}: Conectan secuencialmente los nodos del camino calculado
+  \item \textbf{Marcadores especiales}: El origen se destaca en verde y el destino en rojo
+  \item \textbf{Nodos intermedios}: Se marcan en azul a lo largo del recorrido
+  \item \textbf{Información de distancia}: Se muestra la distancia total en la interfaz
+\end{itemize}
+
+\begin{lstlisting}[language=Dart, caption={Construcción de líneas de ruta}]
+List<Widget> _buildLineasRuta() {
+  if (_rutaActiva.length < 2) return [];
+  
+  final lineas = <Widget>[];
+  
+  for (int i = 0; i < _rutaActiva.length - 1; i++) {
+    final nodoActual = _nodos.firstWhere(
+      (n) => n['id'] == _rutaActiva[i]
+    );
+    final nodoSiguiente = _nodos.firstWhere(
+      (n) => n['id'] == _rutaActiva[i + 1]
+    );
+    
+    final inicio = _calcularPosicionEscalada(
+      nodoActual['x'] as double,
+      nodoActual['y'] as double,
+    );
+    final fin = _calcularPosicionEscalada(
+      nodoSiguiente['x'] as double,
+      nodoSiguiente['y'] as double,
+    );
+    
+    lineas.add(
+      CustomPaint(
+        painter: RutaPainter(inicio: inicio, fin: fin),
+      ),
+    );
+  }
+  
+  return lineas;
+}
+\end{lstlisting}
+
+\paragraph{Limpieza de selección}
+
+El usuario puede limpiar la selección actual y comenzar una nueva navegación en cualquier momento:
+
+\begin{lstlisting}[language=Dart, caption={Limpieza de ruta activa}]
+void _limpiarSeleccion() {
+  setState(() {
+    _origenSeleccionado = null;
+    _destinoSeleccionado = null;
+    _rutaActiva.clear();
+    
+    // Limpiar conexiones debug si estan activas
+    if (_modoDebugActivo) {
+      _conexionesDebug.clear();
+    }
+  });
+  
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Row(
+        children: [
+          Icon(Icons.clear, color: Colors.white),
+          SizedBox(width: 12),
+          Text('Seleccion limpiada'),
+        ],
+      ),
+      duration: Duration(seconds: 2),
+    ),
+  );
+}
+\end{lstlisting}
+
+\paragraph{Ventajas del enfoque simplificado}
+
+\begin{itemize}
+  \item \textbf{Simplicidad}: La interfaz es más intuitiva al enfocarse en un piso a la vez
+  \item \textbf{Rendimiento}: Reduce la carga computacional al trabajar con grafos individuales
+  \item \textbf{Claridad visual}: El usuario siempre ve claramente el piso en el que está navegando
+  \item \textbf{Mantenibilidad}: El código es más simple y fácil de mantener sin lógica multi-piso
+  \item \textbf{Escalabilidad}: Permite agregar nuevos pisos sin complejidad adicional en el sistema de navegación
 \end{itemize}
 
 \subsubsection{Pantalla de selección de destino}
@@ -1191,121 +1177,116 @@ Para facilitar la selección de destinos, se implementó una pantalla dedicada (
 
 \paragraph{Características principales}
 
-\textbf{Lista filtrable de nodos.} La pantalla muestra todos los nodos disponibles del piso actual con las siguientes capacidades:
+\textbf{Lista de nodos disponibles.} La pantalla muestra todos los nodos del piso actual con las siguientes capacidades:
 \begin{itemize}
-  \item Búsqueda en tiempo real por ID o nombre de nodo
+  \item Visualización de todos los destinos posibles dentro del mismo piso
   \item Agrupación visual por tipo de nodo (aulas, laboratorios, oficinas, etc.)
   \item Iconos distintivos según el tipo de ubicación
   \item Indicación clara del nodo origen seleccionado
 \end{itemize}
 
-\textbf{Barra de búsqueda.} Implementa filtrado instantáneo:
-\begin{lstlisting}[language=Dart, caption={Filtrado de nodos}]
-List<Nodo> _nodosFiltrados() {
-  if (_textoBusqueda.isEmpty) return widget.grafo.nodos;
-  
-  return widget.grafo.nodos.where((nodo) {
-    final id = nodo.id.toLowerCase();
-    final busqueda = _textoBusqueda.toLowerCase();
-    return id.contains(busqueda);
-  }).toList();
-}
-\end{lstlisting}
-
-\textbf{Información contextual.} Cada elemento de la lista muestra:
+\textbf{Selección directa.} El usuario puede:
 \begin{itemize}
-  \item ID del nodo
-  \item Tipo de ubicación inferido
-  \item Icono representativo
-  \item Coordenadas (para depuración en modo debug)
+  \item Tocar cualquier nodo en el mapa para establecerlo como origen o destino
+  \item Ver información detallada de cada nodo al seleccionarlo
+  \item Confirmar la selección mediante diálogos intuitivos
+  \item Visualizar la ruta calculada inmediatamente después de seleccionar ambos puntos
 \end{itemize}
 
 \paragraph{Flujo de uso}
 
 \begin{enumerate}
-  \item El usuario escanea un código QR que establece su ubicación actual (origen)
-  \item Se abre la pantalla de selección de destino
-  \item El usuario puede buscar o explorar la lista de destinos disponibles
-  \item Al seleccionar un destino, se calcula automáticamente la ruta con A*
-  \item La aplicación regresa al mapa mostrando la ruta calculada
+  \item El usuario escanea un código QR o toca un nodo en el mapa para establecer el origen
+  \item Selecciona un segundo nodo en el mismo piso como destino
+  \item La aplicación valida que ambos nodos estén en el mismo piso
+  \item Si la validación es exitosa, se calcula automáticamente la ruta con A*
+  \item La ruta se visualiza sobre el mapa con líneas y marcadores
+  \item El usuario puede limpiar la selección y comenzar una nueva ruta en cualquier momento
 \end{enumerate}
 
-\paragraph{Integración con navegación multi-piso}
+\paragraph{Limitación actual}
 
-La pantalla incluye un botón especial para seleccionar destinos en otros pisos:
-\begin{itemize}
-  \item Muestra un selector de piso (1, 2, 3 o 4)
-  \item Al elegir un piso diferente, carga los nodos de ese piso
-  \item Permite seleccionar el destino en el nuevo piso
-  \item Activa automáticamente el cálculo de ruta multi-piso
-\end{itemize}
+Actualmente, la aplicación solo permite navegar dentro del mismo piso. Si el usuario intenta seleccionar un destino en un piso diferente, se muestra un mensaje indicando que debe navegar manualmente al piso destino:
 
-\subsubsection{Pantalla de opciones de ruta multi-piso}
+\begin{quote}
+\textit{``El origen y destino deben estar en el mismo piso. Por favor, selecciona el piso destino desde el menú principal.''}
+\end{quote}
 
-Cuando existen múltiples rutas posibles entre pisos diferentes, la aplicación presenta al usuario las alternativas disponibles mediante la pantalla \texttt{PantallaOpcionesRuta} implementada en \texttt{screens/pantalla\_opciones\_ruta.dart}.
+Esta decisión de diseño simplifica la experiencia del usuario y mantiene la claridad en la navegación, evitando complejidades adicionales relacionadas con cambios de piso durante el recorrido.
 
-\paragraph{Presentación de opciones}
+\subsubsection{Integración del escáner QR con la navegación}
 
-Cada opción de ruta se muestra en una tarjeta que incluye:
-\begin{itemize}
-  \item \textbf{Distancia total}: Suma de todos los segmentos del recorrido
-  \item \textbf{Número de pasos}: Cantidad total de nodos en la ruta
-  \item \textbf{Puntos de conexión}: Escaleras o ascensores que se utilizarán
-  \item \textbf{Resumen visual}: Lista detallada de segmentos con iconos distintivos
-\end{itemize}
+El sistema de códigos QR se integra perfectamente con el sistema de navegación, permitiendo establecer rápidamente el punto de origen:
 
-\begin{lstlisting}[language=Dart, caption={Tarjeta de opción de ruta}]
-Card(
-  child: ListTile(
-    leading: Icon(
-      Icons.route,
-      color: Colors.blue,
-      size: 40,
-    ),
-    title: Text(
-      'Opcion ${index + 1}',
-      style: TextStyle(fontWeight: FontWeight.bold),
-    ),
-    subtitle: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Distancia: ${opcion.distanciaTotal.toStringAsFixed(1)} m'),
-        Text('Pasos: ${_contarPasosTotales(opcion)}'),
-        ...opcion.segmentos.map((seg) => _buildSegmentoInfo(seg)),
-      ],
-    ),
-    onTap: () => _seleccionarOpcion(opcion),
-  ),
-)
-\end{lstlisting}
-
-\paragraph{Criterios de ordenamiento}
-
-Las opciones se presentan ordenadas por:
 \begin{enumerate}
-  \item Distancia total (menor distancia primero)
-  \item Número de cambios de piso (menos cambios primero)
-  \item Tipo de conexión vertical (ascensor preferido sobre escalera para accesibilidad)
+  \item El usuario escanea un código QR físico ubicado en un punto de la facultad
+  \item El sistema identifica el nodo correspondiente en el grafo del piso actual
+  \item Se establece automáticamente como punto de origen para la navegación
+  \item El usuario puede seleccionar un destino tocando otro nodo en el mapa
+  \item La aplicación calcula y muestra la ruta óptima usando A*
 \end{enumerate}
 
-\paragraph{Información de segmentos}
-
-Para cada segmento de la ruta, se muestra:
-\begin{itemize}
-  \item Icono del tipo de segmento (línea horizontal para mismo nivel, flechas verticales para escaleras/ascensores)
-  \item Descripción textual del recorrido
-  \item Pisos involucrados
-  \item Cantidad de pasos en ese segmento
-\end{itemize}
-
-
+Este flujo permite una experiencia de usuario fluida, combinando la precisión del posicionamiento por QR con la flexibilidad de la selección visual de destinos.
 
 % ============================================================
 % CONCLUSIONES Y RECOMENDACIONES
 % ============================================================
 \section{Conclusiones y Recomendaciones}
-% 
-Redacte conclusiones breves destacando los aprendizajes clave y si se cumplieron los objetivos[cite: 83]. Añada recomendaciones si es pertinente[cite: 86].
+
+\subsection{Conclusiones}
+
+El desarrollo de la aplicación de navegación interna para la Facultad de Ingeniería de la Universidad de Magallanes cumplió exitosamente con los objetivos planteados, logrando implementar un sistema funcional que facilita la orientación de estudiantes y visitantes dentro del edificio.
+
+\textbf{Logros principales:}
+\begin{itemize}
+  \item Se digitalizaron y optimizaron los planos arquitectónicos de los 4 pisos del edificio, convirtiéndolos a formato SVG para su visualización interactiva.
+  
+  \item Se implementó el algoritmo A* para el cálculo de rutas óptimas, demostrando ser eficiente y preciso para la navegación en espacios interiores.
+  
+  \item Se desarrolló un sistema de modelado mediante grafos que representa fielmente la topología de cada piso, incluyendo más de 100 nodos distribuidos entre salas, laboratorios, oficinas y pasillos.
+  
+  \item Se integró exitosamente un sistema de códigos QR que permite a los usuarios identificar rápidamente su ubicación actual, generando automáticamente 108 códigos QR para todos los puntos de interés.
+  
+  \item Se creó una interfaz gráfica intuitiva utilizando Flutter, con soporte para zoom, desplazamiento y visualización clara de rutas sobre mapas vectoriales.
+\end{itemize}
+
+\textbf{Decisiones de diseño:}
+
+Durante el desarrollo, se optó por simplificar el sistema de navegación limitándolo a rutas dentro del mismo piso. Esta decisión resultó beneficiosa por varias razones:
+
+\begin{itemize}
+  \item \textbf{Claridad visual}: El usuario siempre tiene claro en qué piso se encuentra y hacia dónde se dirige.
+  
+  \item \textbf{Simplicidad de uso}: La interfaz es más intuitiva al no requerir gestión compleja de cambios de piso durante la navegación.
+  
+  \item \textbf{Mantenibilidad del código}: El código resultante es más simple y fácil de mantener, reduciendo la probabilidad de errores.
+  
+  \item \textbf{Rendimiento}: Al trabajar con grafos individuales por piso, la aplicación consume menos recursos computacionales.
+\end{itemize}
+
+Para navegar a otro piso, el usuario simplemente regresa al menú principal y selecciona el piso destino deseado, estableciendo una nueva ruta dentro de ese nivel.
+
+\subsection{Recomendaciones}
+
+Para futuras mejoras del sistema, se recomienda:
+
+\begin{itemize}
+  \item \textbf{Implementar navegación multi-piso}: Desarrollar un gestor que calcule rutas completas atravesando múltiples pisos mediante escaleras y ascensores, proporcionando opciones alternativas cuando existan múltiples caminos.
+  
+  \item \textbf{Agregar navegación en tiempo real}: Integrar seguimiento continuo de la posición del usuario mediante Bluetooth beacons o Wi-Fi positioning para actualizar la ruta dinámicamente.
+  
+  \item \textbf{Incluir características de accesibilidad}: Identificar rutas accesibles para personas con movilidad reducida, priorizando ascensores sobre escaleras y evitando obstáculos.
+  
+  \item \textbf{Expandir la cobertura}: Extender el sistema a otros edificios del campus universitario, creando una red de navegación completa.
+  
+  \item \textbf{Añadir información contextual}: Incluir horarios de clases, disponibilidad de salas, y puntos de interés como cafeterías, baños y servicios estudiantiles.
+  
+  \item \textbf{Implementar modo offline}: Permitir el uso de la aplicación sin conexión a internet, descargando todos los mapas y datos necesarios de forma anticipada.
+  
+  \item \textbf{Desarrollar sistema de retroalimentación}: Permitir a los usuarios reportar problemas, sugerir mejoras o actualizar información sobre nodos y conexiones.
+\end{itemize}
+
+El sistema actual proporciona una base sólida sobre la cual se pueden construir estas mejoras futuras, manteniendo la arquitectura modular y escalable que facilita la evolución del proyecto.
 
 % ============================================================
 % REFERENCIAS
