@@ -227,8 +227,8 @@ Esta organización permite que el usuario seleccione rápidamente el piso que de
 \begin{itemize}
   \item \textbf{Visualización de mapas SVG}: Se integró el paquete \texttt{flutter\_svg} para cargar y mostrar los mapas arquitectónicos en formato SVG. La aplicación determina dinámicamente qué archivo SVG cargar según el piso seleccionado, utilizando las rutas:
   \begin{itemize}
-    \item Primer piso: \texttt{Mapas/Primer piso labs\_fac\_ing simple.svg}
-    \item Segundo piso: \texttt{Mapas/Segundo piso fac ing simple.svg}
+    \item Primer piso: \texttt{Mapas/Primer piso fac\_ing simple.svg}
+    \item Segundo piso: \texttt{Mapas/Segundo piso fac\_ing simple.svg}
     \item Tercer piso: \texttt{Mapas/Tercer piso fac\_ing simple.svg}
     \item Cuarto piso: \texttt{Mapas/Cuarto piso fac\_ing simple.svg}
   \end{itemize}
@@ -244,8 +244,10 @@ Esta organización permite que el usuario seleccione rápidamente el piso que de
   \begin{itemize}
     \item Acercar el mapa (zoom in) aumentando la escala en un 20\%
     \item Alejar el mapa (zoom out) reduciendo la escala en un 20\%
-    \item Reiniciar la vista al estado inicial, útil cuando el usuario pierde orientación
+    \item Centrar el mapa en el patio de ingeniería (nodo P1\_Patio\_de\_ingenieria con coordenadas 567, 478), representado con un ícono de brújula (Icons.explore) similar a Google Maps
   \end{itemize}
+
+  El botón de centrado fue diseñado para proporcionar un punto de referencia consistente a los usuarios, permitiendo reorientarse rápidamente al centro de la facultad independientemente del nivel de zoom o desplazamiento actual.
 
   \item \textbf{Gestión de estados de carga}: La aplicación implementa un sistema robusto para manejar diferentes estados:
   \begin{itemize}
@@ -424,6 +426,38 @@ void zoom(double scaleFactor) {
 \end{lstlisting}
 
 Este enfoque garantiza que el zoom siempre se aplique respecto al centro visible de la pantalla, proporcionando una experiencia de usuario más natural.
+
+\textbf{Centrado en punto de referencia.} La aplicación implementa un sistema de centrado que enfoca el mapa en el patio de ingeniería al iniciar y al presionar el botón de brújula:
+
+\begin{lstlisting}[language=Dart, caption={Centrado en el patio de ingeniería}]
+void _centrarEnPatio() {
+  // Coordenadas del patio de ingenieria en el piso 1
+  const double patioX = 567.0;
+  const double patioY = 478.0;
+  
+  // Obtener el tamano de la pantalla
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
+  
+  // Calcular el desplazamiento necesario para centrar el patio
+  // Centramos el punto del patio en el centro de la pantalla
+  final dx = (screenWidth / 2) - patioX;
+  final dy = (screenHeight / 2) - patioY;
+  
+  // Crear matriz de transformacion con escala 1.0 y traduccion al patio
+  final matrix = Matrix4.identity()
+    ..translate(dx, dy);
+  
+  _transformationController.value = matrix;
+}
+
+void _resetZoom() {
+  // Centra la vista en el patio de ingenieria (coordenadas: 567, 478)
+  _centrarEnPatio();
+}
+\end{lstlisting}
+
+Esta funcionalidad se ejecuta automáticamente al abrir el mapa mediante \texttt{WidgetsBinding.instance.addPostFrameCallback()} en el método \texttt{initState()}, asegurando que el usuario siempre comience con el patio de ingeniería como punto de referencia central.
 
 \paragraph{Estructura de archivos JSON}
 Cada piso de la facultad tiene su archivo JSON correspondiente con una estructura que incluye un array de nodos (con propiedades id, x, y, tipo y nombre) y un array de conexiones (con origen, destino y distancia).
