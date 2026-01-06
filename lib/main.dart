@@ -452,7 +452,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       final data = json.decode(raw) as Map<String, dynamic>;
       final grafo = Grafo.fromJson(data);
 
-      await Navigator.push<String>(
+      final resultado = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => QRScannerScreen(
@@ -461,16 +461,54 @@ class _PantallaMapaState extends State<PantallaMapa> {
           ),
         ),
       );
+
+      // Procesar resultado si existe
+      if (!mounted) return;
+
+      if (resultado != null && resultado is Map<String, dynamic>) {
+        // Si viene una ruta calculada del escáner
+        if (resultado.containsKey('ruta') && resultado['ruta'] is List) {
+          final ruta = (resultado['ruta'] as List).cast<String>();
+          final origen = resultado['origen'] as String?;
+          final destino = resultado['destino'] as String?;
+
+          if (ruta.isNotEmpty && origen != null && destino != null) {
+            setState(() {
+              _origenSeleccionado = origen;
+              _destinoSeleccionado = destino;
+              _rutaActiva.clear();
+              _rutaActiva.addAll(ruta);
+            });
+
+            // Calcular distancia
+            final distancia = _calcularDistanciaRuta(ruta);
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '✅ Ruta establecida: ${distancia.toStringAsFixed(1)} unidades',
+                  ),
+                  backgroundColor: Colors.green,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
+          }
+        }
+      }
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error al abrir scanner QR: $e');
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al abrir scanner: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al abrir scanner: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

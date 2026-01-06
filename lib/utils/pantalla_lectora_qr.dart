@@ -161,6 +161,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       return;
     }
 
+    // Verificar que el widget esté montado antes de continuar
+    if (!mounted) return;
+
     // Crear navegador QR y procesar
     final qrNav = QRNavigation(
       context: context,

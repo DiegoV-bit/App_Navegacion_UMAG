@@ -62,6 +62,9 @@ class QRNavigation {
       ),
     );
 
+    // Verificar que el contexto todavía sea válido antes de usar Navigator
+    if (!context.mounted) return;
+
     // Si se calculó una ruta, cerrar el scanner y regresar al mapa con la ruta
     if (resultado != null && resultado is Map<String, dynamic>) {
       Navigator.pop(context, resultado);
@@ -76,6 +79,9 @@ class QRNavigation {
     final String origen = rutaData['origen'] as String;
     final String destino = rutaData['destino'] as String;
     final double distancia = rutaData['distancia'] as double;
+
+    // Verificar que el contexto esté montado
+    if (!context.mounted) return;
 
     // Mostrar diálogo con la ruta
     showDialog(
@@ -163,6 +169,9 @@ class QRNavigation {
     final double y = coordData['y'] as double;
     final int piso = coordData['piso'] as int;
 
+    // Verificar que el contexto esté montado
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -203,6 +212,8 @@ class QRNavigation {
   void _iniciarNavegacionPasoAPaso(List<String> ruta) {
     // Aquí implementarías la navegación paso a paso
     // Por ahora mostramos un mensaje y cerramos el scanner
+    if (!context.mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Navegación iniciada: ${ruta.length} pasos'),
@@ -218,6 +229,9 @@ class QRNavigation {
   }
 
   void _mostrarEnMapa(double x, double y, int piso) {
+    // Verificar que el contexto esté montado
+    if (!context.mounted) return;
+
     // Mostrar mensaje
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -234,6 +248,8 @@ class QRNavigation {
   }
 
   void _mostrarError(String mensaje) {
+    if (!context.mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
@@ -244,7 +260,7 @@ class QRNavigation {
 
     // Reanudar escaneo después de 2 segundos
     Future.delayed(const Duration(seconds: 2), () {
-      if (Navigator.of(context).canPop()) {
+      if (context.mounted && Navigator.of(context).canPop()) {
         Navigator.pop(context); // Volver al scanner
       }
     });
