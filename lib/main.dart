@@ -12,7 +12,7 @@ import 'utils/pantalla_lectora_qr.dart';
 
 // ==================== CONFIGURACIÓN DEBUG ====================
 // Cambiar a false cuando la aplicación esté lista para producción
-const bool kDebugMode = true;
+const bool kDebugMode = false;
 // =============================================================
 
 // ==================== TIPOS DE NODOS ====================
@@ -340,6 +340,13 @@ class _PantallaMapaState extends State<PantallaMapa> {
     _configurarDimensionesSVG();
     _inicializarMapa();
 
+    // Centrar el mapa en el patio después de que se construya el widget
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _centrarEnPatio();
+      }
+    });
+
     // Mostrar mensaje si está seleccionando destino
     if (widget.seleccionandoDestino && _origenSeleccionado != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -611,8 +618,28 @@ class _PantallaMapaState extends State<PantallaMapa> {
   }
 
   void _resetZoom() {
-    // Devuelve la vista a la transformación inicial sin desplazamientos ni zoom.
-    _transformationController.value = Matrix4.identity();
+    // Centra la vista en el patio de ingeniería (coordenadas: 567, 478)
+    _centrarEnPatio();
+  }
+
+  void _centrarEnPatio() {
+    // Coordenadas del patio de ingeniería en el piso 1
+    const double patioX = 567.0;
+    const double patioY = 478.0;
+
+    // Obtener el tamaño de la pantalla
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Calcular el desplazamiento necesario para centrar el patio
+    // Centramos el punto del patio en el centro de la pantalla
+    final dx = (screenWidth / 2) - patioX;
+    final dy = (screenHeight / 2) - patioY;
+
+    // Crear matriz de transformación con escala 1.0 y traducción al patio
+    final matrix = Matrix4.identity()..translate(dx, dy);
+
+    _transformationController.value = matrix;
   }
 
   void resetZoomIfNeeded() {
@@ -2836,15 +2863,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.zoom_in),
-            onPressed: () => _zoomIn(1.2),
-          ),
-
-          IconButton(
-            icon: Icon(Icons.zoom_out),
-            onPressed: () => zoom(0.8),
-          ),
-          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _resetZoom,
             tooltip: 'Reiniciar zoom',
@@ -3024,7 +3042,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
             heroTag: "reset_zoom",
             onPressed: _resetZoom,
             tooltip: 'Reiniciar vista',
-            child: const Icon(Icons.center_focus_strong),
+            child: const Icon(Icons.explore),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
