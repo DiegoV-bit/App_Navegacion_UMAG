@@ -7,6 +7,7 @@
 \usepackage{hyperref}
 \usepackage{fancyhdr}
 \usepackage{listings}
+\usepackage{wrapfig}
 
 % Configuración de listings para código
 \lstset{
@@ -149,6 +150,7 @@ Desarrollar una aplicación móvil de navegación interna que permita a los usua
   \item Integrar tecnologías de posicionamiento mediante códigos QR que permitan identificar la ubicación del usuario.
   \item Desarrollar una interfaz gráfica intuitiva con visualización de mapas SVG interactivos y control de zoom.
 \end{itemize}
+\newpage
 
 % ============================================================
 % DESARROLLO / HALLAZGOS / RESULTADOS
@@ -168,20 +170,51 @@ Para la realización de este proyecto se siguieron las siguientes etapas:
   \item Integración de los mapas a la aplicación.
   \item Creación de la interfaz gráfica de la aplicación.
   \item Modelado del grafo de salas y conexiones.
-  \item Implementación del algoritmo de rutas.
-  \item Implementación de funcionalidades extras a la aplicación.
-  \item Pruebas piloto de la aplicación.
-  \item Escalado a todos los pisos.
-  \item Pruebas finales y ajustes.
+  \item Implementación del algoritmo A* para cálculo de rutas.
+  \item Creación y generación automatizada de códigos QR.
+  \item Sistema de lectura e interpretación de códigos QR.
+  \item Solución al problema de compatibilidad de formatos QR.
+  \item Sistema de navegación y cálculo de rutas.
+  \item Pantalla de selección de destino.
+  \item Integración del escáner QR con la navegación.
 \end{enumerate}
 
 \subsection{Presentación de los Hallazgos y Resultados}
 \subsubsection{Digitalización de planos arquitectónicos de la facultad}
+
+\begin{wrapfigure}{r}{0.35\textwidth}
+  \vspace{-10pt}
+  \centering
+  \includegraphics[width=0.18\textwidth]{LibreCAD_logo.png}
+  \vspace{5pt}
+  
+  \includegraphics[width=0.18\textwidth]{Inkscape_Logo.svg.png}
+  \vspace{-10pt}
+  \caption{Logos de LibreCAD (arriba) e Inkscape (abajo)}
+\end{wrapfigure}
+
 Los mapas arquitectónicos de la facultad ya estaban digitalizados en formato DWG (formato utilizado por AutoCAD). A partir de estos archivos, se realizó una conversión a DXF (Drawing Exchange Format) para permitir su edición en software libre.
+
 En LibreCAD se eliminaron elementos no relevantes para un mapa de navegación (mobiliario y detalles decorativos), conservando paredes y pasillos principales; adicionalmente, se corrigieron errores presentes en los planos originales, ya que faltaban varias salas, laboratorios y oficinas.
-Una vez corregidos y simplificados, los planos se exportaron a formato SVG (Scalable Vector Graphics) para su integración en la aplicación móvil. No obstante, la exportación directa a SVG desde LibreCAD no mantenía las proporciones adecuadas, lo que hacía que, al visualizar el mapa en un visor de imágenes o navegador web, se presentara demasiado pequeño o ni siquiera pudiera visualizarse. Para corregirlo, se empleó Inkscape (editor de gráficos vectoriales), ajustando las dimensiones del mapa para garantizar una visualización correcta en la aplicación móvil.
+
+Una vez corregidos y simplificados, los planos se exportaron a formato SVG (Scalable Vector Graphics) para su integración en la aplicación móvil. No obstante, la exportación directa a SVG desde LibreCAD no mantenía las proporciones adecuadas, lo que hacía que, al visualizar el mapa en un visor de imágenes o navegador web, se presentara demasiado pequeño o ni siquiera pudiera visualizarse.
+
+Para corregirlo, se empleó Inkscape (editor de gráficos vectoriales), ajustando las dimensiones del mapa para garantizar una visualización correcta en la aplicación móvil.
+\newpage
 
 \subsubsection{Investigación sobre la creación de aplicaciones móviles}
+
+\begin{wrapfigure}{r}{0.35\textwidth}
+  \vspace{-10pt}
+  \centering
+  \includegraphics[width=0.18\textwidth]{Flutter.png}
+  \vspace{5pt}
+  
+  \includegraphics[width=0.18\textwidth]{Dart.png}
+  \vspace{-10pt}
+  \caption{Logos de Flutter (arriba) y Dart (abajo)}
+\end{wrapfigure}
+
 Con el fin de elegir la mejor forma de desarrollar la aplicación móvil, se consideraron las plataformas móviles más utilizadas por el estudiantado (Android e iOS). En consecuencia, se investigaron las diferentes tecnologías y frameworks existentes para desarrollo móvil. Las opciones principales fueron las siguientes:
 \begin{itemize}
   \item Desarrollo nativo: Crear aplicaciones independientes para cada plataforma (Java/Kotlin para Android y Swift/Objective-C para iOS).
@@ -192,13 +225,25 @@ Con el fin de elegir la mejor forma de desarrollar la aplicación móvil, se con
 \subsubsection{Preparación del entorno de desarrollo y repositorio de Github}
 Se prepararon los equipos para desarrollar la aplicación móvil (con sistemas operativos Windows 10 y Debian 13), instalando Flutter SDK, un editor de código (Visual Studio Code) y los emuladores de Android e iOS para realizar pruebas durante el desarrollo. Una vez listo el entorno, se creó un repositorio en GitHub para alojar el código fuente del proyecto y permitir la colaboración entre los integrantes del equipo.
 
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.6\textwidth]{Repo_github.png}
+\end{figure}
+
 \subsubsection{Integración de los mapas a la aplicación}
 Con la interfaz gráfica ya creada, se integraron los mapas al proyecto para permitir su visualización dentro de la aplicación. Una vez incorporados, los mapas se visualizan correctamente y presentan una interacción adecuada con el usuario.
 
 Cabe destacar que el mapa del primer piso y el de los laboratorios, al ser recursos independientes, podrían dificultar el mantenimiento si se trabajaran por separado. Por ello, se consideró conveniente fusionar ambos mapas para reducir complejidad y evitar futuras complicaciones en la aplicación.
 
+\newpage
+
 \subsubsection{Creación de la interfaz gráfica}
 La interfaz gráfica de la aplicación se desarrolló usando Flutter como framework principal, aprovechando su capacidad de crear interfaces nativas y fluidas con un único código base. El diseño de la app se enfocó en la simplicidad y usabilidad, considerando que los usuarios principales serían estudiantes nuevos y visitantes que necesitan orientarse rápidamente dentro de la facultad.
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.2\textwidth]{Pantalla_inicio.png}
+  \caption{Pantalla de inicio de la aplicación}
+\end{figure}
 
 \paragraph{Estructura de la aplicación}
 La aplicación se estructuró en dos pantallas principales que permiten una navegación intuitiva:
