@@ -553,7 +553,9 @@ class _PantallaMapaState extends State<PantallaMapa> {
     });
 
     // Mostrar mensaje si está seleccionando destino
-    if (widget.seleccionandoDestino && _origenSeleccionado != null) {
+    if (widget.seleccionandoDestino &&
+        _origenSeleccionado != null &&
+        kDebugMode) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -645,14 +647,14 @@ class _PantallaMapaState extends State<PantallaMapa> {
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error cargando nodos: $e');
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al cargar nodos: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al cargar nodos: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -695,7 +697,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
             // Calcular distancia
             final distancia = _calcularDistanciaRuta(ruta);
 
-            if (mounted) {
+            if (mounted && kDebugMode) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -712,14 +714,14 @@ class _PantallaMapaState extends State<PantallaMapa> {
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error al abrir scanner QR: $e');
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al abrir scanner: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al abrir scanner: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -933,12 +935,13 @@ class _PantallaMapaState extends State<PantallaMapa> {
               title: const Text('Tipo de lugar'),
               subtitle: Text(_obtenerTipoLugar(nodoId)),
             ),
-            ListTile(
-              dense: true,
-              leading: const Icon(Icons.straighten, size: 20),
-              title: const Text('Coordenadas'),
-              subtitle: Text('X: ${nodo['x']}, Y: ${nodo['y']}'),
-            ),
+            if (_modoDebugActivo)
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.straighten, size: 20),
+                title: const Text('Coordenadas'),
+                subtitle: Text('X: ${nodo['x']}, Y: ${nodo['y']}'),
+              ),
             if (_origenSeleccionado != null && _origenSeleccionado != nodoId)
               Container(
                 margin: const EdgeInsets.only(top: 12),
@@ -1026,27 +1029,29 @@ class _PantallaMapaState extends State<PantallaMapa> {
       _rutaActiva.clear();
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.trip_origin, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                  'Origen establecido: $nodoId\nAhora selecciona un destino'),
-            ),
-          ],
+    if (kDebugMode) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.trip_origin, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                    'Origen establecido: $nodoId\nAhora selecciona un destino'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green.shade600,
+          duration: const Duration(seconds: 3),
+          action: SnackBarAction(
+            label: 'Limpiar',
+            textColor: Colors.white,
+            onPressed: _limpiarSeleccion,
+          ),
         ),
-        backgroundColor: Colors.green.shade600,
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'Limpiar',
-          textColor: Colors.white,
-          onPressed: _limpiarSeleccion,
-        ),
-      ),
-    );
+      );
+    }
   }
 
   // Helper para extraer número de piso de un ID de nodo
@@ -1061,22 +1066,26 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
   void _establecerDestino(String nodoId) async {
     if (_origenSeleccionado == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Primero debes establecer un origen'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      if (kDebugMode) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Primero debes establecer un origen'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
       return;
     }
 
     if (nodoId == _origenSeleccionado) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El destino debe ser diferente al origen'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      if (kDebugMode) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('El destino debe ser diferente al origen'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
       return;
     }
 
@@ -1085,13 +1094,15 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final pisoDestino = _extraerPisoDeNodoId(nodoId);
 
     if (pisoOrigen != pisoDestino) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El origen y destino deben estar en el mismo piso'),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 3),
-        ),
-      );
+      if (kDebugMode) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('El origen y destino deben estar en el mismo piso'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
       return;
     }
 
@@ -1125,71 +1136,75 @@ class _PantallaMapaState extends State<PantallaMapa> {
 
         final distanciaTotal = _calcularDistanciaRuta(resultado);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: Colors.white),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Ruta calculada',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+        if (kDebugMode) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.white),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Ruta calculada',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text('Desde: $origen'),
-                Text('Hasta: $destino'),
-                Text('Nodos: ${resultado.length}'),
-                Text(
-                  'Distancia: ${distanciaTotal.toStringAsFixed(1)} metros',
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Desde: $origen'),
+                  Text('Hasta: $destino'),
+                  Text('Nodos: ${resultado.length}'),
+                  Text(
+                    'Distancia: ${distanciaTotal.toStringAsFixed(1)} metros',
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green.shade700,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Limpiar',
+                textColor: Colors.white,
+                onPressed: _limpiarSeleccion,
+              ),
             ),
-            backgroundColor: Colors.green.shade700,
-            duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'Limpiar',
-              textColor: Colors.white,
-              onPressed: _limpiarSeleccion,
-            ),
-          ),
-        );
+          );
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text('No se encontró una ruta entre estos puntos'),
-                ),
-              ],
+        if (kDebugMode) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.white),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text('No se encontró una ruta entre estos puntos'),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.red.shade600,
+              duration: const Duration(seconds: 4),
             ),
-            backgroundColor: Colors.red.shade600,
-            duration: const Duration(seconds: 4),
-          ),
-        );
+          );
+        }
         _limpiarSeleccion();
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error al calcular ruta: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al calcular la ruta: $e'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al calcular la ruta: $e'),
-          backgroundColor: Colors.red.shade600,
-        ),
-      );
       _limpiarSeleccion();
     }
   }
@@ -3297,34 +3312,98 @@ class _PantallaMapaState extends State<PantallaMapa> {
   }
 
   void _mostrarInformacion(BuildContext context) {
+    // Obtener información específica del piso
+    final infoDelPiso = _obtenerInformacionDelPiso(widget.numeroPiso);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('${widget.titulo} - Información'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          title: Row(
             children: [
-              Text('Archivo del mapa: $nombreArchivo.svg'),
-              const SizedBox(height: 12),
-              const Text('Funcionalidades:'),
-              const SizedBox(height: 8),
-              const Text('• Navegación táctil (pan)'),
-              const Text('• Zoom con pellizco'),
-              const Text('• Botones de zoom'),
-              const Text('• Reiniciar vista'),
-              const Text('• Carga de mapas SVG'),
+              Icon(
+                Icons.info_outline,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text('${widget.titulo}')),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _mostrarDiagnostico();
-              },
-              child: const Text('Diagnóstico'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  infoDelPiso['descripcion'] as String,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '¿Qué puedes encontrar aquí?',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ...(infoDelPiso['lugares'] as List<Map<String, dynamic>>).map(
+                  (lugar) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          lugar['icono'] as IconData,
+                          size: 20,
+                          color: lugar['color'] as Color,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                lugar['titulo'] as String,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                lugar['descripcion'] as String,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ),
+          actions: [
+            if (kDebugMode)
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _mostrarDiagnostico();
+                },
+                child: const Text('Diagnóstico'),
+              ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cerrar'),
@@ -3333,6 +3412,178 @@ class _PantallaMapaState extends State<PantallaMapa> {
         );
       },
     );
+  }
+
+  // Información específica de cada piso
+  Map<String, dynamic> _obtenerInformacionDelPiso(int piso) {
+    switch (piso) {
+      case 1:
+        return {
+          'descripcion':
+              'El primer piso es el acceso principal de la Facultad de Ingeniería. Aquí encontrarás servicios administrativos, salas de clases y espacios comunes.',
+          'lugares': [
+            {
+              'titulo': 'Salas de Clases',
+              'descripcion':
+                  'Salas equipadas para clases teóricas y prácticas. Incluye Sala 50, 51, 52 y otras.',
+              'icono': Icons.class_,
+              'color': Colors.lightBlue,
+            },
+            {
+              'titulo': 'Laboratorios',
+              'descripcion':
+                  'Laboratorios especializados para prácticas de ingeniería y experimentación.',
+              'icono': Icons.science,
+              'color': Colors.lightGreen,
+            },
+            {
+              'titulo': 'Patio de Ingeniería',
+              'descripcion':
+                  'Espacio central de reunión y descanso para estudiantes.',
+              'icono': Icons.park,
+              'color': Colors.amber,
+            },
+            {
+              'titulo': 'Administración',
+              'descripcion':
+                  'Oficinas administrativas y de atención a estudiantes.',
+              'icono': Icons.business,
+              'color': Colors.amber,
+            },
+            {
+              'titulo': 'Servicios Higiénicos',
+              'descripcion': 'Baños disponibles en este nivel.',
+              'icono': Icons.wc,
+              'color': Colors.cyan,
+            },
+          ],
+        };
+      case 2:
+        return {
+          'descripcion':
+              'El segundo piso alberga principalmente salas de clases, oficinas de profesores y espacios de estudio para estudiantes.',
+          'lugares': [
+            {
+              'titulo': 'Salas de Clases',
+              'descripcion':
+                  'Múltiples salas para diferentes asignaturas de ingeniería.',
+              'icono': Icons.class_,
+              'color': Colors.lightBlue,
+            },
+            {
+              'titulo': 'Oficinas de Profesores',
+              'descripcion':
+                  'Espacios de trabajo para el cuerpo docente y atención de alumnos.',
+              'icono': Icons.business,
+              'color': Colors.amber,
+            },
+            {
+              'titulo': 'Laboratorios',
+              'descripcion':
+                  'Laboratorios especializados para diferentes áreas de ingeniería.',
+              'icono': Icons.science,
+              'color': Colors.lightGreen,
+            },
+            {
+              'titulo': 'Salas de Estudio',
+              'descripcion':
+                  'Espacios disponibles para estudio individual o grupal.',
+              'icono': Icons.menu_book,
+              'color': Colors.amber,
+            },
+            {
+              'titulo': 'Servicios Higiénicos',
+              'descripcion': 'Baños disponibles en este nivel.',
+              'icono': Icons.wc,
+              'color': Colors.cyan,
+            },
+          ],
+        };
+      case 3:
+        return {
+          'descripcion':
+              'El tercer piso se dedica principalmente a laboratorios especializados, salas de computación y oficinas académicas.',
+          'lugares': [
+            {
+              'titulo': 'Laboratorios Especializados',
+              'descripcion':
+                  'Laboratorios de computación, electrónica y otras especialidades.',
+              'icono': Icons.science,
+              'color': Colors.lightGreen,
+            },
+            {
+              'titulo': 'Salas de Computación',
+              'descripcion':
+                  'Salas equipadas con computadores para prácticas y desarrollo.',
+              'icono': Icons.computer,
+              'color': Colors.lightBlue,
+            },
+            {
+              'titulo': 'Salas de Clases',
+              'descripcion': 'Aulas para clases teóricas y seminarios.',
+              'icono': Icons.class_,
+              'color': Colors.lightBlue,
+            },
+            {
+              'titulo': 'Oficinas Académicas',
+              'descripcion': 'Oficinas de coordinadores y personal académico.',
+              'icono': Icons.business,
+              'color': Colors.amber,
+            },
+            {
+              'titulo': 'Servicios Higiénicos',
+              'descripcion': 'Baños disponibles en este nivel.',
+              'icono': Icons.wc,
+              'color': Colors.cyan,
+            },
+          ],
+        };
+      case 4:
+        return {
+          'descripcion':
+              'El cuarto piso cuenta con laboratorios avanzados, salas de proyectos y espacios para trabajo de titulación.',
+          'lugares': [
+            {
+              'titulo': 'Laboratorios Avanzados',
+              'descripcion':
+                  'Laboratorios especializados para proyectos de titulación e investigación.',
+              'icono': Icons.science,
+              'color': Colors.lightGreen,
+            },
+            {
+              'titulo': 'Salas de Proyectos',
+              'descripcion':
+                  'Espacios dedicados para desarrollo de proyectos de estudiantes.',
+              'icono': Icons.engineering,
+              'color': Colors.amber,
+            },
+            {
+              'titulo': 'Salas de Clases',
+              'descripcion': 'Aulas para cursos avanzados y especializaciones.',
+              'icono': Icons.class_,
+              'color': Colors.lightBlue,
+            },
+            {
+              'titulo': 'Áreas de Trabajo',
+              'descripcion':
+                  'Espacios para trabajo grupal y desarrollo de tesis.',
+              'icono': Icons.groups,
+              'color': Colors.amber,
+            },
+            {
+              'titulo': 'Servicios Higiénicos',
+              'descripcion': 'Baños disponibles en este nivel.',
+              'icono': Icons.wc,
+              'color': Colors.cyan,
+            },
+          ],
+        };
+      default:
+        return {
+          'descripcion': 'Información no disponible para este piso.',
+          'lugares': <Map<String, dynamic>>[],
+        };
+    }
   }
 
   Future<void> _mostrarDiagnostico() async {
