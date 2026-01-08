@@ -200,6 +200,25 @@ En LibreCAD se eliminaron elementos no relevantes para un mapa de navegación (m
 Una vez corregidos y simplificados, los planos se exportaron a formato SVG (Scalable Vector Graphics) para su integración en la aplicación móvil. No obstante, la exportación directa a SVG desde LibreCAD no mantenía las proporciones adecuadas, lo que hacía que, al visualizar el mapa en un visor de imágenes o navegador web, se presentara demasiado pequeño o ni siquiera pudiera visualizarse.
 
 Para corregirlo, se empleó Inkscape (editor de gráficos vectoriales), ajustando las dimensiones del mapa para garantizar una visualización correcta en la aplicación móvil.
+
+\begin{figure}[!htbp]
+  \centering
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Mapa_original.png}
+    
+    \textbf{Antes: Plano original}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Mapa.jpg}
+    
+    \textbf{Después: Plano simplificado}
+  \end{minipage}
+  \caption{Comparación del proceso de digitalización: plano original con elementos decorativos (izq.) vs. plano simplificado para navegación (der.)}
+  \label{fig:digitalizacion_comparacion}
+\end{figure}
 \newpage
 
 \subsubsection{Investigación sobre la creación de aplicaciones móviles}
@@ -239,16 +258,18 @@ Cabe destacar que el mapa del primer piso y el de los laboratorios, al ser recur
 
 \subsubsection{Creación de la interfaz gráfica}
 La interfaz gráfica de la aplicación se desarrolló usando Flutter como framework principal, aprovechando su capacidad de crear interfaces nativas y fluidas con un único código base. El diseño de la app se enfocó en la simplicidad y usabilidad, considerando que los usuarios principales serían estudiantes nuevos y visitantes que necesitan orientarse rápidamente dentro de la facultad.
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=0.2\textwidth]{Pantalla_inicio.png}
-  \caption{Pantalla de inicio de la aplicación}
-\end{figure}
 
 \paragraph{Estructura de la aplicación}
 La aplicación se estructuró en dos pantallas principales que permiten una navegación intuitiva:
 
 \textbf{Pantalla de inicio (PantallaInicio).} Esta pantalla funciona como punto de entrada de la aplicación y presenta las siguientes características:
+
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.3\textwidth]{Pantalla_inicio.png}
+  \caption{Pantalla de inicio de la aplicación mostrando las cuatro opciones de pisos con iconos distintivos}
+  \label{fig:pantalla_inicio}
+\end{figure}
 
 \begin{itemize}
   \item \textbf{Diseño visual atractivo}: Se implementó un gradiente de color que va desde un azul claro en la parte superior hasta blanco en la parte inferior, creando una interfaz agradable visualmente y manteniendo la identidad institucional mediante el uso del color azul.
@@ -303,6 +324,61 @@ Esta organización permite que el usuario seleccione rápidamente el piso que de
   \item \textbf{Barra informativa}: Se incluyó una barra azul claro debajo del encabezado que muestra el nombre del piso actual y proporciona una indicación visual de que se puede hacer zoom con gestos de pellizco.
 \end{itemize}
 
+% ===========================================================================
+% IMAGEN REQUERIDA: Vista del mapa SVG con controles de navegación
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. Abre la aplicación y selecciona cualquier piso (preferiblemente Piso 1)
+% 2. Captura la pantalla del mapa mostrando:
+%    - El mapa SVG completo del piso ocupando la mayor parte de la pantalla
+%    - El header con el nombre del piso y botón de regreso
+%    - La barra informativa azul claro debajo del header
+%    - LOS 3 BOTONES FLOTANTES en la esquina inferior derecha:
+%      * Botón de zoom in (+)
+%      * Botón de zoom out (-)
+%      * Botón de centrar (ícono de brújula/explore)
+% 3. Asegúrate que el mapa se vea claramente con:
+%    - Paredes y pasillos visibles
+%    - Salas etiquetadas si es posible
+%    - Nivel de zoom normal (no muy acercado ni muy alejado)
+% 4. Los botones flotantes deben verse claramente
+% 5. NO incluyas barra de estado del dispositivo
+% 6. Guarda como: image/mapa_con_controles_navegacion.png
+% 7. Resolución: Captura nativa del emulador, formato PNG
+% ===========================================================================
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{mapa_con_controles_navegacion.png}
+  \caption{Vista del mapa SVG del primer piso con controles de zoom y centrado en la esquina inferior derecha}
+  \label{fig:mapa_controles}
+\end{figure}
+
+% ===========================================================================
+% IMAGEN REQUERIDA: Demostración de funcionalidad de zoom
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. Crea una imagen compuesta con DOS capturas lado a lado
+% 2. CAPTURA IZQUIERDA - Zoom Out (vista general):
+%    - Abre el mapa de un piso
+%    - Usa el botón de zoom out (-) varias veces
+%    - Captura mostrando el piso completo visible
+%    - El mapa debe verse pequeño pero completo
+% 3. CAPTURA DERECHA - Zoom In (vista detallada):
+%    - En el mismo mapa, usa el botón de zoom in (+) varias veces
+%    - Enfoca en una sección específica (sala, pasillo, etc.)
+%    - Captura mostrando detalles ampliados (números de salas visibles)
+% 4. Une ambas capturas en una sola imagen lado a lado
+% 5. Opcionalmente agrega texto "Vista General" y "Vista Detallada"
+% 6. Guarda como: image/demostracion_zoom_niveles.png
+% 7. Cada captura 1080x1920, imagen final 2160x1920, formato PNG
+% ===========================================================================
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{demostracion_zoom_niveles.png}
+  \caption{Comparación de niveles de zoom: vista general del piso completo (izq.) vs. vista detallada con zoom aplicado (der.)}
+  \label{fig:zoom_demo}
+\end{figure}
+
 \paragraph{Implementación técnica}
 
 \textbf{Widget principal y navegación.} La aplicación utiliza \texttt{MaterialApp} como widget raíz, configurando el tema principal con Material Design 3 (\texttt{useMaterial3: true}) para aprovechar los componentes de diseño más modernos de Flutter. El sistema de navegación se basa en \texttt{Navigator.push()}, que permite transiciones fluidas entre la pantalla de inicio y las pantallas de mapas.
@@ -312,6 +388,33 @@ Esta organización permite que el usuario seleccione rápidamente el piso que de
 Las operaciones de zoom se realizan clonando la matriz actual, aplicando la escala deseada y actualizando el controlador, lo que garantiza que las transformaciones se realicen de forma acumulativa y coherente.
 
 \textbf{Carga asíncrona de recursos.} La aplicación implementa un patrón de carga asíncrona mediante \texttt{FutureBuilder}, que permite mostrar indicadores de progreso mientras se cargan los archivos SVG. Este enfoque mejora significativamente la experiencia del usuario, especialmente en dispositivos con menor rendimiento o cuando los archivos de mapa son de gran tamaño.
+
+% ===========================================================================
+% IMAGEN OPCIONAL: Estructura JSON del archivo de grafo
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. Abre el archivo lib/data/grafo_piso1.json en VS Code
+% 2. Asegúrate que el formato JSON esté bien formateado (indentado)
+% 3. Captura de pantalla mostrando:
+%    - El editor de código (VS Code) con syntax highlighting
+%    - La estructura JSON clara con:
+%      * Array de "nodos" con al menos 3-4 nodos visibles
+%      * Cada nodo mostrando: id, x, y
+%      * Array de "conexiones" con al menos 2-3 conexiones visibles
+%      * Cada conexión mostrando: origen, destino, distancia
+% 4. Los colores del syntax highlighting deben estar activos
+% 5. La fuente debe ser legible
+% 6. NO captures todo el archivo (solo una porción representativa)
+% 7. Guarda como: image/estructura_json_grafo.png
+% 8. Formato PNG, resolución suficiente para leer el código
+% 9. Esta imagen es OPCIONAL pero recomendada
+% ===========================================================================
+%\begin{figure}[!h]
+%  \centering
+%  \includegraphics[width=0.7\textwidth]{estructura_json_grafo.png}
+%  \caption{Estructura JSON de un archivo de grafo mostrando nodos con coordenadas y conexiones con distancias}
+%  \label{fig:json_grafo}
+%\end{figure}
 
 \paragraph{Consideraciones de diseño}
 
@@ -815,6 +918,57 @@ La clase \texttt{RutaPainter} implementa un pintor personalizado que dibuja la r
 
 Este proceso permite navegación precisa entre salas, laboratorios, oficinas y pasillos, proporcionando al usuario una guía visual clara para desplazarse dentro de la facultad.
 
+% ===========================================================================
+% IMAGEN REQUERIDA: Ruta calculada con algoritmo A* visualizada en el mapa
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. Abre la aplicación en un piso (preferiblemente Piso 1)
+% 2. Selecciona un NODO ORIGEN (debe aparecer marcador VERDE)
+% 3. Selecciona un NODO DESTINO alejado del origen (marcador ROJO)
+% 4. La aplicación debe calcular y mostrar la ruta con A*
+% 5. Captura de pantalla mostrando:
+%    - El mapa SVG de fondo claramente visible
+%    - MARCADOR VERDE en el punto de origen
+%    - MARCADOR ROJO en el punto de destino
+%    - LÍNEAS AZULES conectando origen y destino a través de la ruta
+%    - NODOS INTERMEDIOS marcados a lo largo de la ruta
+%    - La ruta debe seguir pasillos y ser visualmente clara
+% 6. Asegúrate que la ruta sea lo suficientemente larga para demostrar el algoritmo
+%    (al menos 5-7 nodos intermedios)
+% 7. Opcionalmente incluye el mensaje de distancia total si está visible
+% 8. Guarda como: image/ruta_calculada_a_estrella.png
+% 9. Formato PNG, captura nativa del emulador
+% ===========================================================================
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.65\textwidth]{ruta_calculada_a_estrella.png}
+  \caption{Ruta óptima calculada con el algoritmo A* desde el origen (verde) hasta el destino (rojo), mostrando el camino con líneas azules y nodos intermedios}
+  \label{fig:ruta_a_estrella}
+\end{figure}
+
+% ===========================================================================
+% IMAGEN REQUERIDA: Mensaje de confirmación con distancia total
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. Después de calcular una ruta, debe aparecer un SNACKBAR o mensaje
+% 2. Captura de pantalla mostrando:
+%    - El mapa con la ruta calculada de fondo
+%    - El MENSAJE/SNACKBAR en la parte inferior con texto como:
+%      "Ruta calculada: 156 metros" o similar
+%    - El ícono de confirmación (check, ruta, etc.)
+% 3. Asegúrate que el mensaje sea claramente legible
+% 4. El mensaje debe estar visible (no desvanecido)
+% 5. La ruta en el mapa debe verse también
+% 6. Guarda como: image/mensaje_distancia_ruta.png
+% 7. Formato PNG, captura nativa del emulador
+% ===========================================================================
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{mensaje_distancia_ruta.png}
+  \caption{Mensaje de confirmación mostrando la distancia total de la ruta calculada}
+  \label{fig:mensaje_distancia}
+\end{figure}
+
 \paragraph{Ventajas de A* sobre alternativas}
 La elección de A* sobre el algoritmo de Dijkstra se justifica por varias razones:
 \begin{itemize}
@@ -865,6 +1019,36 @@ El sistema utiliza las siguientes bibliotecas de Python, definidas en \texttt{re
 \textbf{qrcode[pil]==8.2}: Biblioteca principal para la generación de códigos QR. Proporciona soporte para diferentes versiones de QR (1-40), múltiples niveles de corrección de errores (L, M, Q, H), personalización de tamaño y borde, y exportación a múltiples formatos de imagen.
 
 \textbf{Pillow$>$=11.0.0}: Biblioteca de procesamiento de imágenes (PIL - Python Imaging Library). Se utiliza para renderización de códigos QR en formato PNG, manipulación de colores y contraste, configuración de la calidad de salida y soporte para diferentes formatos de imagen.
+
+% ===========================================================================
+% IMAGEN REQUERIDA: Collage de múltiples códigos QR generados
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. Navega a la carpeta qr_codes/ del proyecto
+% 2. Selecciona 6 códigos QR diferentes de distintos pisos, por ejemplo:
+%    - P1_Entrada_1.png
+%    - P1_Lab_Tesla.png
+%    - P2_Lab_comp_facultad_ciencias.png
+%    - P2_Sala_23.png
+%    - P3_Departamento_matematica_fisica.png
+%    - P4_Sala_41.png
+% 3. Usa una herramienta de edición (GIMP, Photoshop, etc.) para crear un collage
+% 4. Organiza los 6 QR en una cuadrícula de 3x2 o 2x3
+% 5. Debajo de cada QR agrega su ID en texto pequeño
+% 6. Asegúrate que cada QR sea:
+%    - Claramente escaneable (no muy pequeño)
+%    - Con borde blanco alrededor
+%    - Tamaño similar entre todos
+% 7. Fondo blanco para el collage
+% 8. Guarda como: image/collage_codigos_qr_generados.png
+% 9. Resolución final: 1200x800 aproximadamente, formato PNG
+% ===========================================================================
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.75\textwidth]{collage_codigos_qr_generados.png}
+  \caption{Ejemplos de códigos QR generados automáticamente para diferentes puntos de interés en los cuatro pisos}
+  \label{fig:qr_collage}
+\end{figure}
 
 \paragraph{Configuración de generación}
 La configuración principal del sistema establece los parámetros óptimos para la generación de códigos QR:
@@ -983,6 +1167,55 @@ El proceso completo de escaneo y procesamiento sigue estos pasos:
 
 \textbf{Escanear alias}: \texttt{ubicacion:Ascensor} se interpreta como \texttt{P1\_Ascensor}.
 
+% ===========================================================================
+% IMAGEN REQUERIDA: Pantalla del escáner QR activo
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. Abre la aplicación y accede al escáner de códigos QR
+% 2. La cámara debe estar activa mostrando vista previa
+% 3. Captura de pantalla mostrando:
+%    - La VISTA PREVIA DE LA CÁMARA ocupando la mayoría de la pantalla
+%    - Un CÓDIGO QR IMPRESO visible en el centro (puede estar en papel)
+%    - El marco/recuadro de escaneo resaltado
+%    - Instrucciones en pantalla como "Apunta al código QR"
+%    - Botón para regresar o cerrar el escáner
+% 4. El QR debe estar enfocado y parcialmente dentro del área de escaneo
+% 5. NO captures después de escanear (debe ser durante el escaneo)
+% 6. Asegúrate que se vea la interfaz del escáner claramente
+% 7. Guarda como: image/pantalla_escaner_qr_activo.png
+% 8. Formato PNG, captura nativa del emulador
+% ===========================================================================
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{pantalla_escaner_qr_activo.png}
+  \caption{Pantalla de lectura de códigos QR con vista previa de cámara activa}
+  \label{fig:escaner_qr}
+\end{figure}
+
+% ===========================================================================
+% IMAGEN REQUERIDA: Mensaje de confirmación de QR válido
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. Escanea un código QR válido con la aplicación
+% 2. Debe aparecer un MENSAJE de confirmación
+% 3. Captura de pantalla mostrando:
+%    - El mapa que se abrió después del escaneo
+%    - SNACKBAR o DIÁLOGO de confirmación con texto como:
+%      "QR válido: P1_Entrada_2" o
+%      "Código escaneado correctamente: [ID del nodo]"
+%    - Ícono de éxito (check verde, etc.)
+% 4. El nodo correspondiente debe estar seleccionado/resaltado en el mapa
+% 5. El mensaje debe ser claramente visible
+% 6. Guarda como: image/confirmacion_qr_valido.png
+% 7. Formato PNG, captura nativa del emulador
+% ===========================================================================
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{confirmacion_qr_valido.png}
+  \caption{Mensaje de confirmación de lectura exitosa de código QR mostrando el ID del nodo identificado}
+  \label{fig:qr_confirmacion}
+\end{figure}
+
 \paragraph{Generación de códigos QR desde la aplicación}
 
 En modo debug, desde el mapa se puede tocar un nodo y seleccionar "Generar QR", lo que copia al portapapeles un QR válido para ese nodo. Esta funcionalidad facilita el testing y la creación de nuevos códigos durante el desarrollo.
@@ -990,6 +1223,35 @@ En modo debug, desde el mapa se puede tocar un nodo y seleccionar "Generar QR", 
 \paragraph{Ventajas del sistema QR}
 
 El sistema proporciona navegación más rápida dentro del edificio, integración completa con el grafo y A*, soporte para mapas complejos con coordenadas, señalización física dentro de la facultad y simplificación del debugging del sistema.
+
+% ===========================================================================
+% IMAGEN REQUERIDA: Código QR físico instalado o maqueta
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. OPCIÓN A (si tienes QR físico instalado):
+%    - Toma una foto de un código QR impreso e instalado en la facultad
+%    - Debe verse el código QR en su contexto (junto a puerta, en pared, etc.)
+%    - El QR debe ser claramente visible y escaneable
+%    - Incluye parte del entorno (marco de puerta, número de sala, etc.)
+% 2. OPCIÓN B (si no tienes instalado, crea maqueta):
+%    - Imprime un código QR en papel
+%    - Pégalo temporalmente en una puerta o pared
+%    - Agrega una etiqueta con el ID del nodo (ej: "Sala 23")
+%    - Toma una foto mostrando cómo se vería instalado
+% 3. La foto debe mostrar:
+%    - El código QR claramente visible (tamano minimo 5x5 cm)
+%    - Contexto de la ubicacion (puerta, pared, pasillo)
+%    - Buena iluminacion para que el QR se vea nitido
+% 4. Guarda como: image/qr_fisico_instalado.png o .jpg
+% 5. Resolucion: 1920x1080 minimo
+% 6. Formato: JPG para fotos reales, PNG para maquetas digitales
+% ===========================================================================
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{qr_fisico_instalado.png}
+  \caption{Ejemplo de código QR instalado en punto estratégico para identificación de ubicación}
+  \label{fig:qr_fisico}
+\end{figure}
 
 \subsubsection{Solución al problema de compatibilidad de formatos QR}
 
@@ -1122,6 +1384,32 @@ Esta decisión de diseño simplifica la experiencia del usuario y evita compleji
   \item Seleccionar el piso destino deseado
   \item Establecer un nuevo origen y destino dentro de ese piso
 \end{enumerate}
+
+% ===========================================================================
+% IMAGEN REQUERIDA: Selección de origen y destino en el mapa
+% ===========================================================================
+% INSTRUCCIONES:
+% 1. Abre la aplicación en un piso
+% 2. Selecciona un nodo como ORIGEN (debe aparecer marcador VERDE)
+% 3. Selecciona otro nodo como DESTINO (marcador ROJO)
+% 4. NO calcules la ruta todavía (solo deben verse los dos nodos seleccionados)
+% 5. Captura de pantalla mostrando:
+%    - El mapa SVG claramente visible
+%    - MARCADOR VERDE en el nodo de origen
+%    - MARCADOR ROJO en el nodo de destino
+%    - Los dos nodos deben estar separados (no muy cerca)
+%    - NO debe haber línea de ruta todavía (solo los marcadores)
+% 6. Asegúrate que ambos marcadores sean claramente visibles
+% 7. Opcional: Incluye etiquetas o IDs de los nodos seleccionados
+% 8. Guarda como: image/seleccion_origen_destino.png
+% 9. Formato PNG, captura nativa del emulador
+% ===========================================================================
+\begin{figure}[!h]
+  \centering
+  \includegraphics[width=0.6\textwidth]{seleccion_origen_destino.png}
+  \caption{Selección de nodo origen (verde) y nodo destino (rojo) mediante interacción táctil en el mapa}
+  \label{fig:seleccion_nodos}
+\end{figure}
 
 \paragraph{Cálculo de rutas con A*}
 

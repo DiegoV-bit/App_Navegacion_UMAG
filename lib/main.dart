@@ -3326,7 +3326,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                 color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: 8),
-              Expanded(child: Text('${widget.titulo}')),
+              Expanded(child: Text(widget.titulo)),
             ],
           ),
           content: SingleChildScrollView(
