@@ -25,6 +25,8 @@ enum TipoNodo {
   escalera,
   ascensor,
   bano,
+  laboratorio,
+  salaClases,
   puntoInteres,
 }
 
@@ -47,6 +49,10 @@ extension TipoNodoExtension on TipoNodo {
         return 'Ascensor';
       case TipoNodo.bano:
         return 'Baño';
+      case TipoNodo.laboratorio:
+        return 'Laboratorio';
+      case TipoNodo.salaClases:
+        return 'Sala de Clases';
       case TipoNodo.puntoInteres:
         return 'Punto de Interés';
     }
@@ -70,6 +76,10 @@ extension TipoNodoExtension on TipoNodo {
         return Icons.elevator;
       case TipoNodo.bano:
         return Icons.wc;
+      case TipoNodo.laboratorio:
+        return Icons.science;
+      case TipoNodo.salaClases:
+        return Icons.class_;
       case TipoNodo.puntoInteres:
         return Icons.place;
     }
@@ -93,6 +103,10 @@ extension TipoNodoExtension on TipoNodo {
         return Colors.indigo;
       case TipoNodo.bano:
         return Colors.cyan;
+      case TipoNodo.laboratorio:
+        return Colors.lightGreen;
+      case TipoNodo.salaClases:
+        return Colors.lightBlue;
       case TipoNodo.puntoInteres:
         return Colors.amber;
     }
@@ -1222,7 +1236,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
   String _obtenerTipoLugar(String id) {
     if (id.contains('Entrada')) return 'Entrada principal';
     if (id.contains('Pasillo')) return 'Pasillo';
-    if (id.contains('A')) return 'Aula';
+    if (id.contains('Sala') || id.contains('Aula')) return 'Sala de Clases';
     if (id.contains('Lab')) return 'Laboratorio';
     if (id.contains('Oficina')) return 'Oficina';
     if (id.contains('Baño')) return 'Baño';
@@ -1234,7 +1248,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
   IconData _obtenerIconoNodo(String id) {
     if (id.contains('Entrada')) return Icons.door_front_door;
     if (id.contains('Pasillo')) return Icons.swap_horiz;
-    if (id.contains('A')) return Icons.meeting_room;
+    if (id.contains('Sala') || id.contains('Aula')) return Icons.class_;
     if (id.contains('Lab')) return Icons.science;
     if (id.contains('Oficina')) return Icons.business;
     if (id.contains('Baño')) return Icons.wc;
@@ -1461,6 +1475,10 @@ class _PantallaMapaState extends State<PantallaMapa> {
         return '${prefijo}_Ascensor_$timestamp';
       case TipoNodo.bano:
         return '${prefijo}_Bano_$timestamp';
+      case TipoNodo.laboratorio:
+        return '${prefijo}_Lab_$timestamp';
+      case TipoNodo.salaClases:
+        return '${prefijo}_Sala_$timestamp';
       case TipoNodo.puntoInteres:
         return '${prefijo}_PuntoInteres_$timestamp';
     }
@@ -1912,8 +1930,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
         return 'Ascensor para accesibilidad';
       case TipoNodo.bano:
         return 'Servicios higiénicos';
+      case TipoNodo.laboratorio:
+        return 'Laboratorio de investigación o prácticas';
+      case TipoNodo.salaClases:
+        return 'Sala o aula para clases';
       case TipoNodo.puntoInteres:
-        return 'Lugar relevante (cafetería, biblioteca, etc.)';
+        return 'Lugar relevante (cafetería, biblioteca, oficinas, etc.)';
     }
   }
 
@@ -3551,14 +3573,23 @@ class _PantallaMapaState extends State<PantallaMapa> {
     // Puerta
     if (idLower.contains('puerta')) return TipoNodo.puerta;
 
-    // Laboratorios y salas (como puntos de interés)
-    if (idLower.contains('lab') ||
-        idLower.contains('sala') ||
-        idLower.contains('aula') ||
-        idLower.contains('oficina') ||
+    // Laboratorios (color verde para distinguirlos)
+    if (idLower.contains('lab')) {
+      return TipoNodo.laboratorio;
+    }
+
+    // Salas de clases (Sala XX o Aula XX)
+    if (idLower.contains('sala') || idLower.contains('aula')) {
+      return TipoNodo.salaClases;
+    }
+
+    // Otros puntos de interés (oficinas, administración, patio, etc.)
+    if (idLower.contains('oficina') ||
         idLower.contains('secretaria') ||
         idLower.contains('administracion') ||
-        idLower.contains('patio')) {
+        idLower.contains('patio') ||
+        idLower.contains('cafeteria') ||
+        idLower.contains('biblioteca')) {
       return TipoNodo.puntoInteres;
     }
 
