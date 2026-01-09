@@ -8,6 +8,7 @@
 \usepackage{fancyhdr}
 \usepackage{listings}
 \usepackage{wrapfig}
+\usepackage{float}
 
 % Configuración de listings para código
 \lstset{
@@ -56,7 +57,6 @@
 \newcommand{\curso}{Taller de Integración}
 \newcommand{\docente}{Dra. Patricia Maldonado}
 \newcommand{\estudianteUno}{Diego Vidal}
-\newcommand{\estudianteDos}{Bruno Martinez}
 \newcommand{\titulo}{\textit{Aplicación de navegación interna para la Facultad de Ingeniería}}
 \newcommand{\fechaentrega}{\textit{Fecha de entrega}}
 
@@ -89,7 +89,7 @@
 
 \vspace{4mm}
 \begin{center}
-  \includegraphics[width=0.65\textwidth]{placeholder.png}
+  \includegraphics[width=0.45\textwidth]{ruta_calculada_a_estrella.jpeg}
 \end{center}
 
 \vspace{4mm}
@@ -99,12 +99,11 @@
 
 \vspace{3mm}
 \begin{tabular}{ll}
-  Estudiantes: & \estudianteUno\\
-              & \estudianteDos\\
+  Estudiante: & \estudianteUno\\
   Programa: & \programa\\
   Departamento: & \facultad\\
-  Profesor adjunto: & \docente\\
-  Fecha: & \fechaentrega\\
+  Profesor guía: & \docente\\
+  Fecha: & 08/01/2026\\
 \end{tabular}
 
 \vspace{3mm}
@@ -131,11 +130,11 @@
 
 \subsection{Antecedentes}
 % 
-Los alumnos cuando llegan por primera vez a la universidad pueden sentirse desorientados a la hora de ir a alguna sala o laboratorio ya que no sabe como llegar a esos lugares en especifico, para resolver esta problemática se busca crear una aplicación móvil para poder navegar dentro de la facultad.
+Los alumnos al ingresar por primera vez a la Universidad pueden experimentar desorientación a la hora de ir a alguna sala o laboratorio, ya que no saben cómo llegar a esos lugares en específico. Para resolver esta problemática, se busca crear una aplicación móvil para poder navegar dentro de la facultad.
 
 \subsection{Período en que se realizó}
 % 
-El proyecto fue desarrollado en el segundo semestre del año 2025 en las dependencias de la facultad de ingeniería de la universidad de Magallanes. Las pruebas y evaluaciones se realizaron usando planos digitales y simulaciones de desplazamiento en sus principales pasillos y áreas de uso común.
+El proyecto fue desarrollado en el segundo semestre del año 2025 y parte del mes de enero de 2026 en las dependencias de la Facultad de Ingeniería de la Universidad de Magallanes. Las pruebas y evaluaciones se realizaron usando planos digitales y simulaciones de desplazamiento en sus principales pasillos y áreas de uso común.
 
 \subsection{Objetivo General}
 % 
@@ -160,15 +159,15 @@ Desarrollar una aplicación móvil de navegación interna que permita a los usua
 % Esta sección se divide en Metodología y Presentación de Resultados [cite: 61]
 
 \subsection{Metodología utilizada}
-% 
-Para la realización de este proyecto se siguieron las siguientes etapas:
+
+Para el desarrollo del proyecto se optó por una metodología incremental, dividiendo el trabajo en etapas que permitieron validar cada componente (mapas, algoritmo, interfaz) de forma independiente. Las etapas fueron las siguientes:
 
 \begin{enumerate}
   \item Digitalización de planos arquitectónicos de la facultad.
   \item Investigación sobre la creación de aplicaciones móviles.
   \item Preparación del entorno de desarrollo y repositorio de Github.
-  \item Integración de los mapas a la aplicación.
   \item Creación de la interfaz gráfica de la aplicación.
+  \item Integración de los mapas a la aplicación.
   \item Modelado del grafo de salas y conexiones.
   \item Implementación del algoritmo A* para cálculo de rutas.
   \item Creación y generación automatizada de códigos QR.
@@ -201,7 +200,7 @@ Una vez corregidos y simplificados, los planos se exportaron a formato SVG (Scal
 
 Para corregirlo, se empleó Inkscape (editor de gráficos vectoriales), ajustando las dimensiones del mapa para garantizar una visualización correcta en la aplicación móvil.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
   \centering
   \begin{minipage}[t]{0.48\textwidth}
     \centering
@@ -212,7 +211,7 @@ Para corregirlo, se empleó Inkscape (editor de gráficos vectoriales), ajustand
   \hfill
   \begin{minipage}[t]{0.48\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{Mapa.jpg}
+    \includegraphics[width=\textwidth]{Mapa.png}
     
     \textbf{Después: Plano simplificado}
   \end{minipage}
@@ -244,28 +243,25 @@ Con el fin de elegir la mejor forma de desarrollar la aplicación móvil, se con
 \subsubsection{Preparación del entorno de desarrollo y repositorio de Github}
 Se prepararon los equipos para desarrollar la aplicación móvil (con sistemas operativos Windows 10 y Debian 13), instalando Flutter SDK, un editor de código (Visual Studio Code) y los emuladores de Android e iOS para realizar pruebas durante el desarrollo. Una vez listo el entorno, se creó un repositorio en GitHub para alojar el código fuente del proyecto y permitir la colaboración entre los integrantes del equipo.
 
-\begin{figure}[!h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.6\textwidth]{Repo_github.png}
+  \caption{Repositorio de GitHub del proyecto con la estructura de archivos y commits}
+  \label{fig:repo_github}
 \end{figure}
-
-\subsubsection{Integración de los mapas a la aplicación}
-Con la interfaz gráfica ya creada, se integraron los mapas al proyecto para permitir su visualización dentro de la aplicación. Una vez incorporados, los mapas se visualizan correctamente y presentan una interacción adecuada con el usuario.
-
-Cabe destacar que el mapa del primer piso y el de los laboratorios, al ser recursos independientes, podrían dificultar el mantenimiento si se trabajaran por separado. Por ello, se consideró conveniente fusionar ambos mapas para reducir complejidad y evitar futuras complicaciones en la aplicación.
-
-\newpage
 
 \subsubsection{Creación de la interfaz gráfica}
 La interfaz gráfica de la aplicación se desarrolló usando Flutter como framework principal, aprovechando su capacidad de crear interfaces nativas y fluidas con un único código base. El diseño de la app se enfocó en la simplicidad y usabilidad, considerando que los usuarios principales serían estudiantes nuevos y visitantes que necesitan orientarse rápidamente dentro de la facultad.
+
+\newpage
 
 \paragraph{Estructura de la aplicación}
 La aplicación se estructuró en dos pantallas principales que permiten una navegación intuitiva:
 
 \textbf{Pantalla de inicio (PantallaInicio).} Esta pantalla funciona como punto de entrada de la aplicación y presenta las siguientes características:
 
-\begin{figure}[!h]
-  \centering
+\begin{figure}[H]
+  \raggedright
   \includegraphics[width=0.3\textwidth]{Pantalla_inicio.png}
   \caption{Pantalla de inicio de la aplicación mostrando las cuatro opciones de pisos con iconos distintivos}
   \label{fig:pantalla_inicio}
@@ -287,6 +283,8 @@ La aplicación se estructuró en dos pantallas principales que permiten una nave
 \end{itemize}
 
 Esta organización permite que el usuario seleccione rápidamente el piso que desea explorar con solo tocar la tarjeta correspondiente.
+
+\newpage
 
 \textbf{Pantalla de mapa (PantallaMapa).} Una vez seleccionado un piso, el usuario es dirigido a la pantalla de mapa, que constituye el componente central de la aplicación. Esta pantalla implementa las siguientes funcionalidades:
 
@@ -324,58 +322,29 @@ Esta organización permite que el usuario seleccione rápidamente el piso que de
   \item \textbf{Barra informativa}: Se incluyó una barra azul claro debajo del encabezado que muestra el nombre del piso actual y proporciona una indicación visual de que se puede hacer zoom con gestos de pellizco.
 \end{itemize}
 
-% ===========================================================================
-% IMAGEN REQUERIDA: Vista del mapa SVG con controles de navegación
-% ===========================================================================
-% INSTRUCCIONES:
-% 1. Abre la aplicación y selecciona cualquier piso (preferiblemente Piso 1)
-% 2. Captura la pantalla del mapa mostrando:
-%    - El mapa SVG completo del piso ocupando la mayor parte de la pantalla
-%    - El header con el nombre del piso y botón de regreso
-%    - La barra informativa azul claro debajo del header
-%    - LOS 3 BOTONES FLOTANTES en la esquina inferior derecha:
-%      * Botón de zoom in (+)
-%      * Botón de zoom out (-)
-%      * Botón de centrar (ícono de brújula/explore)
-% 3. Asegúrate que el mapa se vea claramente con:
-%    - Paredes y pasillos visibles
-%    - Salas etiquetadas si es posible
-%    - Nivel de zoom normal (no muy acercado ni muy alejado)
-% 4. Los botones flotantes deben verse claramente
-% 5. NO incluyas barra de estado del dispositivo
-% 6. Guarda como: image/mapa_con_controles_navegacion.png
-% 7. Resolución: Captura nativa del emulador, formato PNG
-% ===========================================================================
-\begin{figure}[!h]
+
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.5\textwidth]{mapa_con_controles_navegacion.png}
+  \includegraphics[width=0.2\textwidth]{mapa_con_controles_navegacion.jpeg}
   \caption{Vista del mapa SVG del primer piso con controles de zoom y centrado en la esquina inferior derecha}
   \label{fig:mapa_controles}
 \end{figure}
 
-% ===========================================================================
-% IMAGEN REQUERIDA: Demostración de funcionalidad de zoom
-% ===========================================================================
-% INSTRUCCIONES:
-% 1. Crea una imagen compuesta con DOS capturas lado a lado
-% 2. CAPTURA IZQUIERDA - Zoom Out (vista general):
-%    - Abre el mapa de un piso
-%    - Usa el botón de zoom out (-) varias veces
-%    - Captura mostrando el piso completo visible
-%    - El mapa debe verse pequeño pero completo
-% 3. CAPTURA DERECHA - Zoom In (vista detallada):
-%    - En el mismo mapa, usa el botón de zoom in (+) varias veces
-%    - Enfoca en una sección específica (sala, pasillo, etc.)
-%    - Captura mostrando detalles ampliados (números de salas visibles)
-% 4. Une ambas capturas en una sola imagen lado a lado
-% 5. Opcionalmente agrega texto "Vista General" y "Vista Detallada"
-% 6. Guarda como: image/demostracion_zoom_niveles.png
-% 7. Cada captura 1080x1920, imagen final 2160x1920, formato PNG
-% ===========================================================================
-\begin{figure}[!h]
+
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.9\textwidth]{demostracion_zoom_niveles.png}
-  \caption{Comparación de niveles de zoom: vista general del piso completo (izq.) vs. vista detallada con zoom aplicado (der.)}
+  \begin{minipage}[b]{0.2\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{zoom_out.jpeg}
+    \caption*{Sin zoom}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[b]{0.2\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{zoom_in.jpeg}
+    \caption*{Zoom al máximo}
+  \end{minipage}
+  \caption{Comparación de niveles de zoom: vista general del piso completo (izq.) vs. vista detallada con zoom máximo aplicado (der.)}
   \label{fig:zoom_demo}
 \end{figure}
 
@@ -389,33 +358,6 @@ Las operaciones de zoom se realizan clonando la matriz actual, aplicando la esca
 
 \textbf{Carga asíncrona de recursos.} La aplicación implementa un patrón de carga asíncrona mediante \texttt{FutureBuilder}, que permite mostrar indicadores de progreso mientras se cargan los archivos SVG. Este enfoque mejora significativamente la experiencia del usuario, especialmente en dispositivos con menor rendimiento o cuando los archivos de mapa son de gran tamaño.
 
-% ===========================================================================
-% IMAGEN OPCIONAL: Estructura JSON del archivo de grafo
-% ===========================================================================
-% INSTRUCCIONES:
-% 1. Abre el archivo lib/data/grafo_piso1.json en VS Code
-% 2. Asegúrate que el formato JSON esté bien formateado (indentado)
-% 3. Captura de pantalla mostrando:
-%    - El editor de código (VS Code) con syntax highlighting
-%    - La estructura JSON clara con:
-%      * Array de "nodos" con al menos 3-4 nodos visibles
-%      * Cada nodo mostrando: id, x, y
-%      * Array de "conexiones" con al menos 2-3 conexiones visibles
-%      * Cada conexión mostrando: origen, destino, distancia
-% 4. Los colores del syntax highlighting deben estar activos
-% 5. La fuente debe ser legible
-% 6. NO captures todo el archivo (solo una porción representativa)
-% 7. Guarda como: image/estructura_json_grafo.png
-% 8. Formato PNG, resolución suficiente para leer el código
-% 9. Esta imagen es OPCIONAL pero recomendada
-% ===========================================================================
-%\begin{figure}[!h]
-%  \centering
-%  \includegraphics[width=0.7\textwidth]{estructura_json_grafo.png}
-%  \caption{Estructura JSON de un archivo de grafo mostrando nodos con coordenadas y conexiones con distancias}
-%  \label{fig:json_grafo}
-%\end{figure}
-
 \paragraph{Consideraciones de diseño}
 
 Durante el desarrollo de la interfaz se tomaron varias decisiones importantes:
@@ -428,14 +370,71 @@ Durante el desarrollo de la interfaz se tomaron varias decisiones importantes:
   \item \textbf{Accesibilidad}: Se implementaron tooltips en todos los botones de acción para ayudar a los usuarios a comprender la funcionalidad de cada control.
 
   \item \textbf{Manejo de errores}: Se diseñó una pantalla de error informativa que no solo indica que algo salió mal, sino que proporciona detalles técnicos útiles para diagnosticar el problema.
+  
+  \item \textbf{Soporte para temas claro y oscuro}: La aplicación incluye un sistema completo de temas que permite al usuario elegir entre modo claro, modo oscuro o seguir la configuración del sistema. Esta funcionalidad mejora la experiencia de usuario al permitir personalización según preferencias individuales y condiciones de iluminación.
 \end{enumerate}
+
+\paragraph{Sistema de temas y personalización}
+
+La aplicación implementa un sistema robusto de gestión de temas utilizando \texttt{ThemeMode} de Flutter, que permite tres modos de operación:
+
+\begin{itemize}
+  \item \textbf{Modo Claro}: Interfaz con colores claros optimizada para ambientes bien iluminados
+  \item \textbf{Modo Oscuro}: Interfaz con colores oscuros que reduce la fatiga visual en ambientes con poca luz y ahorra batería en pantallas OLED
+  \item \textbf{Modo Automático}: Sigue la configuración del sistema operativo del dispositivo
+\end{itemize}
+
+El tema se gestiona a nivel de aplicación mediante un estado \texttt{ThemeMode} que se propaga a través de la jerarquía de widgets. La aplicación define dos temas completos basados en Material Design 3:
+
+\begin{lstlisting}[language=Dart, caption={Configuración de temas}]
+MaterialApp(
+  themeMode: _themeMode,
+  
+  // Tema claro
+  theme: ThemeData(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.blue,
+      brightness: Brightness.light,
+    ),
+    useMaterial3: true,
+  ),
+  
+  // Tema oscuro
+  darkTheme: ThemeData(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.blue,
+      brightness: Brightness.dark,
+    ),
+    useMaterial3: true,
+  ),
+)
+\end{lstlisting}
+
+\textbf{Pantalla de Configuración.} Para facilitar el cambio de tema, se implementó una pantalla de configuración (\texttt{PantallaAjustes}) accesible desde el botón de configuración en la barra de aplicación de la pantalla de inicio. Esta pantalla incluye:
+
+\begin{itemize}
+  \item Selector de modo de tema con tres opciones mediante controles de radio
+  \item Iconos representativos para cada modo (automático, claro, oscuro)
+  \item Descripción explicativa de cada opción
+  \item Aplicación inmediata del cambio de tema sin necesidad de reiniciar la aplicación
+  \item Sección informativa mostrando la versión de la aplicación y datos institucionales
+\end{itemize}
+
+El diseño adaptable de la interfaz garantiza que todos los colores de fondo, texto, tarjetas y controles se ajusten automáticamente al tema seleccionado, manteniendo contraste adecuado y legibilidad en ambos modos.
 
 Esta implementación inicial de la interfaz gráfica estableció las bases para el desarrollo posterior de funcionalidades más avanzadas, como el sistema de navegación basado en grafos y el cálculo de rutas óptimas entre diferentes puntos de la facultad.
 
 \newpage
 
+\subsubsection{Integración de los mapas a la aplicación}
+Con la interfaz gráfica ya creada, se integraron los mapas al proyecto para permitir su visualización dentro de la aplicación. Una vez incorporados, los mapas se visualizan correctamente y presentan una interacción adecuada con el usuario.
+
+Cabe destacar que el mapa del primer piso y el de los laboratorios, al ser recursos independientes, podrían dificultar el mantenimiento si se trabajaran por separado. Por ello, se consideró conveniente fusionar ambos mapas para reducir complejidad y evitar futuras complicaciones en la aplicación.
+
 \subsubsection{Modelado del grafo de salas y conexiones}
-La aplicación hace uso de un modelo de grafo para poder representar la topología de cada piso del edificio (dicho de otra forma se representa mediante el grafo las salas de clase, oficinas y laboratorio de toda la facultad de ingeniería). Este modelo permite calcular las mejores rutas entre distintos puntos de interés mediante algoritmos de búsqueda en grafos.
+La aplicación hace uso de un modelo de grafo para representar la topología de cada piso del edificio (dicho de otra forma, se representa mediante el grafo las salas de clase, oficinas y laboratorios de toda la facultad de ingeniería). Este modelo permite calcular las mejores rutas entre distintos puntos de interés mediante algoritmos de búsqueda en grafos.
+
+Las distancias que están asociadas a las conexiones del grafo representan costos relativos de desplazamiento, los cuales están asociados a la geometría del plano del edificio. Estas distancias no corresponden necesariamente a metros reales, sino que permiten modelar el esfuerzo de desplazamiento entre nodos dentro del entorno. Esta aproximación es suficiente para la navegación interna, ya que el objetivo es determinar rutas óptimas dentro del edificio y no realizar mediciones físicas exactas.
 
 \paragraph{Estructura del modelo de datos}
 \textbf{Clase Nodo.} Representa un punto de interés en el mapa (Sala, laboratorio, oficina, etc.).
@@ -498,11 +497,67 @@ class Grafo {
 \end{lstlisting}
 
 \paragraph{Sistema de tipificación de nodos}
-La aplicación implementa un sistema de clasificación de nodos mediante un \texttt{enum} que permite separar por categorías a los diferentes nodos que hay en el mapa. Se definió el \texttt{enum TipoNodo} con los valores: entrada, pasillo, intersección, esquina, puerta, escalera, ascensor, baño y punto de interés.
+La aplicación implementa un sistema de clasificación de nodos mediante un \texttt{enum} que permite categorizar los diferentes tipos de ubicaciones en el mapa. Se definió el \texttt{enum TipoNodo} con once valores diferentes:
 
-Cada tipo de nodo tiene asociado un nombre legible, un icono representativo y un color distintivo mediante una extensión que proporciona propiedades adicionales para facilitar su visualización en la interfaz gráfica.
+\begin{itemize}
+  \item \textbf{entrada}: Puntos de acceso al edificio
+  \item \textbf{pasillo}: Zonas de tránsito general
+  \item \textbf{interseccion}: Puntos donde se cruzan múltiples pasillos
+  \item \textbf{esquina}: Puntos de cambio de dirección
+  \item \textbf{puerta}: Accesos a salas o espacios cerrados
+  \item \textbf{escalera}: Conexiones verticales entre pisos
+  \item \textbf{ascensor}: Elevadores para accesibilidad
+  \item \textbf{bano}: Servicios higiénicos
+  \item \textbf{laboratorio}: Espacios de prácticas y experimentación
+  \item \textbf{salaClases}: Aulas y salas de docencia
+  \item \textbf{puntoInteres}: Ubicaciones destacadas o de referencia
+\end{itemize}
 
-La aplicación puede inferir el tipo de nodo basándose en el ID del nodo mediante análisis de subcadenas en el identificador. Por ejemplo, si el ID contiene ``entrada'', se clasifica como \texttt{TipoNodo.entrada}; si contiene ``ascensor'', se clasifica como \texttt{TipoNodo.ascensor}, y así sucesivamente.
+Cada tipo de nodo tiene asociado propiedades visuales específicas mediante una extensión del \texttt{enum} que proporciona:
+
+\begin{lstlisting}[language=Dart, caption={Extensión de TipoNodo para propiedades visuales}]
+extension TipoNodoExtension on TipoNodo {
+  String get nombre {
+    switch (this) {
+      case TipoNodo.entrada: return 'Entrada';
+      case TipoNodo.pasillo: return 'Pasillo';
+      case TipoNodo.interseccion: return 'Interseccion';
+      case TipoNodo.escalera: return 'Escalera';
+      case TipoNodo.ascensor: return 'Ascensor';
+      case TipoNodo.bano: return 'Bano';
+      case TipoNodo.laboratorio: return 'Laboratorio';
+      case TipoNodo.salaClases: return 'Sala de Clases';
+      // ... otros casos
+    }
+  }
+  
+  IconData get icono {
+    switch (this) {
+      case TipoNodo.entrada: return Icons.door_front;
+      case TipoNodo.escalera: return Icons.stairs;
+      case TipoNodo.ascensor: return Icons.elevator;
+      case TipoNodo.bano: return Icons.wc;
+      case TipoNodo.laboratorio: return Icons.science;
+      case TipoNodo.salaClases: return Icons.school;
+      // ... otros casos
+    }
+  }
+  
+  Color get color {
+    switch (this) {
+      case TipoNodo.entrada: return Colors.green;
+      case TipoNodo.escalera: return Colors.orange;
+      case TipoNodo.ascensor: return Colors.purple;
+      case TipoNodo.bano: return Colors.blue;
+      case TipoNodo.laboratorio: return Colors.teal;
+      case TipoNodo.salaClases: return Colors.indigo;
+      // ... otros casos
+    }
+  }
+}
+\end{lstlisting}
+
+La aplicación puede inferir el tipo de nodo basándose en el identificador mediante análisis de subcadenas. Por ejemplo, si el ID contiene ``entrada'', se clasifica como \texttt{TipoNodo.entrada}; si contiene ``lab'', se clasifica como \texttt{TipoNodo.laboratorio}. Este sistema de inferencia automática facilita la asignación de tipos durante la creación de los datos del grafo y asegura consistencia en la visualización.
 
 \paragraph{Sistema de coordenadas}
 \textbf{Normalización SVG.} El sistema utilizado para las coordenadas fue normalizar las coordenadas del archivo SVG a $1200 \times 800$ píxeles, para todos los pisos, independientemente del tamaño real del archivo SVG. Esto permite:
@@ -772,6 +827,8 @@ Esta combinación permite que A* sea eficiente y encuentre rutas óptimas siempr
 h(n_1, n_2) = \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}
 \end{equation}
 
+El algoritmo A* utiliza una heurística basada en la distancia euclidiana entre nodos, calculada a partir de sus coordenadas en el plano. Esta heurística permite guiar la búsqueda de manera eficiente, sin necesidad de conocer distancias físicas exactas. Su uso es adecuado en este contexto, ya que el edificio se modela como un entorno discreto representado mediante un grafo.
+
 \paragraph{Implementación en Dart}
 La implementación se realizó en el archivo \texttt{a\_estrella.dart}, integrándose con la clase \texttt{Grafo} que modela los nodos (con sus coordenadas) y la adyacencia entre ellos.
 
@@ -918,55 +975,12 @@ La clase \texttt{RutaPainter} implementa un pintor personalizado que dibuja la r
 
 Este proceso permite navegación precisa entre salas, laboratorios, oficinas y pasillos, proporcionando al usuario una guía visual clara para desplazarse dentro de la facultad.
 
-% ===========================================================================
-% IMAGEN REQUERIDA: Ruta calculada con algoritmo A* visualizada en el mapa
-% ===========================================================================
-% INSTRUCCIONES:
-% 1. Abre la aplicación en un piso (preferiblemente Piso 1)
-% 2. Selecciona un NODO ORIGEN (debe aparecer marcador VERDE)
-% 3. Selecciona un NODO DESTINO alejado del origen (marcador ROJO)
-% 4. La aplicación debe calcular y mostrar la ruta con A*
-% 5. Captura de pantalla mostrando:
-%    - El mapa SVG de fondo claramente visible
-%    - MARCADOR VERDE en el punto de origen
-%    - MARCADOR ROJO en el punto de destino
-%    - LÍNEAS AZULES conectando origen y destino a través de la ruta
-%    - NODOS INTERMEDIOS marcados a lo largo de la ruta
-%    - La ruta debe seguir pasillos y ser visualmente clara
-% 6. Asegúrate que la ruta sea lo suficientemente larga para demostrar el algoritmo
-%    (al menos 5-7 nodos intermedios)
-% 7. Opcionalmente incluye el mensaje de distancia total si está visible
-% 8. Guarda como: image/ruta_calculada_a_estrella.png
-% 9. Formato PNG, captura nativa del emulador
-% ===========================================================================
-\begin{figure}[!h]
+
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.65\textwidth]{ruta_calculada_a_estrella.png}
+  \includegraphics[width=0.4\textwidth]{ruta_calculada_a_estrella.jpeg}
   \caption{Ruta óptima calculada con el algoritmo A* desde el origen (verde) hasta el destino (rojo), mostrando el camino con líneas azules y nodos intermedios}
   \label{fig:ruta_a_estrella}
-\end{figure}
-
-% ===========================================================================
-% IMAGEN REQUERIDA: Mensaje de confirmación con distancia total
-% ===========================================================================
-% INSTRUCCIONES:
-% 1. Después de calcular una ruta, debe aparecer un SNACKBAR o mensaje
-% 2. Captura de pantalla mostrando:
-%    - El mapa con la ruta calculada de fondo
-%    - El MENSAJE/SNACKBAR en la parte inferior con texto como:
-%      "Ruta calculada: 156 metros" o similar
-%    - El ícono de confirmación (check, ruta, etc.)
-% 3. Asegúrate que el mensaje sea claramente legible
-% 4. El mensaje debe estar visible (no desvanecido)
-% 5. La ruta en el mapa debe verse también
-% 6. Guarda como: image/mensaje_distancia_ruta.png
-% 7. Formato PNG, captura nativa del emulador
-% ===========================================================================
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=0.5\textwidth]{mensaje_distancia_ruta.png}
-  \caption{Mensaje de confirmación mostrando la distancia total de la ruta calculada}
-  \label{fig:mensaje_distancia}
 \end{figure}
 
 \paragraph{Ventajas de A* sobre alternativas}
@@ -1020,36 +1034,6 @@ El sistema utiliza las siguientes bibliotecas de Python, definidas en \texttt{re
 
 \textbf{Pillow$>$=11.0.0}: Biblioteca de procesamiento de imágenes (PIL - Python Imaging Library). Se utiliza para renderización de códigos QR en formato PNG, manipulación de colores y contraste, configuración de la calidad de salida y soporte para diferentes formatos de imagen.
 
-% ===========================================================================
-% IMAGEN REQUERIDA: Collage de múltiples códigos QR generados
-% ===========================================================================
-% INSTRUCCIONES:
-% 1. Navega a la carpeta qr_codes/ del proyecto
-% 2. Selecciona 6 códigos QR diferentes de distintos pisos, por ejemplo:
-%    - P1_Entrada_1.png
-%    - P1_Lab_Tesla.png
-%    - P2_Lab_comp_facultad_ciencias.png
-%    - P2_Sala_23.png
-%    - P3_Departamento_matematica_fisica.png
-%    - P4_Sala_41.png
-% 3. Usa una herramienta de edición (GIMP, Photoshop, etc.) para crear un collage
-% 4. Organiza los 6 QR en una cuadrícula de 3x2 o 2x3
-% 5. Debajo de cada QR agrega su ID en texto pequeño
-% 6. Asegúrate que cada QR sea:
-%    - Claramente escaneable (no muy pequeño)
-%    - Con borde blanco alrededor
-%    - Tamaño similar entre todos
-% 7. Fondo blanco para el collage
-% 8. Guarda como: image/collage_codigos_qr_generados.png
-% 9. Resolución final: 1200x800 aproximadamente, formato PNG
-% ===========================================================================
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=0.75\textwidth]{collage_codigos_qr_generados.png}
-  \caption{Ejemplos de códigos QR generados automáticamente para diferentes puntos de interés en los cuatro pisos}
-  \label{fig:qr_collage}
-\end{figure}
-
 \paragraph{Configuración de generación}
 La configuración principal del sistema establece los parámetros óptimos para la generación de códigos QR:
 
@@ -1096,20 +1080,27 @@ Después de ejecutar el script, se genera la siguiente estructura:
 
 \begin{verbatim}
 qr_codes/
-├── README.md           # Documentación automática
-├── piso1/
-│   ├── QR_P1_Entrada_1.png
-│   ├── QR_P1_Pasillo_Norte.png
-│   └── ... (50 archivos)
-├── piso2/
-│   └── ... (24 archivos)
-├── piso3/
-│   └── ... (22 archivos)
-└── piso4/
-    └── ... (12 archivos)
+|-- README.md           # Documentacion automatica
+|-- piso1/
+|   |-- QR_P1_Entrada_1.png
+|   |-- QR_P1_Pasillo_Norte.png
+|   +-- ... (50 archivos)
+|-- piso2/
+|   +-- ... (24 archivos)
+|-- piso3/
+|   +-- ... (22 archivos)
++-- piso4/
+    +-- ... (12 archivos)
 \end{verbatim}
 
 Total: 108 códigos QR organizados por piso (50 en piso 1, 24 en piso 2, 22 en piso 3 y 12 en piso 4).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{collage_codigos_qr_generados.jpg}
+  \caption{Ejemplos de códigos QR generados automáticamente para diferentes puntos de interés en los cuatro pisos}
+  \label{fig:qr_collage}
+\end{figure}
 
 \paragraph{Consideraciones de implementación física}
 
@@ -1185,33 +1176,17 @@ El proceso completo de escaneo y procesamiento sigue estos pasos:
 % 7. Guarda como: image/pantalla_escaner_qr_activo.png
 % 8. Formato PNG, captura nativa del emulador
 % ===========================================================================
-\begin{figure}[!h]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.45\textwidth]{pantalla_escaner_qr_activo.png}
+  \includegraphics[width=0.45\textwidth]{pantalla_escaner_qr_activo.jpeg}
   \caption{Pantalla de lectura de códigos QR con vista previa de cámara activa}
   \label{fig:escaner_qr}
 \end{figure}
 
-% ===========================================================================
-% IMAGEN REQUERIDA: Mensaje de confirmación de QR válido
-% ===========================================================================
-% INSTRUCCIONES:
-% 1. Escanea un código QR válido con la aplicación
-% 2. Debe aparecer un MENSAJE de confirmación
-% 3. Captura de pantalla mostrando:
-%    - El mapa que se abrió después del escaneo
-%    - SNACKBAR o DIÁLOGO de confirmación con texto como:
-%      "QR válido: P1_Entrada_2" o
-%      "Código escaneado correctamente: [ID del nodo]"
-%    - Ícono de éxito (check verde, etc.)
-% 4. El nodo correspondiente debe estar seleccionado/resaltado en el mapa
-% 5. El mensaje debe ser claramente visible
-% 6. Guarda como: image/confirmacion_qr_valido.png
-% 7. Formato PNG, captura nativa del emulador
-% ===========================================================================
-\begin{figure}[!h]
+
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.5\textwidth]{confirmacion_qr_valido.png}
+  \includegraphics[width=0.5\textwidth]{confirmacion_qr_valido.jpeg}
   \caption{Mensaje de confirmación de lectura exitosa de código QR mostrando el ID del nodo identificado}
   \label{fig:qr_confirmacion}
 \end{figure}
@@ -1223,35 +1198,6 @@ En modo debug, desde el mapa se puede tocar un nodo y seleccionar "Generar QR", 
 \paragraph{Ventajas del sistema QR}
 
 El sistema proporciona navegación más rápida dentro del edificio, integración completa con el grafo y A*, soporte para mapas complejos con coordenadas, señalización física dentro de la facultad y simplificación del debugging del sistema.
-
-% ===========================================================================
-% IMAGEN REQUERIDA: Código QR físico instalado o maqueta
-% ===========================================================================
-% INSTRUCCIONES:
-% 1. OPCIÓN A (si tienes QR físico instalado):
-%    - Toma una foto de un código QR impreso e instalado en la facultad
-%    - Debe verse el código QR en su contexto (junto a puerta, en pared, etc.)
-%    - El QR debe ser claramente visible y escaneable
-%    - Incluye parte del entorno (marco de puerta, número de sala, etc.)
-% 2. OPCIÓN B (si no tienes instalado, crea maqueta):
-%    - Imprime un código QR en papel
-%    - Pégalo temporalmente en una puerta o pared
-%    - Agrega una etiqueta con el ID del nodo (ej: "Sala 23")
-%    - Toma una foto mostrando cómo se vería instalado
-% 3. La foto debe mostrar:
-%    - El código QR claramente visible (tamano minimo 5x5 cm)
-%    - Contexto de la ubicacion (puerta, pared, pasillo)
-%    - Buena iluminacion para que el QR se vea nitido
-% 4. Guarda como: image/qr_fisico_instalado.png o .jpg
-% 5. Resolucion: 1920x1080 minimo
-% 6. Formato: JPG para fotos reales, PNG para maquetas digitales
-% ===========================================================================
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=0.5\textwidth]{qr_fisico_instalado.png}
-  \caption{Ejemplo de código QR instalado en punto estratégico para identificación de ubicación}
-  \label{fig:qr_fisico}
-\end{figure}
 
 \subsubsection{Solución al problema de compatibilidad de formatos QR}
 
@@ -1292,7 +1238,7 @@ Se creó el script \texttt{scripts/verificar\_formato\_qr.py} que verifica la co
 \paragraph{Script de verificación de formatos}
 Para garantizar la compatibilidad entre los códigos QR generados y la aplicación, se emplea el script \texttt{scripts/verificar\_formato\_qr.py}, previamente descrito.
 
-	extbf{Funciones principales:}
+\textbf{Funciones principales:}
 \begin{itemize}
   \item Lee los archivos JSON de todos los pisos
   \item Genera datos QR de prueba para cada nodo
@@ -1385,28 +1331,10 @@ Esta decisión de diseño simplifica la experiencia del usuario y evita compleji
   \item Establecer un nuevo origen y destino dentro de ese piso
 \end{enumerate}
 
-% ===========================================================================
-% IMAGEN REQUERIDA: Selección de origen y destino en el mapa
-% ===========================================================================
-% INSTRUCCIONES:
-% 1. Abre la aplicación en un piso
-% 2. Selecciona un nodo como ORIGEN (debe aparecer marcador VERDE)
-% 3. Selecciona otro nodo como DESTINO (marcador ROJO)
-% 4. NO calcules la ruta todavía (solo deben verse los dos nodos seleccionados)
-% 5. Captura de pantalla mostrando:
-%    - El mapa SVG claramente visible
-%    - MARCADOR VERDE en el nodo de origen
-%    - MARCADOR ROJO en el nodo de destino
-%    - Los dos nodos deben estar separados (no muy cerca)
-%    - NO debe haber línea de ruta todavía (solo los marcadores)
-% 6. Asegúrate que ambos marcadores sean claramente visibles
-% 7. Opcional: Incluye etiquetas o IDs de los nodos seleccionados
-% 8. Guarda como: image/seleccion_origen_destino.png
-% 9. Formato PNG, captura nativa del emulador
-% ===========================================================================
-\begin{figure}[!h]
+
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.6\textwidth]{seleccion_origen_destino.png}
+  \includegraphics[width=0.4\textwidth]{seleccion_origen_destino.jpeg}
   \caption{Selección de nodo origen (verde) y nodo destino (rojo) mediante interacción táctil en el mapa}
   \label{fig:seleccion_nodos}
 \end{figure}
@@ -1595,6 +1523,16 @@ El sistema de códigos QR se integra perfectamente con el sistema de navegación
 
 Este flujo permite una experiencia de usuario fluida, combinando la precisión del posicionamiento por QR con la flexibilidad de la selección visual de destinos.
 
+\subsubsection{Pruebas de la aplicación}
+Con lo desarrollado, se realizaron pruebas exhaustivas para validar la funcionalidad del sistema de navegación y códigos QR:
+\begin{itemize}
+  \item El algoritmo A* fue probado en múltiples escenarios, confirmando rutas óptimas que tienen sentido con la topología real del edificio.
+  \item Los mapas SVG fueron verificados para asegurar que los nodos y conexiones coinciden con los planos arquitectónicos.
+  \item La integración del escáner QR fue testeada con todos los códigos generados, confirmando compatibilidad y correcta identificación de nodos.
+  \item La interfaz de usuario fue evaluada para garantizar una experiencia intuitiva y fluida.
+  \item Se realizaron pruebas de usabilidad con usuarios reales para obtener retroalimentación y mejorar la experiencia.
+\end{itemize}
+
 % ============================================================
 % CONCLUSIONES Y RECOMENDACIONES
 % ============================================================
@@ -1651,6 +1589,9 @@ Para futuras mejoras del sistema, se recomienda:
   \item \textbf{Implementar modo offline}: Permitir el uso de la aplicación sin conexión a internet, descargando todos los mapas y datos necesarios de forma anticipada.
   
   \item \textbf{Desarrollar sistema de retroalimentación}: Permitir a los usuarios reportar problemas, sugerir mejoras o actualizar información sobre nodos y conexiones.
+  \item \textbf{Agregar nuevos nodos a los mapas}: Incluir nuevos puntos de interés como puertas de emergencia, zonas de descanso y servicios adicionales.
+  \item \textbf{Optimizar la interfaz de usuario}: Mejorar la experiencia visual y de interacción, incorporando animaciones suaves, transiciones y un diseño más atractivo.
+  \item \textbf{Agregar otros edificios del campus}: Extender la aplicación para cubrir otros edificios de la universidad, creando una red de navegación completa.
 \end{itemize}
 
 El sistema actual proporciona una base sólida sobre la cual se pueden construir estas mejoras futuras, manteniendo la arquitectura modular y escalable que facilita la evolución del proyecto.
@@ -1662,26 +1603,55 @@ El sistema actual proporciona una base sólida sobre la cual se pueden construir
 % [cite: 33]
 % El formato solicitado es IEEE.
 % Asegurarse de que las citas en el texto usen corchetes, ej. [1], [2].
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 \bibitem{torvalds2001}
 L. Torvalds y D. Diamond, \textit{Just for Fun: The Story of an Accidental Revolutionary}. HarperBusiness, 2001.
 
 \bibitem{tanenbaum2015}
 A. S. Tanenbaum y H. Bos, \textit{Modern Operating Systems}. 4.\,ed., Pearson, 2015.
+
+\bibitem{flutter}
+Google LLC, ``Flutter - Build apps for any screen,'' Flutter Documentation. [En línea]. Disponible en: \url{https://flutter.dev/}. [Accedido: 08-ene-2026].
+
+\bibitem{dart}
+Google LLC, ``Dart programming language,'' Dart Documentation. [En línea]. Disponible en: \url{https://dart.dev/}. [Accedido: 08-ene-2026].
+
+\bibitem{librecad}
+LibreCAD Community, ``LibreCAD - Open Source 2D-CAD,'' LibreCAD Official Website. [En línea]. Disponible en: \url{https://librecad.org/}. [Accedido: 08-ene-2026].
+
+\bibitem{inkscape}
+Inkscape Project, ``Inkscape - Draw Freely,'' Inkscape Official Website. [En línea]. Disponible en: \url{https://inkscape.org/}. [Accedido: 08-ene-2026].
+
+\bibitem{vscode}
+Microsoft Corporation, ``Visual Studio Code - Code Editing. Redefined,'' VS Code Documentation. [En línea]. Disponible en: \url{https://code.visualstudio.com/}. [Accedido: 08-ene-2026].
+
+\bibitem{github}
+GitHub, Inc., ``GitHub: Where the world builds software,'' GitHub Platform. [En línea]. Disponible en: \url{https://github.com/}. [Accedido: 08-ene-2026].
+
+\bibitem{python}
+Python Software Foundation, ``Python Programming Language,'' Python Official Website. [En línea]. Disponible en: \url{https://www.python.org/}. [Accedido: 08-ene-2026].
+
+\bibitem{qrcode}
+L. Vanden, ``qrcode - Python QR Code image generator,'' PyPI. [En línea]. Disponible en: \url{https://pypi.org/project/qrcode/}. [Accedido: 08-ene-2026].
+
+\bibitem{pillow}
+A. Clark et al., ``Pillow - Python Imaging Library,'' Pillow Documentation. [En línea]. Disponible en: \url{https://pillow.readthedocs.io/}. [Accedido: 08-ene-2026].
+
+\bibitem{astar}
+P. E. Hart, N. J. Nilsson, y B. Raphael, ``A Formal Basis for the Heuristic Determination of Minimum Cost Paths,'' \textit{IEEE Transactions on Systems Science and Cybernetics}, vol. 4, no. 2, pp. 100-107, 1968.
+
+\bibitem{materialdesign}
+Google LLC, ``Material Design - Design System,'' Material Design Guidelines. [En línea]. Disponible en: \url{https://m3.material.io/}. [Accedido: 08-ene-2026].
+
+\bibitem{svg}
+W3C, ``Scalable Vector Graphics (SVG) 1.1 Specification,'' World Wide Web Consortium. [En línea]. Disponible en: \url{https://www.w3.org/TR/SVG11/}. [Accedido: 08-ene-2026].
 \end{thebibliography}
 
-% ============================================================
-% ANEXOS
-% ============================================================
-\section{Anexos}
-% [cite: 34, 87]
-% Aquí se puede incluir material que complementa el informe pero que
-% no es esencial para la comprensión principal[cite: 90, 91].
 
 \vspace{0.5cm}
 \hrule
 \begin{center}
-\textbf{\estudianteUno{} y \estudianteDos}\\
+\textbf{\estudianteUno{}}\\
 Estudiantes de \programa\\
 \institucion\\
 \fechaentrega{}
