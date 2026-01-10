@@ -1,0 +1,97 @@
+\documentclass[a4paper,12pt]{article}
+
+% ---------------- PAQUETES ----------------
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{helvet}
+\usepackage{array}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% ---------------- MÁRGENES ----------------
+\geometry{
+  top=1.5cm,
+  bottom=1.5cm,
+  left=1.8cm,
+  right=1.8cm
+}
+
+\begin{document}
+\pagestyle{empty}
+
+% ================== LOGOS SUPERIORES ==================
+\begin{center}
+\begin{tabular}{ m{4.5cm} m{6cm} m{4.5cm} }
+\centering
+\includegraphics[width=3.5cm]{Logos/umag.png}
+&
+\centering
+{\large \textbf{Facultad de Ingeniería}}
+&
+\centering
+\includegraphics[width=3.5cm]{Logos/dic.png}
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+% ================== UBICACIÓN ==================
+\begin{center}
+\colorbox{blue!15}{\parbox{0.9\textwidth}{
+  \centering
+  \vspace{0.3cm}
+  {\Huge \textbf{Sala TI 1}}\\[0.2cm]
+  {\LARGE Piso 1}
+  \vspace{0.3cm}
+}}
+\end{center}
+
+\vspace{0.6cm}
+
+% ================== TÍTULO ==================
+\begin{center}
+{\LARGE \textbf{Sistema de Navegación Interna}}
+\end{center}
+
+\vspace{0.4cm}
+
+% ================== INSTRUCCIONES ==================
+\begin{center}
+\begin{tcolorbox}[width=0.9\textwidth, colback=gray!5, colframe=black!50, boxrule=0.5pt, arc=3mm]
+\vspace{0.1cm}
+{\large \textbf{¿Cómo usar?}}
+\vspace{0.2cm}
+
+\begin{enumerate}[leftmargin=2cm, labelsep=0.5cm, itemsep=0.3cm]
+  \item[\textbf{1.}] Abre la app \textbf{``Mi Facultad UMAG''}
+  \item[\textbf{2.}] Escanea el código QR de abajo
+  \item[\textbf{3.}] Selecciona tu destino
+  \item[\textbf{4.}] Sigue la ruta mostrada
+\end{enumerate}
+\vspace{0.1cm}
+\end{tcolorbox}
+\end{center}
+
+\vspace{0.5cm}
+
+% ================== QR ==================
+\begin{center}
+\fbox{\includegraphics[width=7cm]{qr_ejemplo.png}}
+\end{center}
+
+\vspace{0.4cm}
+
+% ================== PIE ==================
+\begin{center}
+{\footnotesize
+\textit{Aplicación de navegación interna - Universidad de Magallanes}
+}
+\end{center}
+
+\end{document}
