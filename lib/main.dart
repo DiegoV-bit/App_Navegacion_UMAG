@@ -475,12 +475,64 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
           const ListTile(
             leading: Icon(Icons.info_outline),
             title: Text('Versión'),
-            subtitle: Text('1.0.0'),
+            subtitle: Text('1.0.0+1'),
           ),
           const ListTile(
             leading: Icon(Icons.school),
             title: Text('Universidad de Magallanes'),
             subtitle: Text('Facultad de Ingeniería'),
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Desarrollador',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.code),
+            title: const Text('Desarrollado por'),
+            subtitle: const Text('DiegoV-bit'),
+            onTap: () {
+              // Mostrar información adicional del desarrollador
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Información del Desarrollador'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text('Desarrollado por: DiegoV-bit'),
+                      SizedBox(height: 8),
+                      Text('GitHub: github.com/DiegoV-bit'),
+                      SizedBox(height: 8),
+                      Text('Proyecto: App de Navegación UMAG'),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cerrar'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const ListTile(
+            leading: Icon(Icons.account_circle),
+            title: Text('GitHub'),
+            subtitle: Text('github.com/DiegoV-bit'),
+          ),
+          const ListTile(
+            leading: Icon(Icons.calendar_today),
+            title: Text('Año'),
+            subtitle: Text('2026'),
           ),
         ],
       ),
