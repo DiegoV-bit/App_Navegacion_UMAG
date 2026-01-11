@@ -1,4 +1,4 @@
-# 🧭 App Navegación UMAG
+# App Navegación UMAG
 
 <div align="center">
 
@@ -12,11 +12,11 @@
 
 ---
 
-## 📋 Descripción
+## Descripción
 
 Aplicación móvil de navegación interior desarrollada para facilitar la orientación dentro de la Facultad de Ingeniería de la Universidad de Magallanes. El sistema permite a estudiantes, profesores y visitantes encontrar ubicaciones específicas dentro de cada piso del edificio de forma rápida e intuitiva.
 
-### ✨ Características Principales
+### Características Principales
 
 - 🗺️ **Mapas Interactivos**: Visualización de mapas vectoriales (SVG) de los 4 pisos del edificio
 - 🔍 **Algoritmo A***: Cálculo óptimo de rutas dentro del mismo piso
@@ -30,7 +30,7 @@ Aplicación móvil de navegación interior desarrollada para facilitar la orient
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## Arquitectura del Proyecto
 
 ```
 lib/
@@ -55,7 +55,7 @@ lib/
 
 ---
 
-## 🚀 Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 | Tecnología | Propósito |
 |------------|-----------|
@@ -69,7 +69,7 @@ lib/
 
 ---
 
-## 📦 Instalación
+## Instalación
 
 ### Prerrequisitos
 
@@ -78,7 +78,7 @@ lib/
 - Android Studio / Xcode (según plataforma)
 - Dispositivo físico o emulador configurado
 
-### Pasos de Instalación
+### Pasos de Instalación para Desarrollo
 
 1. **Clonar el repositorio**
    ```bash
@@ -101,9 +101,53 @@ lib/
    flutter run
    ```
 
+### Instalación en Dispositivos Android
+
+#### Opción 1: Compilar e Instalar desde Código Fuente
+
+1. **Conectar dispositivo Android**
+   - Habilita las opciones de desarrollador en tu dispositivo
+   - Activa la depuración USB
+   - Conecta el dispositivo a tu computadora
+
+2. **Verificar conexión del dispositivo**
+   ```bash
+   flutter devices
+   ```
+
+3. **Compilar e instalar directamente**
+   ```bash
+   flutter install
+   ```
+
+#### Opción 2: Generar APK para Instalación Manual
+
+1. **Generar APK de desarrollo**
+   ```bash
+   flutter build apk --debug
+   ```
+   El APK se generará en: `build/app/outputs/flutter-apk/app-debug.apk`
+
+2. **Generar APK de producción** (optimizado)
+   ```bash
+   flutter build apk --release
+   ```
+   El APK se generará en: `build/app/outputs/flutter-apk/app-release.apk`
+
+3. **Transferir e instalar el APK**
+   - Transfiere el archivo APK a tu dispositivo Android
+   - Habilita "Instalar aplicaciones de fuentes desconocidas" en configuración
+   - Abre el archivo APK desde el administrador de archivos
+   - Sigue las instrucciones para completar la instalación
+
+#### Opción 3: APK de github release
+- Descargar la version disponible en Github.
+- Instalarla, habiendo activado previamente la instalacion desde fuentes desconocidas (La aplicación no es un virus).
+- Usarla.
+
 ---
 
-## 🎮 Uso
+## Uso
 
 ### Navegación Básica
 
@@ -142,7 +186,7 @@ lib/
 
 ---
 
-## 🛠️ Modo Debug (Desarrolladores)
+## Modo Debug (Desarrolladores)
 
 El modo debug está activado mediante la constante `kDebugMode = true` en [main.dart](lib/main.dart).
 
@@ -157,7 +201,7 @@ El modo debug está activado mediante la constante `kDebugMode = true` en [main.
 
 ---
 
-## 📊 Algoritmo A* (A-Estrella)
+## Algoritmo A* (A-Estrella)
 
 El sistema utiliza el algoritmo A* para calcular las rutas óptimas dentro de cada piso:
 
@@ -177,7 +221,7 @@ El sistema utiliza el algoritmo A* para calcular las rutas óptimas dentro de ca
 
 ---
 
-## 🗺️ Estructura de Datos del Grafo
+## Estructura de Datos del Grafo
 
 Los archivos JSON en `lib/data/` siguen esta estructura:
 
@@ -206,7 +250,7 @@ Los archivos JSON en `lib/data/` siguen esta estructura:
 
 ---
 
-## 📈 Carta Gantt del Proyecto
+## Carta Gantt del Proyecto
 
 <details>
 <summary>Ver planificación completa del desarrollo</summary>
@@ -247,16 +291,16 @@ gantt
 
 ---
 
-## 👥 Contribuidores
+## Contribuidores
 
 | Avatar | Nombre | Rol | Contribuciones |
 |--------|--------|-----|----------------|
 | 👨‍💻 | Diego Vidal | Desarrollador Principal | Interfaz, sistema de navegación, modo debug, corrección de errores QR |
-| 👨‍💻 | Bruno Martinez | Desarrollador | Digitalización de mapas, modelado de grafos, algoritmo A*, sistema de coordenadas |
+%| 👨‍💻 | Bruno Martinez | Desarrollador | Digitalización de mapas, modelado de grafos, algoritmo A*, sistema %de coordenadas |
 
 ---
 
-## 🤝 Contribuir
+## Contribuir
 
 Las contribuciones son bienvenidas. Para cambios importantes:
 
@@ -268,7 +312,7 @@ Las contribuciones son bienvenidas. Para cambios importantes:
 
 ---
 
-## 📧 Contacto
+## Contacto
 
 **Universidad de Magallanes**  
 Facultad de Ingeniería
@@ -278,7 +322,7 @@ Facultad de Ingeniería
 
 ---
 
-## 🙏 Agradecimientos
+## Agradecimientos
 
 - Universidad de Magallanes por el apoyo institucional
 - Facultad de Ingeniería por proporcionar los planos del edificio
