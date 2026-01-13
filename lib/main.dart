@@ -184,6 +184,7 @@ class PantallaInicio extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Facultad de Ingeniería UMAG'),
         backgroundColor: Colors.deepPurple.shade700,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -403,6 +404,7 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
       appBar: AppBar(
         title: const Text('Configuración'),
         backgroundColor: Colors.deepPurple.shade700,
+        foregroundColor: Colors.white,
       ),
       body: ListView(
         children: [
