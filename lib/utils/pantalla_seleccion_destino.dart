@@ -4,10 +4,43 @@ import '../models/grafo.dart';
 import '../models/nodo.dart';
 import 'a_estrella.dart';
 
-/// Pantalla para seleccionar el destino de navegación después de escanear un QR
+/// Pantalla para seleccionar el destino de navegación después de escanear un QR.
+///
+/// Esta pantalla proporciona:
+/// - Información sobre la ubicación actual (origen)
+/// - Dropdown con todos los destinos disponibles del mismo piso
+/// - Cálculo automático de ruta al seleccionar destino
+/// - Visualización detallada de la ruta calculada
+/// - Botón para iniciar navegación con la ruta
+///
+/// Flujo de uso:
+/// 1. Usuario escanea QR que identifica su ubicación
+/// 2. Se abre esta pantalla mostrando la ubicación actual
+/// 3. Usuario selecciona destino del dropdown
+/// 4. Se calcula y muestra la ruta automáticamente
+/// 5. Usuario confirma e inicia navegación
+///
+/// Ejemplo:
+/// ```dart
+/// Navigator.push(
+///   context,
+///   MaterialPageRoute(
+///     builder: (context) => PantallaSeleccionDestino(
+///       nodoOrigenId: 'P1_Entrada_1',
+///       pisoActual: 1,
+///       grafo: grafo,
+///     ),
+///   ),
+/// );
+/// ```
 class PantallaSeleccionDestino extends StatefulWidget {
+  /// ID del nodo de origen (ubicación actual del usuario)
   final String nodoOrigenId;
+
+  /// Número del piso actual (1-4)
   final int pisoActual;
+
+  /// Grafo del piso con todos los nodos y conexiones
   final Grafo grafo;
 
   const PantallaSeleccionDestino({
@@ -22,10 +55,18 @@ class PantallaSeleccionDestino extends StatefulWidget {
       _PantallaSeleccionDestinoState();
 }
 
+/// Estado de la pantalla de selección de destino.
 class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
+  /// ID del nodo de destino seleccionado por el usuario
   String? _nodoDestinoSeleccionado;
+
+  /// Indica si se está calculando una ruta actualmente
   bool _calculandoRuta = false;
+
+  /// Lista de IDs de nodos que forman la ruta calculada
   List<String>? _rutaCalculada;
+
+  /// Distancia total de la ruta en unidades del mapa SVG
   double? _distanciaTotal;
 
   @override
@@ -376,6 +417,16 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
     );
   }
 
+  /// Calcula la ruta óptima entre origen y destino usando el algoritmo A*.
+  ///
+  /// Este método:
+  /// 1. Valida que haya un destino seleccionado
+  /// 2. Usa el algoritmo A* para encontrar el camino óptimo
+  /// 3. Calcula la distancia total sumando distancias euclidianas entre nodos consecutivos
+  /// 4. Actualiza el estado con la ruta y distancia calculadas
+  /// 5. Muestra errores si no se encuentra ruta
+  ///
+  /// Maneja el estado de carga ([_calculandoRuta]) para mostrar indicadores visuales.
   void _calcularRuta() async {
     if (_nodoDestinoSeleccionado == null) return;
 
@@ -424,6 +475,14 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
     }
   }
 
+  /// Inicia la navegación con la ruta calculada.
+  ///
+  /// Retorna al scanner (que a su vez retorna al mapa) con la información de la ruta:
+  /// - Lista de nodos de la ruta
+  /// - ID de origen y destino
+  /// - Distancia total
+  ///
+  /// El mapa usará esta información para visualizar la ruta.
   void _iniciarNavegacion() {
     if (_rutaCalculada == null) return;
 
@@ -436,6 +495,10 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
     });
   }
 
+  /// Muestra un mensaje de error al usuario.
+  ///
+  /// Parámetros:
+  /// - [mensaje]: Texto del error a mostrar
   void _mostrarError(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -446,6 +509,20 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
     );
   }
 
+  /// Extrae el número de piso del ID de un nodo.
+  ///
+  /// Parámetros:
+  /// - [nodoId]: ID del nodo (formato: "P{piso}_{nombre}")
+  ///
+  /// Retorna:
+  /// - Número de piso extraído
+  /// - [pisoActual] si no se puede extraer
+  ///
+  /// Ejemplo:
+  /// ```dart
+  /// _extraerPiso('P1_Entrada_1'); // Retorna 1
+  /// _extraerPiso('P3_Lab_Fisica'); // Retorna 3
+  /// ```
   int _extraerPiso(String nodoId) {
     // Extraer el número del piso del ID (ej: P1_Entrada_1 -> 1)
     if (nodoId.startsWith('P') && nodoId.contains('_')) {
@@ -459,6 +536,17 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
     return widget.pisoActual;
   }
 
+  /// Convierte un ID técnico de nodo a un nombre legible para el usuario.
+  ///
+  /// Transforma IDs como "P1_Entrada_1" en "Entrada 1"
+  /// y "P2_Aula_A201" en "Aula A201".
+  ///
+  /// Parámetros:
+  /// - [nodoId]: ID técnico del nodo
+  ///
+  /// Retorna:
+  /// - Nombre formateado y legible
+  /// - El ID original si no se puede formatear
   String _obtenerNombreAmigable(String nodoId) {
     // Convertir ID técnico a nombre legible
     // P1_Entrada_1 -> Entrada 1
@@ -477,6 +565,17 @@ class _PantallaSeleccionDestinoState extends State<PantallaSeleccionDestino> {
     return nodoId;
   }
 
+  /// Obtiene un icono apropiado para un nodo según su tipo o nombre.
+  ///
+  /// Analiza el ID del nodo y retorna un icono Material que represente
+  /// el tipo de ubicación (entrada, aula, laboratorio, etc.).
+  ///
+  /// Parámetros:
+  /// - [nodoId]: ID del nodo
+  ///
+  /// Retorna:
+  /// - [IconData] apropiado para el tipo de nodo
+  /// - [Icons.place] como icono por defecto
   IconData _obtenerIconoParaNodo(String nodoId) {
     final id = nodoId.toLowerCase();
     if (id.contains('entrada')) return Icons.door_front_door;

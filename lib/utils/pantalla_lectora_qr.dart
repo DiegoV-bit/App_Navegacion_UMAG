@@ -4,8 +4,33 @@ import '../utils/codigo_qr.dart';
 import '../utils/navegacion_qr.dart';
 import '../models/grafo.dart';
 
+/// Pantalla que muestra la cámara para escanear códigos QR.
+///
+/// Esta pantalla proporciona:
+/// - Vista de cámara en tiempo real usando [MobileScanner]
+/// - Detección automática de códigos QR
+/// - Overlay visual con marco de escaneo
+/// - Control de flash/linterna
+/// - Validación de formatos QR soportados
+/// - Procesamiento e integración con el sistema de navegación
+///
+/// Ejemplo de uso:
+/// ```dart
+/// Navigator.push(
+///   context,
+///   MaterialPageRoute(
+///     builder: (context) => QRScannerScreen(
+///       pisoActual: 1,
+///       grafo: grafo,
+///     ),
+///   ),
+/// );
+/// ```
 class QRScannerScreen extends StatefulWidget {
+  /// Número del piso actual donde se está escaneando (1-4)
   final int pisoActual;
+
+  /// Grafo del piso actual con nodos y conexiones
   final Grafo grafo;
 
   const QRScannerScreen({
@@ -18,11 +43,18 @@ class QRScannerScreen extends StatefulWidget {
   State<QRScannerScreen> createState() => _QRScannerScreenState();
 }
 
+/// Estado de la pantalla del scanner QR.
 class _QRScannerScreenState extends State<QRScannerScreen> {
+  /// Controlador del scanner de código de barras/QR
   final MobileScannerController controller = MobileScannerController(
     formats: [BarcodeFormat.qrCode],
   );
+
+  /// Indica si el scanner está actualmente escaneando
+  /// Se desactiva temporalmente al detectar un QR para evitar escaneos múltiples
   bool _isScanning = true;
+
+  /// Indica si la linterna/flash está activada
   bool _torchEnabled = false;
 
   @override
@@ -149,6 +181,15 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     );
   }
 
+  /// Procesa un código QR escaneado.
+  ///
+  /// Este método:
+  /// 1. Valida que el QR no esté vacío
+  /// 2. Verifica que el formato sea soportado
+  /// 3. Crea un navegador QR y delega el procesamiento
+  ///
+  /// Parámetros:
+  /// - [qrData]: Contenido del código QR escaneado
   void _procesarQR(String qrData) async {
     if (qrData.isEmpty) {
       _mostrarError('QR vacío o no legible');
@@ -174,6 +215,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     await qrNav.procesarQR(qrData);
   }
 
+  /// Alterna el estado de la linterna/flash de la cámara.
   void _toggleFlash() async {
     await controller.toggleTorch();
     setState(() {
@@ -181,6 +223,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     });
   }
 
+  /// Muestra un bottom sheet con las instrucciones de formatos QR soportados.
+  ///
+  /// Presenta ejemplos de todos los formatos válidos:
+  /// - Nodo: nodo:P1_Entrada_1
+  /// - Ubicación: ubicacion:Entrada Principal
+  /// - Ruta: ruta:P1_Entrada_1|P1_Pasillo_Norte
+  /// - Piso + Nodo: piso:1|nodo:P1_Entrada_1
+  /// - Coordenadas: coord:1004,460
   void _mostrarInstrucciones() {
     showModalBottomSheet(
       context: context,
@@ -237,6 +287,12 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     );
   }
 
+  /// Construye un item de formato QR en el diálogo de ayuda.
+  ///
+  /// Parámetros:
+  /// - [titulo]: Nombre del formato (ejemplo: "Nodo", "Ruta")
+  /// - [ejemplo]: Cadena de ejemplo del formato
+  /// - [color]: Color temático para el item
   Widget _buildFormatoItem(String titulo, String ejemplo, Color color) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -269,6 +325,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     );
   }
 
+  /// Muestra un mensaje de error y reinicia el scanner.
+  ///
+  /// - Presenta un SnackBar con el mensaje de error
+  /// - Proporciona botón para reintentar inmediatamente
+  /// - Automáticamente reinicia el scanner después de 2 segundos
+  ///
+  /// Parámetros:
+  /// - [mensaje]: Descripción del error a mostrar
   void _mostrarError(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -300,7 +364,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   }
 }
 
-// Custom Painter para el overlay del scanner
+/// Custom Painter que dibuja el overlay visual sobre la cámara del scanner.
+///
+/// Dibuja:
+/// - Área oscura semi-transparente alrededor del marco de escaneo
+/// - Marco de escaneo con esquinas redondeadas y resaltadas
+/// - Esquinas con líneas azules para indicar el área de escaneo
+///
+/// El área de escaneo es un cuadrado de 250x250 px centrado en la pantalla.
 class ScannerOverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

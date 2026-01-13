@@ -3,9 +3,32 @@ import 'dart:convert';
 import '../models/grafo.dart';
 import '../utils/a_estrella.dart';
 
-/// Utilidades para manejo de códigos QR en la aplicación de navegación UMAG
+/// Clase de utilidades para el manejo y procesamiento de códigos QR.
+///
+/// Esta clase proporciona funcionalidades para:
+/// - Parsear diferentes formatos de códigos QR
+/// - Generar códigos QR para nodos, rutas y coordenadas
+/// - Integrar códigos QR con el sistema de navegación basado en grafos
+/// - Validar formatos de QR soportados
+/// - Manejar alias amigables para ubicaciones
+///
+/// Formatos QR soportados:
+/// 1. JSON: {"type": "nodo", "id": "P1_Entrada_1", "piso": 1}
+/// 2. nodo:P1_Entrada_1
+/// 3. ubicacion:Entrada Principal
+/// 4. ruta:P1_Entrada_1|P1_Sala_101
+/// 5. piso:1|nodo:P1_Entrada_1
+/// 6. coord:1004,460
 class QRUtils {
   // ==================== FORMATOS QR SOPORTADOS ====================
+  /// Lista de prefijos de formatos QR reconocidos por el sistema.
+  ///
+  /// Cada formato tiene un propósito específico:
+  /// - `nodo:` - Identifica un nodo específico por su ID
+  /// - `ruta:` - Define una ruta entre dos nodos
+  /// - `piso:` - Especifica piso y nodo
+  /// - `coord:` - Coordenadas SVG directas
+  /// - `ubicacion:` - Usa alias amigables de ubicaciones
   static const List<String> formatosSoportados = [
     'nodo:', // nodo:P1_Entrada_1
     'ruta:', // ruta:P1_Entrada_1|P1_Pasillo_Ingenieria_Centro
@@ -17,6 +40,13 @@ class QRUtils {
   ];
 
   // ==================== ALIAS DE UBICACIONES (para códigos legibles) ====================
+  /// Mapa de alias amigables para ubicaciones comunes del edificio.
+  ///
+  /// Permite usar nombres legibles en lugar de IDs técnicos en los códigos QR.
+  /// Por ejemplo: "Entrada Principal" en lugar de "P1_Entrada_1"
+  ///
+  /// Estos alias se pueden usar en códigos QR con el formato:
+  /// `ubicacion:Entrada Principal`
   static final Map<String, String> aliasUbicaciones = {
     'Entrada Principal': 'P1_Entrada_1',
     'Patio de Ingeniería': 'P1_Patio_de_ingenieria',
@@ -32,6 +62,34 @@ class QRUtils {
   };
 
   // ==================== PARSER DE CÓDIGOS QR ====================
+  /// Analiza y parsea un código QR escaneado, extrayendo la información contenida.
+  ///
+  /// Este método procesa diferentes formatos de códigos QR y retorna un [QRResult]
+  /// que contiene la información extraída y el tipo de QR detectado.
+  ///
+  /// Formatos procesados (en orden de prioridad):
+  /// 1. JSON: {"type": "nodo", "id": "P1_Entrada_1", "piso": 1}
+  /// 2. nodo:P1_Entrada_1
+  /// 3. ubicacion:Entrada Principal
+  /// 4. ruta:P1_Entrada_1|P1_Sala_101
+  /// 5. piso:1|nodo:P1_Entrada_1
+  /// 6. coord:1004,460
+  /// 7. ID directo (ejemplo: P1_Entrada_1)
+  ///
+  /// Parámetros:
+  /// - [qrData]: Contenido del código QR escaneado
+  /// - [pisoActual]: Piso actual donde se escanea (usado como default si no se especifica)
+  ///
+  /// Retorna:
+  /// - [QRResult] con la información parseada o un error si el formato es inválido
+  ///
+  /// Ejemplo:
+  /// ```dart
+  /// final resultado = QRUtils.parseQRCode('nodo:P1_Entrada_1', 1);
+  /// if (resultado.esValido) {
+  ///   print('Nodo encontrado: ${resultado.id}');
+  /// }
+  /// ```
   static QRResult parseQRCode(String qrData, int pisoActual) {
     if (qrData.isEmpty) {
       return QRResult.error('Código QR vacío');
@@ -176,6 +234,15 @@ class QRUtils {
   }
 
   // ==================== GENERADOR DE CÓDIGOS QR ====================
+  /// Genera una cadena de código QR para un nodo específico.
+  ///
+  /// Parámetros:
+  /// - [idNodo]: ID del nodo (ejemplo: "P1_Entrada_1")
+  /// - [piso]: Número de piso (opcional). Si se proporciona, incluye el piso en el QR
+  ///
+  /// Retorna:
+  /// - Cadena en formato "piso:X|nodo:ID" si se especifica piso
+  /// - Cadena en formato "nodo:ID" si no se especifica piso
   static String generarQRParaNodo(String idNodo, [int? piso]) {
     if (piso != null) {
       return 'piso:$piso|nodo:$idNodo';
@@ -183,19 +250,78 @@ class QRUtils {
     return 'nodo:$idNodo';
   }
 
+  /// Genera una cadena de código QR usando un alias de ubicación.
+  ///
+  /// Parámetros:
+  /// - [alias]: Nombre amigable de la ubicación (ejemplo: "Entrada Principal")
+  ///
+  /// Retorna:
+  /// - Cadena en formato "ubicacion:ALIAS"
   static String generarQRParaAlias(String alias) {
     return 'ubicacion:$alias';
   }
 
+  /// Genera una cadena de código QR para una ruta predefinida.
+  ///
+  /// Parámetros:
+  /// - [origenId]: ID del nodo de origen
+  /// - [destinoId]: ID del nodo de destino
+  ///
+  /// Retorna:
+  /// - Cadena en formato "ruta:ORIGEN|DESTINO"
   static String generarQRParaRuta(String origenId, String destinoId) {
     return 'ruta:$origenId|$destinoId';
   }
 
+  /// Genera una cadena de código QR para coordenadas SVG específicas.
+  ///
+  /// Parámetros:
+  /// - [x]: Coordenada X en el sistema SVG
+  /// - [y]: Coordenada Y en el sistema SVG
+  ///
+  /// Retorna:
+  /// - Cadena en formato "coord:X,Y" (redondeado a enteros)
   static String generarQRParaCoordenadas(double x, double y) {
     return 'coord:${x.toInt()},${y.toInt()}';
   }
 
   // ==================== INTEGRACIÓN CON GRAFOS ====================
+  /// Procesa un código QR y lo integra con el grafo de navegación.
+  ///
+  /// Este método realiza el procesamiento completo de un QR:
+  /// 1. Parsea el código QR
+  /// 2. Valida que la información sea correcta
+  /// 3. Busca nodos en el grafo si es necesario
+  /// 4. Calcula rutas usando A* si es un QR de ruta
+  /// 5. Retorna toda la información necesaria para la navegación
+  ///
+  /// Parámetros:
+  /// - [qrData]: Contenido del código QR escaneado
+  /// - [pisoActual]: Piso donde se realiza el escaneo
+  /// - [grafo]: Grafo del piso actual con nodos y conexiones
+  ///
+  /// Retorna:
+  /// - Map con la información procesada según el tipo de QR:
+  ///   - Para nodos: {'tipo': 'nodo', 'nodo': {...}, 'piso': X}
+  ///   - Para rutas: {'tipo': 'ruta', 'ruta': [...], 'distancia': X}
+  ///   - Para coordenadas: {'tipo': 'coordenadas', 'x': X, 'y': Y}
+  ///
+  /// Lanza:
+  /// - [Exception] si el QR es inválido, el nodo no existe, o no hay ruta
+  ///
+  /// Ejemplo:
+  /// ```dart
+  /// try {
+  ///   final resultado = await QRUtils.procesarQRConGrafo(
+  ///     'nodo:P1_Entrada_1',
+  ///     1,
+  ///     grafo,
+  ///   );
+  ///   print('Tipo: ${resultado['tipo']}');
+  /// } catch (e) {
+  ///   print('Error: $e');
+  /// }
+  /// ```
   static Future<Map<String, dynamic>> procesarQRConGrafo(
     String qrData,
     int pisoActual,
@@ -274,6 +400,20 @@ class QRUtils {
   }
 
   // ==================== HELPERS ====================
+  /// Extrae el número de piso del ID de un nodo.
+  ///
+  /// Parámetros:
+  /// - [id]: ID del nodo (ejemplo: "P1_Entrada_1", "P2_Lab_Fisica")
+  ///
+  /// Retorna:
+  /// - Número de piso (1, 2, 3, 4) si el formato es válido
+  /// - null si no se puede extraer el piso
+  ///
+  /// Ejemplo:
+  /// ```dart
+  /// final piso = _extraerPisoDeId('P1_Entrada_1'); // Retorna 1
+  /// final piso2 = _extraerPisoDeId('P3_Sala_301'); // Retorna 3
+  /// ```
   static int? _extraerPisoDeId(String id) {
     // Extraer número de piso del ID (ej: P1_Entrada_1 -> 1)
     final regex = RegExp(r'P(\d+)_');
@@ -281,11 +421,38 @@ class QRUtils {
     return match != null ? int.tryParse(match.group(1)!) : null;
   }
 
+  /// Verifica si un string tiene el formato válido de un ID de nodo.
+  ///
+  /// Un ID válido debe:
+  /// - Comenzar con 'P' (de Piso)
+  /// - Contener al menos un guion bajo '_'
+  /// - No contener espacios
+  ///
+  /// Parámetros:
+  /// - [id]: String a validar
+  ///
+  /// Retorna:
+  /// - true si el formato es válido
+  /// - false en caso contrario
   static bool _esIdNodoValido(String id) {
     // Verificar si el ID sigue el patrón de nodos del sistema
     return id.startsWith('P') && id.contains('_') && !id.contains(' ');
   }
 
+  /// Valida si un código QR tiene un formato reconocido por el sistema.
+  ///
+  /// Verifica contra todos los formatos soportados:
+  /// - Formato JSON
+  /// - Prefijos estándar (nodo:, ruta:, ubicacion:, etc.)
+  /// - IDs de nodo directos
+  /// - Alias de ubicaciones
+  ///
+  /// Parámetros:
+  /// - [qrData]: Contenido del QR a validar
+  ///
+  /// Retorna:
+  /// - true si el formato es reconocido
+  /// - false si el formato no es válido
   static bool esQRValido(String qrData) {
     if (qrData.isEmpty) return false;
 
@@ -331,10 +498,30 @@ class QRUtils {
     return false;
   }
 
+  /// Copia un contenido de QR al portapapeles del dispositivo.
+  ///
+  /// Parámetros:
+  /// - [contenido]: String a copiar al portapapeles
+  ///
+  /// Ejemplo:
+  /// ```dart
+  /// await QRUtils.copiarQRAlPortapapeles('nodo:P1_Entrada_1');
+  /// ```
   static Future<void> copiarQRAlPortapapeles(String contenido) async {
     await Clipboard.setData(ClipboardData(text: contenido));
   }
 
+  /// Obtiene el alias amigable de un nodo si existe.
+  ///
+  /// Busca en el mapa de alias para encontrar un nombre legible
+  /// asociado con el ID del nodo.
+  ///
+  /// Parámetros:
+  /// - [idNodo]: ID del nodo (ejemplo: "P1_Entrada_1")
+  ///
+  /// Retorna:
+  /// - Alias amigable si existe (ejemplo: "Entrada Principal")
+  /// - El mismo ID si no tiene alias
   static String obtenerAliasParaNodo(String idNodo) {
     // Buscar alias para un nodo (inverso del mapa)
     for (var entry in aliasUbicaciones.entries) {
@@ -347,6 +534,12 @@ class QRUtils {
 }
 
 // ==================== MODELOS DE RESULTADO ====================
+/// Enum que define los tipos posibles de resultados al parsear un código QR.
+///
+/// - [nodo]: El QR representa un nodo específico del grafo
+/// - [ruta]: El QR define una ruta predefinida entre dos nodos
+/// - [coordenadasSVG]: El QR contiene coordenadas directas en el sistema SVG
+/// - [error]: El QR no pudo ser parseado o es inválido
 enum TipoQRResultado {
   nodo,
   ruta,
@@ -354,16 +547,51 @@ enum TipoQRResultado {
   error,
 }
 
+/// Clase que encapsula el resultado de parsear un código QR.
+///
+/// Almacena toda la información extraída del QR según su tipo:
+/// - Para nodos: [id], [piso]
+/// - Para rutas: [origen], [destino], [piso]
+/// - Para coordenadas: [x], [y], [piso]
+/// - Para errores: [mensajeError]
+///
+/// Uso:
+/// ```dart
+/// final resultado = QRUtils.parseQRCode('nodo:P1_Entrada_1', 1);
+/// if (resultado.esValido) {
+///   if (resultado.esNodo) {
+///     print('Nodo: ${resultado.id}');
+///   }
+/// } else {
+///   print('Error: ${resultado.mensajeError}');
+/// }
+/// ```
 class QRResult {
+  /// Tipo de resultado obtenido del parseo del QR
   final TipoQRResultado tipo;
+
+  /// ID del nodo (solo para tipo nodo)
   final String? id;
+
+  /// Coordenada X en el sistema SVG (solo para tipo coordenadasSVG)
   final double? x;
+
+  /// Coordenada Y en el sistema SVG (solo para tipo coordenadasSVG)
   final double? y;
+
+  /// ID del nodo de origen (solo para tipo ruta)
   final String? origen;
+
+  /// ID del nodo de destino (solo para tipo ruta)
   final String? destino;
+
+  /// Número de piso asociado al resultado
   final int piso;
+
+  /// Mensaje descriptivo del error (solo para tipo error)
   final String? mensajeError;
 
+  /// Constructor privado usado por los factory constructors
   QRResult._({
     required this.tipo,
     this.id,
@@ -375,10 +603,21 @@ class QRResult {
     this.mensajeError,
   });
 
+  /// Crea un resultado de tipo nodo.
+  ///
+  /// Parámetros:
+  /// - [id]: ID del nodo
+  /// - [piso]: Número de piso (default: 1)
   factory QRResult.nodo({required String id, int piso = 1}) {
     return QRResult._(tipo: TipoQRResultado.nodo, id: id, piso: piso);
   }
 
+  /// Crea un resultado de tipo ruta.
+  ///
+  /// Parámetros:
+  /// - [origen]: ID del nodo de origen
+  /// - [destino]: ID del nodo de destino
+  /// - [piso]: Número de piso (default: 1)
   factory QRResult.ruta({
     required String origen,
     required String destino,
@@ -392,6 +631,12 @@ class QRResult {
     );
   }
 
+  /// Crea un resultado de tipo coordenadas SVG.
+  ///
+  /// Parámetros:
+  /// - [x]: Coordenada X en el sistema SVG
+  /// - [y]: Coordenada Y en el sistema SVG
+  /// - [piso]: Número de piso (default: 1)
   factory QRResult.coordenadasSVG({
     required double x,
     required double y,
@@ -405,12 +650,23 @@ class QRResult {
     );
   }
 
+  /// Crea un resultado de tipo error.
+  ///
+  /// Parámetros:
+  /// - [mensaje]: Descripción del error ocurrido
   factory QRResult.error(String mensaje) {
     return QRResult._(tipo: TipoQRResultado.error, mensajeError: mensaje);
   }
 
+  /// Retorna true si el resultado es válido (no es un error)
   bool get esValido => tipo != TipoQRResultado.error;
+
+  /// Retorna true si el resultado es de tipo ruta
   bool get esRuta => tipo == TipoQRResultado.ruta;
+
+  /// Retorna true si el resultado es de tipo nodo
   bool get esNodo => tipo == TipoQRResultado.nodo;
+
+  /// Retorna true si el resultado es de tipo coordenadas
   bool get esCoordenadas => tipo == TipoQRResultado.coordenadasSVG;
 }
