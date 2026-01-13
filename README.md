@@ -173,16 +173,33 @@ lib/
 
 ### Tipos de Nodos
 
-| Icono | Tipo | Descripción |
-|-------|------|-------------|
-| 🚪 | Entrada | Accesos principales del edificio |
-| 🔀 | Intersección | Cruces de pasillos |
-| 📐 | Esquina | Cambios de dirección |
-| 🚪 | Puerta | Acceso a salas/oficinas |
-| 🪜 | Escalera | Conexión vertical entre pisos |
-| 🛗 | Ascensor | Conexión vertical automatizada |
-| 🚻 | Baño | Servicios higiénicos |
-| ⭐ | Punto de Interés | Lugares destacados |
+| Tipo | Descripción | Icono Material |
+|------|-------------|----------------|
+| **Entrada** | Accesos principales del edificio | `door_front_door` |
+| **Pasillo** | Puntos intermedios en corredores | `straighten` |
+| **Intersección** | Cruces de pasillos | `merge_type` |
+| **Esquina** | Cambios de dirección | `turn_right` |
+| **Puerta** | Acceso a salas/oficinas | `meeting_room` |
+| **Escalera** | Conexión vertical entre pisos | `stairs` |
+| **Ascensor** | Conexión vertical automatizada | `elevator` |
+| **Baño** | Servicios higiénicos | `wc` |
+| **Laboratorio** | Laboratorios de investigación | `science` |
+| **Sala de Clases** | Aulas para clases | `class_` |
+| **Punto de Interés** | Lugares relevantes (cafetería, oficinas, etc.) | `place` |
+
+#### Códigos de Color
+
+- 🟢 **Verde** - Entradas
+- 🔵 **Azul** - Pasillos
+- 🟠 **Naranja** - Intersecciones
+- 🟣 **Púrpura** - Esquinas
+- 🔷 **Teal** - Puertas
+- 🔴 **Rojo** - Escaleras
+- 🟦 **Índigo** - Ascensores
+- 🔵 **Cian** - Baños
+- 🟢 **Verde Claro** - Laboratorios
+- 🔵 **Azul Claro** - Salas de Clases
+- 🟡 **Amarillo** - Puntos de Interés
 
 ---
 
@@ -192,11 +209,13 @@ El modo debug está activado mediante la constante `kDebugMode = true` en [main.
 
 ### Funcionalidades Debug
 
-- ✏️ **Crear Nodos**: Toca en el mapa para agregar nuevos nodos
-- 🔗 **Crear Conexiones**: Define conexiones bidireccionales entre nodos
-- 📊 **Estadísticas**: Visualiza información del grafo
+- ✏️ **Crear Nodos**: Toca en el mapa para agregar nuevos nodos con tipo específico
+- 🔗 **Crear Conexiones**: Define conexiones bidireccionales entre nodos con cálculo automático de distancia
+- 📊 **Estadísticas**: Visualiza información del grafo por tipo de nodo
 - 📤 **Exportar Datos**: Copia nodos y conexiones al portapapeles en formato JSON
-- 🔍 **Diagnóstico**: Verifica la integridad del grafo
+- 🔄 **Recargar Nodos**: Actualiza los nodos desde el archivo JSON sin reiniciar
+- 🔧 **Migrar Nodos**: Herramienta para agregar tipos a nodos existentes
+- 🔍 **Diagnóstico**: Verifica la integridad del grafo y archivos
 - 📱 **Generar QR**: Crea códigos QR para cualquier nodo
 
 ---
@@ -248,6 +267,22 @@ Los archivos JSON en `lib/data/` siguen esta estructura:
 }
 ```
 
+### Tipos de Nodo Disponibles
+
+Los siguientes tipos están definidos en el enum `TipoNodo` (main.dart):
+
+- `entrada` - Entradas principales
+- `pasillo` - Puntos en pasillos
+- `interseccion` - Cruces de pasillos
+- `esquina` - Cambios de dirección
+- `puerta` - Accesos a salas
+- `escalera` - Conexiones verticales
+- `ascensor` - Ascensores
+- `bano` - Servicios higiénicos
+- `laboratorio` - Laboratorios
+- `salaClases` - Salas de clases
+- `puntoInteres` - Lugares destacados
+
 ---
 
 ## Carta Gantt del Proyecto
@@ -293,10 +328,20 @@ gantt
 
 ## Contribuidores
 
-| Avatar | Nombre | Rol | Contribuciones |
-|--------|--------|-----|----------------|
-| 👨‍💻 | Diego Vidal | Desarrollador Principal | Interfaz, sistema de navegación, modo debug, corrección de errores QR |
-%| 👨‍💻 | Bruno Martinez | Desarrollador | Digitalización de mapas, modelado de grafos, algoritmo A*, sistema %de coordenadas |
+<table>
+  <tr>
+    <th>Avatar</th>
+    <th>Nombre</th>
+    <th>Rol</th>
+    <th>Contribuciones</th>
+  </tr>
+  <tr>
+    <td>👨‍💻</td>
+    <td>Diego Vidal</td>
+    <td>Desarrollador Principal</td>
+    <td>Interfaz, sistema de navegación, modo debug, corrección de errores QR</td>
+  </tr>
+  </table>
 
 ---
 
