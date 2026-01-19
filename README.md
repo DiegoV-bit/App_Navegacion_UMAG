@@ -39,13 +39,23 @@ lib/
 │   ├── nodo.dart                      # Definición de nodos del grafo
 │   ├── conexion.dart                  # Conexiones entre nodos
 │   └── grafo.dart                     # Estructura del grafo
+├── screens/                           # Pantallas de la aplicación
+│   ├── pantalla_inicio.dart           # Pantalla principal de inicio
+│   ├── pantalla_mapa.dart             # Pantalla del mapa interactivo
+│   └── pantalla_ajustes.dart          # Pantalla de configuración
+├── painters/                          # Pintores personalizados de Canvas
+│   ├── ruta_painter.dart              # Pintor de rutas en el mapa
+│   └── conexion_painter.dart          # Pintor de conexiones entre nodos
 ├── utils/                             # Utilidades y herramientas
 │   ├── a_estrella.dart                # Implementación del algoritmo A*
 │   ├── codigo_qr.dart                 # Procesamiento de códigos QR
+│   ├── constantes.dart                # Constantes de la aplicación
 │   ├── grafo_loader.dart              # Carga de datos del grafo
+│   ├── helpers.dart                   # Funciones auxiliares
 │   ├── navegacion_qr.dart             # Lógica de navegación por QR
 │   ├── pantalla_lectora_qr.dart       # Scanner de códigos QR
-│   └── pantalla_seleccion_destino.dart # Selección de destino
+│   ├── pantalla_seleccion_destino.dart # Selección de destino
+│   └── tipos_nodo.dart                # Definición de tipos de nodo
 └── data/                              # Datos de los grafos
     ├── grafo_piso1.json               # Nodos y conexiones del piso 1
     ├── grafo_piso2.json               # Nodos y conexiones del piso 2
