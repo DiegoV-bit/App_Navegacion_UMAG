@@ -86,6 +86,15 @@
     {"origen": "P3_Pasillo_ingenieria_Sur", "destino": "P3_Pasillo_ingenieria_Centro", "distancia": 470},
 
     {"origen": "P3_Pasillo_ciencias_Norte", "destino": "P3_Pasillo_ciencias_Sur", "distancia": 386},
-    {"origen": "P3_Pasillo_ciencias_Sur", "destino": "P3_Pasillo_ciencias_Norte", "distancia": 386}
+    {"origen": "P3_Pasillo_ciencias_Sur", "destino": "P3_Pasillo_ciencias_Norte", "distancia": 386},
+
+    {"origen": "P3_Pasillo_ingenieria_Sur", "destino": "P3_Baños_ingenieria", "distancia": 72},
+    {"origen": "P3_Baños_ingenieria", "destino": "P3_Pasillo_ingenieria_Sur", "distancia": 72},
+
+    {"origen": "P3_Pasillo_Profesores", "destino": "P3_Secretaria_mecanica", "distancia": 262},
+    {"origen": "P3_Secretaria_mecanica", "destino": "P3_Pasillo_Profesores", "distancia": 262},
+
+    {"origen": "P3_Pasillo_ingenieria_Centro", "destino": "P3_Sala_31", "distancia": 64},
+    {"origen": "P3_Sala_31", "destino": "P3_Pasillo_ingenieria_Centro", "distancia": 64}
   ]
 }

@@ -101,6 +101,12 @@
     {"origen": "P2_Sala_25", "destino": "P2_Pasillo_ingenieria_Sur", "distancia": 143},
 
     {"origen": "P2_Pasillo_ingenieria_Sur", "destino": "P2_Sala_26", "distancia": 87},
-    {"origen": "P2_Sala_26", "destino": "P2_Pasillo_ingenieria_Sur", "distancia": 87}
+    {"origen": "P2_Sala_26", "destino": "P2_Pasillo_ingenieria_Sur", "distancia": 87},
+
+    {"origen": "P2_Pasillo_ingenieria_Sur", "destino": "P2_Baños_ingenieria", "distancia": 63},
+    {"origen": "P2_Baños_ingenieria", "destino": "P2_Pasillo_ingenieria_Sur", "distancia": 63},
+
+    {"origen": "P2_Pasillo_ciencias_Sur", "destino": "P2_Baños_ciencias", "distancia": 75},
+    {"origen": "P2_Baños_ciencias", "destino": "P2_Pasillo_ciencias_Sur", "distancia": 75}
   ]
 }
