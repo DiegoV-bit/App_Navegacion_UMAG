@@ -27,6 +27,7 @@ class _NavegacionUMAGAppState extends State<NavegacionUMAGApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Navegación UMAG',
+      debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
