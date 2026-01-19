@@ -4,17 +4,17 @@ import 'package:flutter/material.dart';
 import 'screens/pantalla_inicio.dart';
 
 void main() {
-  runApp(const NavigacionUMAGApp());
+  runApp(const NavegacionUMAGApp());
 }
 
-class NavigacionUMAGApp extends StatefulWidget {
-  const NavigacionUMAGApp({super.key});
+class NavegacionUMAGApp extends StatefulWidget {
+  const NavegacionUMAGApp({super.key});
 
   @override
-  State<NavigacionUMAGApp> createState() => _NavigacionUMAGAppState();
+  State<NavegacionUMAGApp> createState() => _NavegacionUMAGAppState();
 }
 
-class _NavigacionUMAGAppState extends State<NavigacionUMAGApp> {
+class _NavegacionUMAGAppState extends State<NavegacionUMAGApp> {
   ThemeMode _themeMode = ThemeMode.system;
 
   void _cambiarTema(ThemeMode modo) {
