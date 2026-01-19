@@ -2978,7 +2978,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
               'color': Colors.amber,
             },
             {
-              'titulo': 'Servicios Higiénicos',
+              'titulo': 'Baños y Servicios Higiénicos',
               'descripcion': 'Baños disponibles en este nivel.',
               'icono': Icons.wc,
               'color': Colors.cyan,
@@ -3012,13 +3012,6 @@ class _PantallaMapaState extends State<PantallaMapa> {
               'color': Colors.lightGreen,
             },
             {
-              'titulo': 'Salas de Estudio',
-              'descripcion':
-                  'Espacios disponibles para estudio individual o grupal.',
-              'icono': Icons.menu_book,
-              'color': Colors.amber,
-            },
-            {
               'titulo': 'Servicios Higiénicos',
               'descripcion': 'Baños disponibles en este nivel.',
               'icono': Icons.wc,
@@ -3029,22 +3022,8 @@ class _PantallaMapaState extends State<PantallaMapa> {
       case 3:
         return {
           'descripcion':
-              'El tercer piso se dedica principalmente a laboratorios especializados, salas de computación y oficinas académicas.',
+              'El tercer piso se dedica principalmente a salas de clases, oficinas de profesores y oficinas académicas.',
           'lugares': [
-            {
-              'titulo': 'Laboratorios Especializados',
-              'descripcion':
-                  'Laboratorios de computación, electrónica y otras especialidades.',
-              'icono': Icons.science,
-              'color': Colors.lightGreen,
-            },
-            {
-              'titulo': 'Salas de Computación',
-              'descripcion':
-                  'Salas equipadas con computadores para prácticas y desarrollo.',
-              'icono': Icons.computer,
-              'color': Colors.lightBlue,
-            },
             {
               'titulo': 'Salas de Clases',
               'descripcion': 'Aulas para clases teóricas y seminarios.',
@@ -3058,7 +3037,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
               'color': Colors.amber,
             },
             {
-              'titulo': 'Servicios Higiénicos',
+              'titulo': 'Baños y Servicios Higiénicos',
               'descripcion': 'Baños disponibles en este nivel.',
               'icono': Icons.wc,
               'color': Colors.cyan,
@@ -3068,40 +3047,20 @@ class _PantallaMapaState extends State<PantallaMapa> {
       case 4:
         return {
           'descripcion':
-              'El cuarto piso cuenta con laboratorios avanzados, salas de proyectos y espacios para trabajo de titulación.',
+              'El cuarto piso cuenta con salas de clases, salas de computacion y salas de conferencias.',
           'lugares': [
             {
-              'titulo': 'Laboratorios Avanzados',
+              'titulo': 'Laboratorios de computación',
               'descripcion':
-                  'Laboratorios especializados para proyectos de titulación e investigación.',
-              'icono': Icons.science,
+                  'Laboratorios especializados para investigación, programación y desarrollo.',
+              'icono': Icons.computer,
               'color': Colors.lightGreen,
-            },
-            {
-              'titulo': 'Salas de Proyectos',
-              'descripcion':
-                  'Espacios dedicados para desarrollo de proyectos de estudiantes.',
-              'icono': Icons.engineering,
-              'color': Colors.amber,
             },
             {
               'titulo': 'Salas de Clases',
               'descripcion': 'Aulas para cursos avanzados y especializaciones.',
               'icono': Icons.class_,
               'color': Colors.lightBlue,
-            },
-            {
-              'titulo': 'Áreas de Trabajo',
-              'descripcion':
-                  'Espacios para trabajo grupal y desarrollo de tesis.',
-              'icono': Icons.groups,
-              'color': Colors.amber,
-            },
-            {
-              'titulo': 'Servicios Higiénicos',
-              'descripcion': 'Baños disponibles en este nivel.',
-              'icono': Icons.wc,
-              'color': Colors.cyan,
             },
           ],
         };
