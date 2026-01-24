@@ -1,0 +1,28 @@
+{
+  "conexionesVerticales": [
+    {
+      "nodoOrigen": "P1_Ascensor",
+      "nodoDestino": "P2_Ascensor",
+      "pisoOrigen": 1,
+      "pisoDestino": 2,
+      "tipo": "ascensor",
+      "costo": 30.0
+    },
+    {
+      "nodoOrigen": "P2_Ascensor",
+      "nodoDestino": "P3_Ascensor",
+      "pisoOrigen": 2,
+      "pisoDestino": 3,
+      "tipo": "ascensor",
+      "costo": 30.0
+    },
+    {
+      "nodoOrigen": "P3_Ascensor",
+      "nodoDestino": "P4_Ascensor",
+      "pisoOrigen": 3,
+      "pisoDestino": 4,
+      "tipo": "ascensor",
+      "costo": 30.0
+    }
+  ]
+}

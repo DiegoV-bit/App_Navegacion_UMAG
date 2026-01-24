@@ -8,11 +8,15 @@ import 'dart:math';
 
 // Imports de modelos y utilidades
 import '../models/grafo.dart';
+import '../models/grafo_multipiso.dart';
 import '../utils/a_estrella.dart';
+import '../utils/a_estrella_multipiso.dart';
+import '../utils/grafo_multipiso_loader.dart';
 import '../utils/codigo_qr.dart';
 import '../utils/tipos_nodo.dart';
 import '../utils/pantalla_lectora_qr.dart';
 import '../utils/constantes.dart';
+import '../widgets/visualizador_ruta_multipiso.dart';
 
 // ==================== PANTALLA MAPA ====================
 class PantallaMapa extends StatefulWidget {
@@ -59,6 +63,12 @@ class _PantallaMapaState extends State<PantallaMapa> {
   String? _origenSeleccionado;
   String? _destinoSeleccionado;
 
+  // Variables para navegación multi-piso
+  GrafoMultiPiso? _grafoMultiPiso;
+  final bool _modoMultiPiso =
+      true; // Toggle para habilitar/deshabilitar navegación multi-piso
+  ResultadoRutaMultiPiso? _resultadoMultiPiso;
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +81,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
     // inicializa configuración y carga del mapa
     _configurarDimensionesSVG();
     _inicializarMapa();
+    _cargarGrafoMultiPiso();
 
     // Centrar el mapa en el patio después de que se construya el widget
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -121,6 +132,42 @@ class _PantallaMapaState extends State<PantallaMapa> {
       default:
         _svgWidthOriginal = 1200.0;
         _svgHeightOriginal = 800.0;
+    }
+  }
+
+  // Cargar grafo multi-piso
+  Future<void> _cargarGrafoMultiPiso() async {
+    print('\n🚀 INICIANDO CARGA DE GRAFO MULTI-PISO...');
+    try {
+      _grafoMultiPiso = await cargarGrafoMultiPiso();
+      if (kModoDebugApp) {
+        print('\n════════════════════════════════════════');
+        print('✅ GRAFO MULTI-PISO CARGADO EXITOSAMENTE');
+        print('════════════════════════════════════════');
+        print(
+            'Pisos disponibles: ${_grafoMultiPiso!.grafosPorPiso.keys.toList()..sort()}');
+        print(
+            'Conexiones verticales: ${_grafoMultiPiso!.conexionesVerticales.length}');
+        for (var conexion in _grafoMultiPiso!.conexionesVerticales) {
+          print(
+              '  ${conexion.nodoOrigen} ↔ ${conexion.nodoDestino} (${conexion.tipo.name})');
+        }
+        print('════════════════════════════════════════\n');
+      }
+    } catch (e, stackTrace) {
+      print('\n❌❌❌ ERROR CRÍTICO AL CARGAR GRAFO MULTI-PISO ❌❌❌');
+      print('Error: $e');
+      print('StackTrace: $stackTrace');
+      if (kModoDebugApp) {
+        print('════════════════════════════════════════');
+        print('DIAGNÓSTICO:');
+        print(
+            '1. Verifica que el archivo lib/data/conexiones_verticales.json existe');
+        print(
+            '2. Verifica que los archivos lib/data/grafo_piso[1-4].json existen');
+        print('3. Verifica que pubspec.yaml incluye estos archivos en assets');
+        print('════════════════════════════════════════\n');
+      }
     }
   }
 
@@ -620,13 +667,17 @@ class _PantallaMapaState extends State<PantallaMapa> {
     final pisoOrigen = _extraerPisoDeNodoId(_origenSeleccionado!);
     final pisoDestino = _extraerPisoDeNodoId(nodoId);
 
-    if (pisoOrigen != pisoDestino) {
+    // Si están en pisos diferentes y no está habilitado el modo multi-piso
+    if (pisoOrigen != pisoDestino && !_modoMultiPiso) {
       if (kModoDebugApp) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('El origen y destino deben estar en el mismo piso'),
+            content: Text(
+              'El origen y destino están en diferentes pisos.\n'
+              'Activa el modo multi-piso en ajustes para navegación entre pisos.',
+            ),
             backgroundColor: Colors.orange,
-            duration: Duration(seconds: 3),
+            duration: Duration(seconds: 4),
           ),
         );
       }
@@ -637,11 +688,46 @@ class _PantallaMapaState extends State<PantallaMapa> {
       _destinoSeleccionado = nodoId;
     });
 
-    // Calcular ruta en el mismo piso
+    // Calcular ruta
     await _calcularYMostrarRuta(_origenSeleccionado!, nodoId);
   }
 
   Future<void> _calcularYMostrarRuta(String origen, String destino) async {
+    try {
+      // Verificar si origen y destino están en el mismo piso
+      final pisoOrigen = _extraerPisoDeNodoId(origen);
+      final pisoDestino = _extraerPisoDeNodoId(destino);
+
+      if (pisoOrigen == pisoDestino) {
+        // Usar algoritmo A* normal para mismo piso
+        await _calcularRutaMismoPiso(origen, destino);
+      } else if (_modoMultiPiso && _grafoMultiPiso != null) {
+        // Usar algoritmo A* multi-piso
+        await _calcularRutaMultiPiso(origen, destino);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'El origen y destino deben estar en el mismo piso.\n'
+              'Activa el modo multi-piso para rutas entre pisos.',
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kModoDebugApp) print('❌ Error al calcular ruta: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al calcular ruta: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _calcularRutaMismoPiso(String origen, String destino) async {
     try {
       // Cargar el grafo del piso actual
       final String jsonString = await rootBundle.loadString(rutaGrafoJson);
@@ -659,6 +745,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
         setState(() {
           _rutaActiva.clear();
           _rutaActiva.addAll(resultado);
+          _resultadoMultiPiso = null; // Limpiar resultado multi-piso
         });
 
         final distanciaTotal = _calcularDistanciaRuta(resultado);
@@ -675,7 +762,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
                       const Icon(Icons.check_circle, color: Colors.white),
                       const SizedBox(width: 12),
                       const Text(
-                        'Ruta calculada',
+                        'Ruta calculada (mismo piso)',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -736,6 +823,121 @@ class _PantallaMapaState extends State<PantallaMapa> {
     }
   }
 
+  Future<void> _calcularRutaMultiPiso(String origen, String destino) async {
+    if (_grafoMultiPiso == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('El grafo multi-piso aún no está cargado'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final aStar = AStarMultiPiso(_grafoMultiPiso!);
+      final resultado = aStar.calcularRuta(
+        origen: origen,
+        destino: destino,
+      );
+
+      if (resultado != null) {
+        setState(() {
+          _rutaActiva.clear();
+          _rutaActiva.addAll(resultado.ruta);
+          _resultadoMultiPiso = resultado;
+        });
+
+        // Mostrar información de la ruta
+        final pisosInvolucrados = resultado.rutaPorPiso.keys.toList()..sort();
+        final mensajeTransicion = resultado.puntosTransicion.isEmpty
+            ? 'Misma planta'
+            : 'Cambios de piso en: ${resultado.puntosTransicion.join(", ")}';
+
+        if (kModoDebugApp) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.white),
+                      SizedBox(width: 12),
+                      Text(
+                        'Ruta multi-piso calculada',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('✅ Ruta: ${resultado.ruta.length} pasos'),
+                  Text(
+                      '📏 Distancia: ${resultado.distanciaTotal.toStringAsFixed(1)} unidades'),
+                  Text('🏢 Pisos: ${pisosInvolucrados.join(" → ")}'),
+                  Text('🔄 $mensajeTransicion'),
+                ],
+              ),
+              backgroundColor: Colors.blue.shade700,
+              duration: const Duration(seconds: 6),
+              action: SnackBarAction(
+                label: 'Limpiar',
+                textColor: Colors.white,
+                onPressed: _limpiarSeleccion,
+              ),
+            ),
+          );
+        }
+
+        if (kModoDebugApp) {
+          print('\n${'=' * 60}');
+          print('RUTA MULTI-PISO CALCULADA');
+          print('=' * 60);
+          print('Origen: $origen');
+          print('Destino: $destino');
+          print('Total pasos: ${resultado.ruta.length}');
+          print('Distancia: ${resultado.distanciaTotal.toStringAsFixed(2)}');
+          print('\nRuta por piso:');
+          for (var entry in resultado.rutaPorPiso.entries) {
+            print('  Piso ${entry.key}: ${entry.value.length} nodos');
+            print('    ${entry.value.join(" → ")}');
+          }
+          if (resultado.puntosTransicion.isNotEmpty) {
+            print('\nPuntos de transición:');
+            for (var punto in resultado.puntosTransicion) {
+              print('  - $punto');
+            }
+          }
+          print('=' * 60);
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('❌ No se encontró ruta entre los puntos seleccionados'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        _limpiarSeleccion();
+      }
+    } catch (e) {
+      if (kModoDebugApp) {
+        print('❌ Error al calcular ruta multi-piso: $e');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al calcular ruta multi-piso: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      _limpiarSeleccion();
+    }
+  }
+
   double _calcularDistanciaRuta(List<String> ruta) {
     double distanciaTotal = 0.0;
     for (int i = 0; i < ruta.length - 1; i++) {
@@ -754,6 +956,7 @@ class _PantallaMapaState extends State<PantallaMapa> {
       _origenSeleccionado = null;
       _destinoSeleccionado = null;
       _rutaActiva.clear();
+      _resultadoMultiPiso = null;
 
       // Limpiar también las conexiones debug si están activas
       if (_modoDebugActivo) {
@@ -3770,4 +3973,3 @@ class RutaPainter extends CustomPainter {
     return oldDelegate.inicio != inicio || oldDelegate.fin != fin;
   }
 }
-
