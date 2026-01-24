@@ -61,7 +61,6 @@ app.*.map.json
 *.synctex.gz
 *.bbl
 *.blg
-*.pdf
 gantt_gen.py
 
 docs/
